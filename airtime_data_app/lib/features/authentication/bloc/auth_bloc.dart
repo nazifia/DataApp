@@ -93,7 +93,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(const AuthLoading());
     try {
       final response = await _authRepository.createProfile(
-          event.phoneNumber, event.fullName);
+          event.phoneNumber, event.fullName, event.password);
       emit(AuthSuccess(
         userId: response['user']['id'].toString(),
         phoneNumber: Validators.formatNigerianPhone(event.phoneNumber),

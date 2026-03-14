@@ -106,7 +106,7 @@ class AuthRepository {
 
   // Create User Profile
   Future<Map<String, dynamic>> createProfile(
-      String phoneNumber, String fullName) async {
+      String phoneNumber, String fullName, String password) async {
     if (_config.useMockAuth) {
       return {
         'user': {
@@ -121,6 +121,7 @@ class AuthRepository {
       data: {
         'phone_number': Validators.formatNigerianPhone(phoneNumber),
         'full_name': fullName,
+        'password': password,
         'device_id': _generateDeviceId(),
       },
     );

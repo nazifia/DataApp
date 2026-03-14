@@ -7,7 +7,11 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.database import get_db
 from app.models.user import User
+from passlib.context import CryptContext
+
 from app.schemas.auth import (
+    LoginRequest,
+    LoginResponse,
     RefreshTokenRequest,
     RefreshTokenResponse,
     SendOTPRequest,
@@ -17,6 +21,8 @@ from app.schemas.auth import (
 )
 from app.services import otp_service, sms_service
 from app.utils.auth import create_access_token, create_refresh_token, decode_token
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 logger = logging.getLogger(__name__)
 
@@ -97,6 +103,45 @@ async def verify_otp(request: VerifyOTPRequest, db: Session = Depends(get_db)):
         access_token=access_token,
         refresh_token=refresh_token,
         is_new_user=is_new_user,
+    )
+
+
+@router.post("/login", response_model=LoginResponse, status_code=status.HTTP_200_OK)
+async def login(request: LoginRequest, db: Session = Depends(get_db)):
+    """
+    Standard phone + password login.
+    Returns access and refresh tokens on success.
+    """
+    phone = request.phone_number
+
+    user = db.query(User).filter(User.phone_number == phone).first()
+    if user is None or not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid phone number or password.",
+        )
+
+    if user.password_hash is None or not pwd_context.verify(request.password, user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid phone number or password.",
+        )
+
+    user_id_str = str(user.id)
+    access_token = create_access_token(
+        data={"sub": user_id_str},
+        expires_delta=timedelta(minutes=settings.access_token_expire_minutes),
+    )
+    refresh_token = create_refresh_token(
+        data={"sub": user_id_str},
+        expires_delta=timedelta(days=settings.refresh_token_expire_days),
+    )
+
+    logger.info("User logged in: phone=%s, id=%s", phone, user.id)
+    return LoginResponse(
+        message="Login successful.",
+        access_token=access_token,
+        refresh_token=refresh_token,
     )
 
 

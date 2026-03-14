@@ -39,6 +39,25 @@ class VerifyOTPResponse(BaseModel):
     is_new_user: bool
 
 
+class LoginRequest(BaseModel):
+    phone_number: str
+    password: str
+
+    @field_validator("phone_number")
+    @classmethod
+    def validate_phone_number(cls, v: str) -> str:
+        normalized = normalize_phone_number(v)
+        if normalized is None:
+            raise ValueError("Invalid Nigerian phone number.")
+        return normalized
+
+
+class LoginResponse(BaseModel):
+    message: str
+    access_token: str
+    refresh_token: str
+
+
 class TokenData(BaseModel):
     user_id: str
 

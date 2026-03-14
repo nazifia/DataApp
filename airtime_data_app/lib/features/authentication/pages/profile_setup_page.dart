@@ -23,12 +23,18 @@ class ProfileSetupPage extends StatefulWidget {
 class _ProfileSetupPageState extends State<ProfileSetupPage> {
   final _fullNameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  bool _passwordVisible = false;
+  bool _confirmPasswordVisible = false;
 
   @override
   void dispose() {
     _fullNameController.dispose();
     _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -36,10 +42,12 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
     if (_formKey.currentState?.validate() ?? false) {
       final fullName = _fullNameController.text.trim();
       final email = _emailController.text.trim();
+      final password = _passwordController.text;
       context.read<AuthBloc>().add(
             CreateProfileEvent(
               fullName,
               widget.phoneNumber,
+              password,
               email: email.isEmpty ? null : email,
             ),
           );
@@ -192,6 +200,73 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
                       if (!RegExp(r'^[\w\.\+\-]+@[\w\-]+\.\w{2,}$')
                           .hasMatch(value.trim())) {
                         return 'Enter a valid email address';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Password
+                  _fieldLabel('Password *'),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: _passwordController,
+                    obscureText: !_passwordVisible,
+                    decoration: InputDecoration(
+                      hintText: 'Create a password',
+                      prefixIcon:
+                          const Icon(Icons.lock_outline_rounded),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _passwordVisible
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                          color: Colors.grey,
+                        ),
+                        onPressed: () => setState(
+                            () => _passwordVisible = !_passwordVisible),
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please create a password';
+                      }
+                      if (value.length < 6) {
+                        return 'Password must be at least 6 characters';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Confirm Password
+                  _fieldLabel('Confirm Password *'),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: _confirmPasswordController,
+                    obscureText: !_confirmPasswordVisible,
+                    decoration: InputDecoration(
+                      hintText: 'Repeat your password',
+                      prefixIcon:
+                          const Icon(Icons.lock_outline_rounded),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _confirmPasswordVisible
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                          color: Colors.grey,
+                        ),
+                        onPressed: () => setState(() =>
+                            _confirmPasswordVisible =
+                                !_confirmPasswordVisible),
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please confirm your password';
+                      }
+                      if (value != _passwordController.text) {
+                        return 'Passwords do not match';
                       }
                       return null;
                     },

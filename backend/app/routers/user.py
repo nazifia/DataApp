@@ -1,7 +1,10 @@
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from passlib.context import CryptContext
 from sqlalchemy.orm import Session
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 from app.database import get_db
 from app.models.user import User
@@ -48,6 +51,7 @@ def create_profile(
 
     # Update user profile fields
     current_user.full_name = request.full_name
+    current_user.password_hash = pwd_context.hash(request.password)
     if request.device_id:
         current_user.device_id = request.device_id
 

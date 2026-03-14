@@ -9,6 +9,7 @@ from app.utils.validators import normalize_phone_number
 class CreateProfileRequest(BaseModel):
     phone_number: str
     full_name: str
+    password: str
     device_id: Optional[str] = None
 
     @field_validator("phone_number")

@@ -44,12 +44,14 @@ class VerifyOtpEvent extends AuthEvent {
 class CreateProfileEvent extends AuthEvent {
   final String fullName;
   final String phoneNumber;
+  final String password;
   final String? email;
 
-  const CreateProfileEvent(this.fullName, this.phoneNumber, {this.email});
+  const CreateProfileEvent(this.fullName, this.phoneNumber, this.password,
+      {this.email});
 
   @override
-  List<Object> get props => [fullName, phoneNumber, email ?? ''];
+  List<Object> get props => [fullName, phoneNumber, password, email ?? ''];
 }
 
 class LoadProfileEvent extends AuthEvent {}
