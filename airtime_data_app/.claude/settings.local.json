@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter analyze:*)",
+      "Bash(dart analyze:*)",
+      "Bash(flutter pub:*)",
+      "Bash(dir \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\airtime_data_app\\\\lib\\\\features\\\\data\\\\bloc\")",
+      "Bash(dir \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\airtime_data_app\\\\lib\\\\features\\\\data\\\\state\")",
+      "Bash(dir \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\airtime_data_app\\\\lib\\\\features\\\\data\\\\event\")",
+      "Bash(flutter lib/main.dart)",
+      "Bash(flutter run:*)"
+    ]
+  }
+}

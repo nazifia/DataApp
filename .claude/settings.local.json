@@ -1,0 +1,39 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter create:*)",
+      "Bash(flutter pub:*)",
+      "Bash(cd C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\airtime_data_backend && django-admin startproject airtime_data .)",
+      "Bash(find \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\" -name \"*.log\" -o -name \"*error*\" -o -name \"*build*\" -type f 2>/dev/null | head -20)",
+      "Bash(flutter doctor:*)",
+      "Bash(flutter devices:*)",
+      "Bash(grep -n \"import '../utils/validation.dart'\" \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\airtime_data_app\\\\lib\\\\features\\\\authentication\\\\data\\\\auth_repository.dart\")",
+      "Bash(cd \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\airtime_data_app\" && flutter analyze 2>&1)",
+      "Bash(cd \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\airtime_data_app\" && flutter analyze 2>&1 | grep -E \"^  error\")",
+      "Bash(cd \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\airtime_data_app\" && flutter analyze 2>&1 | tail -5)",
+      "Bash(cd \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\airtime_data_app\" && flutter analyze 2>&1 | grep \"error\")",
+      "Bash(cd \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\airtime_data_app\" && flutter run -d emulator-5554 2>&1)",
+      "Bash(dir \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\" 2>&1)",
+      "Bash(dir \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\" 2>&1)",
+      "Bash(dir \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\venv\" 2>&1 && dir \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\airtime_data_app\\\\..\" 2>&1)",
+      "Bash(dir \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\venv\\\\Scripts\" 2>&1 | head -20)",
+      "Bash(dir \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\venv\\\\Lib\\\\site-packages\" 2>&1 | grep -iE \"\\(django|fastapi|flask|uvicorn|gunicorn|starlette\\)\")",
+      "Bash(dir \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\venv\\\\Lib\\\\site-packages\" 2>&1)",
+      "Bash(adb shell:*)",
+      "Bash(ADB=\"$LOCALAPPDATA/Android/sdk/platform-tools/adb.exe\" && \"$ADB\" shell df /data 2>&1)",
+      "Bash(ADB=\"/c/Users/Dell/AppData/Local/Android/sdk/platform-tools/adb.exe\" && \"$ADB\" shell df /data 2>&1)",
+      "Bash(\"/c/Users/Dell/AppData/Local/Android/sdk/platform-tools/adb.exe\" shell:*)",
+      "Bash(cd \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\airtime_data_app\" && flutter run --no-pub 2>&1)",
+      "Bash(cd \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\airtime_data_app\" && flutter analyze lib/features/authentication/pages/otp_verification_page.dart 2>&1)",
+      "Bash(cd \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\airtime_data_app\" && flutter analyze 2>&1 | grep -E \"error|Error\")",
+      "Bash(cd \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\airtime_data_app\" && flutter analyze 2>&1 | grep -E \"^\\\\s*\\(error\\)\")",
+      "Bash(\"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\venv\\\\Scripts\\\\python.exe\" -c \"import ast, os; errors = []; [errors.append\\(f\\) for root,_,files in os.walk\\('C:/Users/Dell/Desktop/MY_PRODUCTS/ADP/backend'\\) for f in [os.path.join\\(root,file\\) for file in files if file.endswith\\('.py'\\)] if not \\(lambda: \\(ast.parse\\(open\\(f\\).read\\(\\)\\), True\\) or True\\)\\(\\)\\(\\)] ; print\\('Syntax OK' if not errors else f'Errors in: {errors}'\\)\")",
+      "Bash(\"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\venv\\\\Scripts\\\\python.exe\" -c \"\nimport ast, os, sys\n\nerrors = []\nbackend_dir = 'C:/Users/Dell/Desktop/MY_PRODUCTS/ADP/backend'\n\nfor root, dirs, files in os.walk\\(backend_dir\\):\n    for fname in files:\n        if fname.endswith\\('.py'\\):\n            fpath = os.path.join\\(root, fname\\)\n            try:\n                with open\\(fpath, 'r', encoding='utf-8'\\) as fh:\n                    src = fh.read\\(\\)\n                ast.parse\\(src\\)\n            except SyntaxError as e:\n                errors.append\\(\\(fpath, str\\(e\\)\\)\\)\n\nif errors:\n    print\\('SYNTAX ERRORS FOUND:'\\)\n    for path, err in errors:\n        print\\(f'  {path}: {err}'\\)\n    sys.exit\\(1\\)\nelse:\n    print\\('Syntax OK — all', sum\\(1 for r,d,fs in os.walk\\(backend_dir\\) for f in fs if f.endswith\\('.py'\\)\\), 'Python files parsed successfully.'\\)\n\")",
+      "Bash(cd \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\backend\" && \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\venv\\\\Scripts\\\\pip.exe\" install -r requirements.txt 2>&1 | tail -5)",
+      "Bash(cd \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\backend\" && \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\venv\\\\Scripts\\\\pip.exe\" install -r requirements.txt --only-binary=psycopg2-binary 2>&1 | tail -10)",
+      "Bash(\"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\venv\\\\Scripts\\\\pip.exe\" install:*)",
+      "Bash(cd:*)",
+      "Bash(flutter analyze:*)"
+    ]
+  }
+}
