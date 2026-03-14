@@ -98,6 +98,9 @@ class _AirtimePurchasePageState extends State<AirtimePurchasePage> {
         ),
       ),
       body: BlocConsumer<AirtimeBloc, AirtimeState>(
+        listenWhen: (previous, current) =>
+            (current is AirtimeSuccess && previous is! AirtimeSuccess) ||
+            (current is AirtimeFailure && previous is! AirtimeFailure),
         listener: (context, state) {
           if (state is AirtimeSuccess) {
             _showSuccessSheet(context, state);

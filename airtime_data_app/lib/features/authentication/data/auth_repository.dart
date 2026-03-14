@@ -15,6 +15,57 @@ class AuthRepository {
       : _apiClient = apiClient,
         _config = config;
 
+  // Standard Login (phone + password)
+  Future<Map<String, dynamic>> login(
+      String phoneNumber, String password) async {
+    if (_config.useMockAuth) {
+      if (password == 'password123') {
+        const mockToken = 'dev_access_token_123';
+        await _storage.write(key: 'access_token', value: mockToken);
+        await _storage.write(
+            key: 'refresh_token', value: 'dev_refresh_token_123');
+        return {
+          'message': 'Login successful (dev mode)',
+          'access_token': mockToken,
+        };
+      } else {
+        throw Exception('Invalid credentials. Dev password: password123');
+      }
+    }
+    final response = await _apiClient.dio.post(
+      '/auth/login',
+      data: {
+        'phone_number': Validators.formatNigerianPhone(phoneNumber),
+        'password': password,
+      },
+    );
+    final data = Map<String, dynamic>.from(response.data as Map);
+    if (data['access_token'] != null) {
+      await _storage.write(
+          key: 'access_token', value: data['access_token'].toString());
+      if (data['refresh_token'] != null) {
+        await _storage.write(
+            key: 'refresh_token', value: data['refresh_token'].toString());
+      }
+    }
+    return data;
+  }
+
+  // Biometric helpers
+  Future<void> enableBiometric(String phoneNumber) async {
+    await _storage.write(key: 'biometric_enabled', value: 'true');
+    await _storage.write(key: 'biometric_phone', value: phoneNumber);
+  }
+
+  Future<bool> isBiometricEnabled() async {
+    final value = await _storage.read(key: 'biometric_enabled');
+    return value == 'true';
+  }
+
+  Future<String?> getBiometricPhone() async {
+    return await _storage.read(key: 'biometric_phone');
+  }
+
   // Send OTP
   Future<Map<String, dynamic>> sendOtp(String phoneNumber) async {
     if (_config.useMockAuth) {

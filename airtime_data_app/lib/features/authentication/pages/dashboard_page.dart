@@ -17,6 +17,7 @@ import '../../transaction_history/event/transaction_history_event.dart';
 import '../../transaction_history/state/transaction_history_state.dart';
 import '../../../core/constants/theme.dart';
 import '../../../core/utils/validation.dart';
+import '../../../main.dart' show routeObserver;
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -25,14 +26,36 @@ class DashboardPage extends StatefulWidget {
   State<DashboardPage> createState() => _DashboardPageState();
 }
 
-class _DashboardPageState extends State<DashboardPage> {
+class _DashboardPageState extends State<DashboardPage> with RouteAware {
   bool _balanceVisible = true;
+
+  void _refreshData() {
+    context.read<WalletBloc>().add(const LoadWalletEvent());
+    context.read<TransactionHistoryBloc>().add(LoadTransactionHistoryEvent());
+  }
 
   @override
   void initState() {
     super.initState();
-    context.read<WalletBloc>().add(LoadWalletEvent());
-    context.read<TransactionHistoryBloc>().add(LoadTransactionHistoryEvent());
+    _refreshData();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context)!);
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  // Called when another route is popped back to this dashboard
+  @override
+  void didPopNext() {
+    _refreshData();
   }
 
   @override
@@ -76,7 +99,7 @@ class _DashboardPageState extends State<DashboardPage> {
           BlocListener<AirtimeBloc, AirtimeState>(
             listener: (context, state) {
               if (state is AirtimeSuccess) {
-                context.read<WalletBloc>().add(LoadWalletEvent());
+                context.read<WalletBloc>().add(const LoadWalletEvent());
                 context
                     .read<TransactionHistoryBloc>()
                     .add(LoadTransactionHistoryEvent());
@@ -86,12 +109,24 @@ class _DashboardPageState extends State<DashboardPage> {
           BlocListener<DataBloc, DataState>(
             listener: (context, state) {
               if (state is DataSuccess) {
-                context.read<WalletBloc>().add(LoadWalletEvent());
+                context.read<WalletBloc>().add(const LoadWalletEvent());
                 context
                     .read<TransactionHistoryBloc>()
                     .add(LoadTransactionHistoryEvent());
               }
             },
+          ),
+          BlocListener<WalletBloc, WalletState>(
+            listener: (context, state) {
+              if (state is WalletSuccess) {
+                context
+                    .read<TransactionHistoryBloc>()
+                    .add(LoadTransactionHistoryEvent());
+              }
+            },
+            // Only react to wallet success triggered by funding (not initial load)
+            listenWhen: (previous, current) =>
+                previous is WalletLoading && current is WalletSuccess,
           ),
         ],
         child: RefreshIndicator(

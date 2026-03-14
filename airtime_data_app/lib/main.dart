@@ -30,6 +30,9 @@ import 'core/constants/theme.dart';
 // Switch to AppConfig.prod before releasing to production
 const _config = AppConfig.dev;
 
+final RouteObserver<ModalRoute<void>> routeObserver =
+    RouteObserver<ModalRoute<void>>();
+
 void main() {
   runApp(AirtimeDataApp(config: _config));
 }
@@ -74,6 +77,7 @@ class AirtimeDataApp extends StatelessWidget {
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
         themeMode: ThemeMode.system,
+        navigatorObservers: [routeObserver],
         initialRoute: '/',
         routes: {
           '/': (context) => const SplashPage(),

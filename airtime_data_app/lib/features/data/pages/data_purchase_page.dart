@@ -100,6 +100,9 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
         ),
       ),
       body: BlocConsumer<DataBloc, DataState>(
+        listenWhen: (previous, current) =>
+            (current is DataSuccess && previous is! DataSuccess) ||
+            (current is DataFailure && previous is! DataFailure),
         listener: (context, state) {
           if (state is DataSuccess) {
             _showSuccessSheet(context, state);

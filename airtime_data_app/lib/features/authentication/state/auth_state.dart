@@ -44,6 +44,10 @@ class AuthFailure extends AuthState {
   List<Object> get props => [message];
 }
 
+class LoginSuccess extends AuthState {
+  const LoginSuccess();
+}
+
 // OTP Specific States
 class OtpLoading extends AuthState {
   const OtpLoading();
