@@ -1,13 +1,12 @@
 import uuid
+import enum
 from datetime import datetime
 
 from sqlalchemy import Column, DateTime, Enum, ForeignKey, Numeric, String
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from app.database import Base
-
-import enum
+from app.models.user import GUID
 
 
 class TransactionType(str, enum.Enum):
@@ -26,8 +25,8 @@ class TransactionStatus(str, enum.Enum):
 class Transaction(Base):
     __tablename__ = "transactions"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
+    id = Column(GUID(), primary_key=True, default=uuid.uuid4, index=True)
+    user_id = Column(GUID(), ForeignKey("users.id"), nullable=False, index=True)
     type = Column(Enum(TransactionType), nullable=False)
     amount = Column(Numeric(10, 2), nullable=False)
     status = Column(Enum(TransactionStatus), nullable=False, default=TransactionStatus.pending)
