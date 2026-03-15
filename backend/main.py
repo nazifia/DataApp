@@ -1,7 +1,9 @@
 import logging
+import traceback
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.config import settings
 from app.database import engine
@@ -27,7 +29,16 @@ app = FastAPI(
     description="Backend API for ADP — a Nigerian airtime and data purchase application.",
     docs_url="/docs",
     redoc_url="/redoc",
+    debug=settings.dev_mode,
 )
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    tb = traceback.format_exc()
+    logger.error("Unhandled exception:\n%s", tb)
+    detail = tb if settings.dev_mode else "Internal server error."
+    return JSONResponse(status_code=500, content={"detail": detail})
+
 
 # CORS — allow all origins in dev; restrict in production
 app.add_middleware(

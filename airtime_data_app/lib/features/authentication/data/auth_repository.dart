@@ -101,7 +101,16 @@ class AuthRepository {
         'otp': otp,
       },
     );
-    return Map<String, dynamic>.from(response.data as Map);
+    final data = Map<String, dynamic>.from(response.data as Map);
+    if (data['access_token'] != null) {
+      await _storage.write(
+          key: 'access_token', value: data['access_token'].toString());
+      if (data['refresh_token'] != null) {
+        await _storage.write(
+            key: 'refresh_token', value: data['refresh_token'].toString());
+      }
+    }
+    return data;
   }
 
   // Create User Profile

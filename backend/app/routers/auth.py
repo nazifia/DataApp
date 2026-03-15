@@ -22,7 +22,7 @@ from app.schemas.auth import (
 from app.services import otp_service, sms_service
 from app.utils.auth import create_access_token, create_refresh_token, decode_token
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
 logger = logging.getLogger(__name__)
 
