@@ -50,7 +50,9 @@
       "Bash(powershell -Command \"\n\\\\$proc = Get-WmiObject Win32_Process -Filter 'ProcessId = 17860'\nWrite-Host 'Name:' \\\\$proc.Name\nWrite-Host 'Cmdline:' \\\\$proc.CommandLine\nWrite-Host 'Owner:' \\(\\\\$proc.GetOwner\\(\\) | ConvertTo-Json -Compress\\)\n\" 2>/dev/null)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(cat:*)",
+      "Bash(/c/Users/Dell/AppData/Local/Programs/Python/Python314/python.exe -c \"\nimport json\nwith open\\(r'C:\\\\Users\\\\Dell\\\\.claude\\\\projects\\\\C--Users-Dell-Desktop-MY-PRODUCTS-ADP\\\\e7598376-6084-4764-bd2a-c0e6c78d116c\\\\tool-results\\\\toolu_019LGRdWVf3rtjgQQYvEgz9U.txt', encoding='utf-8'\\) as f:\n    data = json.load\\(f\\)\ntext = data[0]['text']\nprint\\(text[:30000]\\)\n\")"
     ]
   }
 }

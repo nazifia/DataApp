@@ -23,14 +23,20 @@ class DataBloc extends Bloc<DataEvent, DataState> {
         event.planId,
         event.phoneNumber,
       );
+      final status = (response['status'] as String?)?.toLowerCase();
+      if (status != null && status != 'success') {
+        emit(DataState.failure(
+            response['message']?.toString() ?? 'Data purchase failed'));
+        return;
+      }
       emit(DataState.success(
         reference: response['reference'].toString(),
-        amount: double.tryParse(response['amount'].toString()) ?? 0,
+        amount: double.tryParse(response['amount']?.toString() ?? '0') ?? 0,
         network: event.network,
-        planName: response['plan_name'].toString(),
+        planName: response['plan_name']?.toString() ?? '',
         phoneNumber: event.phoneNumber,
-        data: response['data'].toString(),
-        validity: response['validity'].toString(),
+        data: response['data']?.toString() ?? '',
+        validity: response['validity']?.toString() ?? '',
       ));
     } catch (e) {
       emit(DataState.failure('Failed to purchase data: $e'));

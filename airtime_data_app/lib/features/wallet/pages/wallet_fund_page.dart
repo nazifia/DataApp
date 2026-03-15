@@ -203,8 +203,8 @@ class _WalletFundPageState extends State<WalletFundPage> {
       ),
       body: BlocConsumer<WalletBloc, WalletState>(
         listener: (context, state) {
-          if (state is WalletSuccess) {
-            _showSuccessSheet(context, state.balance);
+          if (state is FundWalletSuccess) {
+            _showSuccessSheet(context, state.balance, state.amount);
           } else if (state is WalletFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -537,8 +537,7 @@ class _WalletFundPageState extends State<WalletFundPage> {
     );
   }
 
-  void _showSuccessSheet(BuildContext context, double newBalance) {
-    final amount = double.tryParse(_amountController.text) ?? 0;
+  void _showSuccessSheet(BuildContext context, double newBalance, double amount) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,

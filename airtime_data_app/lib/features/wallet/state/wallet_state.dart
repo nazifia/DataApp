@@ -25,6 +25,16 @@ class WalletSuccess extends WalletState {
   List<Object> get props => [balance];
 }
 
+class FundWalletSuccess extends WalletState {
+  final double balance;
+  final double amount;
+
+  const FundWalletSuccess({required this.balance, required this.amount});
+
+  @override
+  List<Object> get props => [balance, amount];
+}
+
 class WalletFailure extends WalletState {
   final String message;
 

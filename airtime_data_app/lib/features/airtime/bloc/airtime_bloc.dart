@@ -22,6 +22,12 @@ class AirtimeBloc extends Bloc<AirtimeEvent, AirtimeState> {
         event.phoneNumber,
         event.amount,
       );
+      final status = (response['status'] as String?)?.toLowerCase();
+      if (status != null && status != 'success') {
+        emit(AirtimeFailure(
+            response['message']?.toString() ?? 'Airtime purchase failed'));
+        return;
+      }
       emit(AirtimeSuccess(
         reference: response['reference'].toString(),
         amount: event.amount,

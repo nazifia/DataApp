@@ -15,11 +15,16 @@ class DataRepository {
       String network, String planId, String phoneNumber) async {
     if (_config.useMockAuth) {
       return {
+        'status': 'success',
         'message': 'Data purchase successful (dev mode)',
         'reference': 'REF-DEV-${DateTime.now().millisecondsSinceEpoch}',
         'plan_id': planId,
+        'plan_name': planId.replaceAll('_', ' ').toUpperCase(),
         'network': network,
         'phone_number': phoneNumber,
+        'amount': 500.0,
+        'data': '1GB',
+        'validity': '30 days',
       };
     }
     final response = await _apiClient.dio.post(

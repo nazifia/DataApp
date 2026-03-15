@@ -29,9 +29,15 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
       FundWalletEvent event, Emitter<WalletState> emit) async {
     emit(const WalletLoading());
     try {
-      await _walletRepository.fundWallet(event.amount);
-      // Reload wallet balance after funding
-      add(const LoadWalletEvent());
+      final response = await _walletRepository.fundWallet(event.amount);
+      final status = (response['status'] as String?)?.toLowerCase();
+      if (status != null && status != 'success') {
+        emit(WalletFailure(
+            response['message']?.toString() ?? 'Wallet funding failed'));
+        return;
+      }
+      final balance = (response['balance'] as num?)?.toDouble() ?? 0.0;
+      emit(FundWalletSuccess(balance: balance, amount: event.amount));
     } catch (e) {
       emit(WalletFailure('Failed to fund wallet: $e'));
     }

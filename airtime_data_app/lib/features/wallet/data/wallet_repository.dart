@@ -20,11 +20,18 @@ class WalletRepository {
   }
 
   // Fund Wallet
-  Future<void> fundWallet(double amount) async {
-    if (_config.useMockAuth) return;
-    await _apiClient.dio.post(
+  Future<Map<String, dynamic>> fundWallet(double amount) async {
+    if (_config.useMockAuth) {
+      return {
+        'status': 'success',
+        'message': 'Wallet funded successfully (dev mode)',
+        'balance': 5000.0 + amount,
+      };
+    }
+    final response = await _apiClient.dio.post(
       '/wallet/fund',
       data: {'amount': amount},
     );
+    return Map<String, dynamic>.from(response.data as Map);
   }
 }
