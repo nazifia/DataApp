@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/config/app_env.dart';
 import 'core/network/api_client.dart';
+import 'core/services/theme_service.dart';
 import 'features/authentication/bloc/auth_bloc.dart';
 import 'features/authentication/data/auth_repository.dart';
 import 'features/wallet/bloc/wallet_bloc.dart';
@@ -33,7 +34,14 @@ const _config = AppConfig.dev;
 final RouteObserver<ModalRoute<void>> routeObserver =
     RouteObserver<ModalRoute<void>>();
 
-void main() {
+/// Global notifier for theme mode — updated from Profile page
+final ValueNotifier<ThemeMode> themeModeNotifier =
+    ValueNotifier(ThemeMode.system);
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // Load persisted theme before first frame
+  themeModeNotifier.value = await ThemeService.loadThemeMode();
   runApp(AirtimeDataApp(config: _config));
 }
 
@@ -45,10 +53,14 @@ class AirtimeDataApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final apiClient = ApiClient(config);
-    final authRepository = AuthRepository(apiClient: apiClient, config: config);
-    final walletRepository = WalletRepository(apiClient: apiClient, config: config);
-    final airtimeRepository = AirtimeRepository(apiClient: apiClient, config: config);
-    final dataRepository = DataRepository(apiClient: apiClient, config: config);
+    final authRepository =
+        AuthRepository(apiClient: apiClient, config: config);
+    final walletRepository =
+        WalletRepository(apiClient: apiClient, config: config);
+    final airtimeRepository =
+        AirtimeRepository(apiClient: apiClient, config: config);
+    final dataRepository =
+        DataRepository(apiClient: apiClient, config: config);
     final transactionHistoryRepository =
         TransactionHistoryRepository(apiClient: apiClient, config: config);
 
@@ -71,37 +83,44 @@ class AirtimeDataApp extends StatelessWidget {
               transactionHistoryRepository: transactionHistoryRepository),
         ),
       ],
-      child: MaterialApp(
-        title: AppConstants.appName,
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.system,
-        navigatorObservers: [routeObserver],
-        initialRoute: '/',
-        routes: {
-          '/': (context) => const SplashPage(),
-          '/welcome': (context) => const WelcomePage(),
-          '/phone-input': (context) => PhoneInputPage(
-                isLogin: ModalRoute.of(context)!.settings.arguments as bool,
-              ),
-          '/otp-verification': (context) {
-            final args = ModalRoute.of(context)!.settings.arguments
-                as Map<String, dynamic>;
-            return OtpVerificationPage(
-              phoneNumber: args['phoneNumber'] as String,
-              isLogin: args['isLogin'] as bool,
-            );
-          },
-          '/profile-setup': (context) => ProfileSetupPage(
-              phoneNumber:
-                  ModalRoute.of(context)!.settings.arguments as String),
-          '/dashboard': (context) => const DashboardPage(),
-          '/airtime-purchase': (context) => const AirtimePurchasePage(),
-          '/data-purchase': (context) => const DataPurchasePage(),
-          '/wallet-fund': (context) => const WalletFundPage(),
-          '/transaction-history': (context) => const TransactionHistoryPage(),
-          '/profile': (context) => const ProfilePage(),
+      child: ListenableBuilder(
+        listenable: themeModeNotifier,
+        builder: (context, _) {
+          return MaterialApp(
+            title: AppConstants.appName,
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: themeModeNotifier.value,
+            navigatorObservers: [routeObserver],
+            initialRoute: '/',
+            routes: {
+              '/': (context) => const SplashPage(),
+              '/welcome': (context) => const WelcomePage(),
+              '/phone-input': (context) => PhoneInputPage(
+                    isLogin:
+                        ModalRoute.of(context)!.settings.arguments as bool,
+                  ),
+              '/otp-verification': (context) {
+                final args = ModalRoute.of(context)!.settings.arguments
+                    as Map<String, dynamic>;
+                return OtpVerificationPage(
+                  phoneNumber: args['phoneNumber'] as String,
+                  isLogin: args['isLogin'] as bool,
+                );
+              },
+              '/profile-setup': (context) => ProfileSetupPage(
+                  phoneNumber:
+                      ModalRoute.of(context)!.settings.arguments as String),
+              '/dashboard': (context) => const DashboardPage(),
+              '/airtime-purchase': (context) => const AirtimePurchasePage(),
+              '/data-purchase': (context) => const DataPurchasePage(),
+              '/wallet-fund': (context) => const WalletFundPage(),
+              '/transaction-history': (context) =>
+                  const TransactionHistoryPage(),
+              '/profile': (context) => const ProfilePage(),
+            },
+          );
         },
       ),
     );

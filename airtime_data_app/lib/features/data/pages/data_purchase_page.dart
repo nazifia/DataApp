@@ -7,6 +7,8 @@ import '../event/data_event.dart';
 import '../state/data_state.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/confirmation_dialog.dart';
+import '../../../core/widgets/pin_input_dialog.dart';
+import '../../../core/services/pin_service.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/theme.dart';
 import '../../../core/utils/validation.dart';
@@ -73,12 +75,38 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
 
       if (confirmed != true || !mounted) return;
 
+      // PIN verification
+      final pinVerified = await _verifyPin();
+      if (!pinVerified || !mounted) return;
+
       context.read<DataBloc>().add(DataEvent.purchaseData(
             network: _selectedNetwork,
             planId: _selectedPlanId,
             phoneNumber: _phoneController.text.trim(),
           ));
     }
+  }
+
+  Future<bool> _verifyPin() async {
+    final hasPin = await PinService.hasPin();
+    if (!hasPin) return true; // No PIN set, skip verification
+    if (!mounted) return false;
+    final enteredPin = await PinInputDialog.show(
+      context,
+      subtitle: 'Confirm your transaction PIN',
+    );
+    if (enteredPin == null) return false;
+    final valid = await PinService.verifyPin(enteredPin);
+    if (!valid && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Incorrect PIN. Transaction cancelled.'),
+          backgroundColor: AppColors.error,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+    return valid;
   }
 
   Future<void> _pickContact() async {
@@ -126,7 +154,8 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
           }
         },
         builder: (context, state) {
-          final isLoading = state is DataLoading || state is DataPlansLoading;
+          final isLoading =
+              state is DataLoading || state is DataPlansLoading;
 
           return Form(
             key: _formKey,
@@ -184,9 +213,7 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
 
                 const SizedBox(height: 32),
                 CustomButton(
-                  text: isLoading
-                      ? 'Processing...'
-                      : 'Buy Data Plan',
+                  text: isLoading ? 'Processing...' : 'Buy Data Plan',
                   onPressed: isLoading ? null : _purchaseData,
                   isLoading: isLoading,
                 ),
@@ -203,7 +230,8 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
     return Row(
       children: AppConstants.supportedNetworks.asMap().entries.map((entry) {
         final network = entry.value;
-        final isLast = entry.key == AppConstants.supportedNetworks.length - 1;
+        final isLast =
+            entry.key == AppConstants.supportedNetworks.length - 1;
         final isSelected = _selectedNetwork == network;
         final color = _networkColors[network] ?? Colors.grey;
         final displayColor =
@@ -222,10 +250,15 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
             },
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              margin: isLast ? EdgeInsets.zero : const EdgeInsets.only(right: 8),
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+              margin: isLast
+                  ? EdgeInsets.zero
+                  : const EdgeInsets.only(right: 8),
+              padding:
+                  const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
               decoration: BoxDecoration(
-                color: isSelected ? color.withValues(alpha: 0.12) : Colors.white,
+                color: isSelected
+                    ? color.withValues(alpha: 0.12)
+                    : Colors.white,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
                   color: isSelected ? color : AppColors.divider,
@@ -249,9 +282,12 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
                     network,
                     style: TextStyle(
                       fontSize: 10,
-                      fontWeight:
-                          isSelected ? FontWeight.w700 : FontWeight.w500,
-                      color: isSelected ? displayColor : AppColors.textSecondary,
+                      fontWeight: isSelected
+                          ? FontWeight.w700
+                          : FontWeight.w500,
+                      color: isSelected
+                          ? displayColor
+                          : AppColors.textSecondary,
                     ),
                   ),
                 ],
@@ -319,7 +355,8 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            Icon(Icons.error_outline_rounded, size: 40, color: Colors.red[300]),
+            Icon(Icons.error_outline_rounded,
+                size: 40, color: Colors.red[300]),
             const SizedBox(height: 10),
             Text(
               message,
@@ -365,7 +402,9 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
             margin: const EdgeInsets.only(bottom: 10),
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: isSelected ? color.withValues(alpha: 0.06) : Colors.white,
+              color: isSelected
+                  ? color.withValues(alpha: 0.06)
+                  : Colors.white,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
                 color: isSelected ? color : AppColors.divider,
@@ -436,11 +475,15 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
                   children: [
                     Text(
                       CurrencyFormatter.formatNaira(
-                          double.tryParse(plan['price'].toString()) ?? 0),
+                          double.tryParse(
+                                  plan['price'].toString()) ??
+                              0),
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w800,
-                        color: isSelected ? displayColor : AppColors.textPrimary,
+                        color: isSelected
+                            ? displayColor
+                            : AppColors.textPrimary,
                       ),
                     ),
                     if (isSelected)
@@ -462,7 +505,8 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
       decoration: BoxDecoration(
         color: AppColors.primary.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+        border: Border.all(
+            color: AppColors.primary.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -476,7 +520,8 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
           _summaryRow('Network', _selectedNetwork),
           _summaryRow('Plan', _selectedPlanName),
           _summaryRow('Phone', _phoneController.text),
-          _summaryRow('Amount', CurrencyFormatter.formatNaira(_selectedPlanPrice)),
+          _summaryRow('Amount',
+              CurrencyFormatter.formatNaira(_selectedPlanPrice)),
         ],
       ),
     );

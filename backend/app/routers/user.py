@@ -10,6 +10,8 @@ from app.database import get_db
 from app.models.user import User
 from app.models.wallet import Wallet
 from app.schemas.user import (
+    ChangePasswordRequest,
+    ChangePasswordResponse,
     CreateProfileRequest,
     UpdateProfileRequest,
     UpdateProfileResponse,
@@ -91,3 +93,31 @@ def update_profile(
         message="Profile updated successfully.",
         user=UserResponse.model_validate(current_user),
     )
+
+
+@router.put("/password", response_model=ChangePasswordResponse, status_code=status.HTTP_200_OK)
+def change_password(
+    request: ChangePasswordRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Change the authenticated user's password."""
+    # Verify the current password
+    if not current_user.password_hash:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No password set for this account.",
+        )
+
+    if not pwd_context.verify(request.current_password, current_user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect.",
+        )
+
+    # Hash and save the new password
+    current_user.password_hash = pwd_context.hash(request.new_password)
+    db.commit()
+    logger.info("Password changed for user %s", current_user.id)
+
+    return ChangePasswordResponse(message="Password changed successfully.")

@@ -32,7 +32,8 @@ class AuthSuccess extends AuthState {
   });
 
   @override
-  List<Object> get props => [userId, phoneNumber, fullName, email ?? '', profilePicture ?? ''];
+  List<Object> get props =>
+      [userId, phoneNumber, fullName, email ?? '', profilePicture ?? ''];
 }
 
 class AuthFailure extends AuthState {
@@ -125,6 +126,20 @@ class WalletFailure extends AuthState {
   final String message;
 
   const WalletFailure(this.message);
+
+  @override
+  List<Object> get props => [message];
+}
+
+// Password Change States
+class PasswordChangedSuccess extends AuthState {
+  const PasswordChangedSuccess();
+}
+
+class PasswordChangedFailure extends AuthState {
+  final String message;
+
+  const PasswordChangedFailure(this.message);
 
   @override
   List<Object> get props => [message];

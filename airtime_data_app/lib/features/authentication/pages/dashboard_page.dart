@@ -32,6 +32,7 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
   void _refreshData() {
     context.read<WalletBloc>().add(const LoadWalletEvent());
     context.read<TransactionHistoryBloc>().add(LoadTransactionHistoryEvent());
+    context.read<AuthBloc>().add(LoadProfileEvent());
   }
 
   @override
@@ -130,115 +131,116 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
           ),
         ],
         child: RefreshIndicator(
-        color: AppColors.primary,
-        onRefresh: () async {
-          context.read<WalletBloc>().add(LoadWalletEvent());
-          context
-              .read<TransactionHistoryBloc>()
-              .add(LoadTransactionHistoryEvent());
-        },
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Header with wallet card
-              _buildHeader(),
+          color: AppColors.primary,
+          onRefresh: () async {
+            context.read<WalletBloc>().add(LoadWalletEvent());
+            context
+                .read<TransactionHistoryBloc>()
+                .add(LoadTransactionHistoryEvent());
+            context.read<AuthBloc>().add(LoadProfileEvent());
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Header with wallet card
+                _buildHeader(),
 
-              // Quick Actions
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Quick Actions',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                // Quick Actions
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Quick Actions',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildQuickActionCard(
-                            Icons.call_rounded,
-                            'Buy Airtime',
-                            AppColors.primary,
-                            const Color(0xFFE8F5E9),
-                            () => Navigator.of(context)
-                                .pushNamed('/airtime-purchase'),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildQuickActionCard(
-                            Icons.wifi_rounded,
-                            'Buy Data',
-                            AppColors.info,
-                            const Color(0xFFE3F2FD),
-                            () => Navigator.of(context)
-                                .pushNamed('/data-purchase'),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildQuickActionCard(
-                            Icons.account_balance_wallet_rounded,
-                            'Fund Wallet',
-                            AppColors.warning,
-                            const Color(0xFFFFF8E1),
-                            () =>
-                                Navigator.of(context).pushNamed('/wallet-fund'),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              // Recent Transactions
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 28, 20, 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Recent Transactions',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.of(context)
-                              .pushNamed('/transaction-history'),
-                          child: const Text(
-                            'See all',
-                            style: TextStyle(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w600,
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildQuickActionCard(
+                              Icons.call_rounded,
+                              'Buy Airtime',
+                              AppColors.primary,
+                              const Color(0xFFE8F5E9),
+                              () => Navigator.of(context)
+                                  .pushNamed('/airtime-purchase'),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    _buildRecentTransactions(),
-                  ],
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildQuickActionCard(
+                              Icons.wifi_rounded,
+                              'Buy Data',
+                              AppColors.info,
+                              const Color(0xFFE3F2FD),
+                              () => Navigator.of(context)
+                                  .pushNamed('/data-purchase'),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildQuickActionCard(
+                              Icons.account_balance_wallet_rounded,
+                              'Fund Wallet',
+                              AppColors.warning,
+                              const Color(0xFFFFF8E1),
+                              () => Navigator.of(context)
+                                  .pushNamed('/wallet-fund'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+
+                // Recent Transactions
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 28, 20, 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Recent Transactions',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.of(context)
+                                .pushNamed('/transaction-history'),
+                            child: const Text(
+                              'See all',
+                              style: TextStyle(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      _buildRecentTransactions(),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-      ),
       ),
       bottomNavigationBar: _buildBottomNav(context),
     );
@@ -261,31 +263,84 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Greeting
+          // Greeting row with profile avatar
           BlocBuilder<AuthBloc, AuthState>(
             builder: (context, state) {
               String name = 'User';
+              String? profilePicture;
+
               if (state is AuthSuccess) {
                 name = state.fullName.split(' ').first;
+                profilePicture = state.profilePicture;
               } else if (state is ProfileSuccess) {
                 name = (state.profileData['full_name']?.toString() ?? 'User')
                     .split(' ')
                     .first;
+                profilePicture =
+                    state.profileData['profile_picture']?.toString();
               }
-              return Text(
-                'Hello, $name 👋',
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
+
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Hello, $name 👋',
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        const Text(
+                          'What would you like to do today?',
+                          style: TextStyle(
+                              fontSize: 13, color: Colors.white70),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Tappable profile avatar → navigate to profile
+                  GestureDetector(
+                    onTap: () =>
+                        Navigator.of(context).pushNamed('/profile'),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.5),
+                          width: 2,
+                        ),
+                      ),
+                      child: CircleAvatar(
+                        radius: 22,
+                        backgroundColor:
+                            Colors.white.withValues(alpha: 0.2),
+                        backgroundImage: profilePicture != null
+                            ? NetworkImage(profilePicture)
+                            : null,
+                        child: profilePicture == null
+                            ? Text(
+                                name.isNotEmpty
+                                    ? name[0].toUpperCase()
+                                    : 'U',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : null,
+                      ),
+                    ),
+                  ),
+                ],
               );
             },
-          ),
-          const SizedBox(height: 2),
-          const Text(
-            'What would you like to do today?',
-            style: TextStyle(fontSize: 13, color: Colors.white70),
           ),
           const SizedBox(height: 20),
 
@@ -372,7 +427,8 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
                           context.read<WalletBloc>().add(LoadWalletEvent()),
                       child: const Text(
                         'Tap to retry',
-                        style: TextStyle(color: Colors.white70, fontSize: 13),
+                        style: TextStyle(
+                            color: Colors.white70, fontSize: 13),
                       ),
                     ),
                   ],
@@ -534,8 +590,7 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
                 ),
               ),
               const SizedBox(width: 8),
-              Container(
-                  width: 70, height: 14, color: Colors.grey[200]),
+              Container(width: 70, height: 14, color: Colors.grey[200]),
             ],
           ),
         );
@@ -566,8 +621,7 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
           const SizedBox(height: 4),
           Text(
             'Buy airtime or data to see history',
-            style:
-                TextStyle(fontSize: 13, color: Colors.grey[400]),
+            style: TextStyle(fontSize: 13, color: Colors.grey[400]),
           ),
         ],
       ),
@@ -605,7 +659,8 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: _txColor(transaction['type']).withValues(alpha: 0.12),
+                color:
+                    _txColor(transaction['type']).withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
@@ -725,8 +780,10 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
                   phone = state.phoneNumber;
                   profilePicture = state.profilePicture;
                 } else if (state is ProfileSuccess) {
-                  name = state.profileData['full_name']?.toString() ?? 'User';
-                  phone = state.profileData['phone_number']?.toString() ?? '';
+                  name =
+                      state.profileData['full_name']?.toString() ?? 'User';
+                  phone =
+                      state.profileData['phone_number']?.toString() ?? '';
                   profilePicture =
                       state.profileData['profile_picture']?.toString();
                 }
@@ -734,7 +791,8 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
                   children: [
                     CircleAvatar(
                       radius: 28,
-                      backgroundColor: Colors.white.withValues(alpha: 0.2),
+                      backgroundColor:
+                          Colors.white.withValues(alpha: 0.2),
                       backgroundImage: profilePicture != null
                           ? NetworkImage(profilePicture)
                           : null,
@@ -817,13 +875,15 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
                   Navigator.of(context).pop();
                   Navigator.of(context).pushNamed('/wallet-fund');
                 }, color: AppColors.warning),
-                _drawerItem(Icons.history_rounded, 'Transaction History', () {
+                _drawerItem(Icons.history_rounded, 'Transaction History',
+                    () {
                   Navigator.of(context).pop();
                   Navigator.of(context).pushNamed('/transaction-history');
                 }),
                 const Divider(height: 1, indent: 16, endIndent: 16),
                 const SizedBox(height: 8),
-                _drawerItem(Icons.help_outline_rounded, 'Help & Support', () {
+                _drawerItem(
+                    Icons.help_outline_rounded, 'Help & Support', () {
                   Navigator.of(context).pop();
                 }),
                 _drawerItem(
@@ -850,7 +910,8 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
   Widget _drawerItem(IconData icon, String title, VoidCallback onTap,
       {Color? color}) {
     return ListTile(
-      leading: Icon(icon, color: color ?? AppColors.textSecondary, size: 22),
+      leading:
+          Icon(icon, color: color ?? AppColors.textSecondary, size: 22),
       title: Text(
         title,
         style: TextStyle(
@@ -890,7 +951,8 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
               _bottomNavItem(Icons.wifi_rounded, 'Data', false,
                   () => Navigator.of(context).pushNamed('/data-purchase')),
               _bottomNavItem(Icons.history_rounded, 'History', false,
-                  () => Navigator.of(context).pushNamed('/transaction-history')),
+                  () => Navigator.of(context)
+                      .pushNamed('/transaction-history')),
             ],
           ),
         ),
@@ -909,16 +971,17 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon,
-                color: active ? AppColors.primary : AppColors.textSecondary,
+                color:
+                    active ? AppColors.primary : AppColors.textSecondary,
                 size: 24),
             const SizedBox(height: 3),
             Text(
               label,
               style: TextStyle(
                 fontSize: 11,
-                fontWeight:
-                    active ? FontWeight.w700 : FontWeight.w400,
-                color: active ? AppColors.primary : AppColors.textSecondary,
+                fontWeight: active ? FontWeight.w700 : FontWeight.w400,
+                color:
+                    active ? AppColors.primary : AppColors.textSecondary,
               ),
             ),
           ],
@@ -929,40 +992,59 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
 
   Color _txColor(dynamic type) {
     switch ((type?.toString() ?? '').toLowerCase()) {
-      case 'airtime': return AppColors.primary;
-      case 'data': return AppColors.info;
-      case 'wallet_fund': return AppColors.warning;
-      case 'refund': return Colors.purple;
-      default: return AppColors.textSecondary;
+      case 'airtime':
+        return AppColors.primary;
+      case 'data':
+        return AppColors.info;
+      case 'wallet_fund':
+        return AppColors.warning;
+      case 'refund':
+        return Colors.purple;
+      default:
+        return AppColors.textSecondary;
     }
   }
 
   IconData _txIcon(dynamic type) {
     switch ((type?.toString() ?? '').toLowerCase()) {
-      case 'airtime': return Icons.call_rounded;
-      case 'data': return Icons.wifi_rounded;
-      case 'wallet_fund': return Icons.account_balance_wallet_rounded;
-      case 'refund': return Icons.replay_rounded;
-      default: return Icons.receipt_long_outlined;
+      case 'airtime':
+        return Icons.call_rounded;
+      case 'data':
+        return Icons.wifi_rounded;
+      case 'wallet_fund':
+        return Icons.account_balance_wallet_rounded;
+      case 'refund':
+        return Icons.replay_rounded;
+      default:
+        return Icons.receipt_long_outlined;
     }
   }
 
   String _txTitle(dynamic type) {
     switch ((type?.toString() ?? '').toLowerCase()) {
-      case 'airtime': return 'Airtime Purchase';
-      case 'data': return 'Data Purchase';
-      case 'wallet_fund': return 'Wallet Funding';
-      case 'refund': return 'Refund';
-      default: return 'Transaction';
+      case 'airtime':
+        return 'Airtime Purchase';
+      case 'data':
+        return 'Data Purchase';
+      case 'wallet_fund':
+        return 'Wallet Funding';
+      case 'refund':
+        return 'Refund';
+      default:
+        return 'Transaction';
     }
   }
 
   Color _statusColor(dynamic status) {
     switch ((status?.toString() ?? '').toLowerCase()) {
-      case 'success': return AppColors.success;
-      case 'failed': return AppColors.error;
-      case 'pending': return AppColors.warning;
-      default: return AppColors.textSecondary;
+      case 'success':
+        return AppColors.success;
+      case 'failed':
+        return AppColors.error;
+      case 'pending':
+        return AppColors.warning;
+      default:
+        return AppColors.textSecondary;
     }
   }
 }
@@ -976,40 +1058,59 @@ class _TransactionDetailSheet extends StatelessWidget {
 
   Color _typeColor(dynamic type) {
     switch ((type?.toString() ?? '').toLowerCase()) {
-      case 'airtime': return AppColors.primary;
-      case 'data': return AppColors.info;
-      case 'wallet_fund': return AppColors.warning;
-      case 'refund': return Colors.purple;
-      default: return AppColors.textSecondary;
+      case 'airtime':
+        return AppColors.primary;
+      case 'data':
+        return AppColors.info;
+      case 'wallet_fund':
+        return AppColors.warning;
+      case 'refund':
+        return Colors.purple;
+      default:
+        return AppColors.textSecondary;
     }
   }
 
   IconData _typeIcon(dynamic type) {
     switch ((type?.toString() ?? '').toLowerCase()) {
-      case 'airtime': return Icons.call_rounded;
-      case 'data': return Icons.wifi_rounded;
-      case 'wallet_fund': return Icons.account_balance_wallet_rounded;
-      case 'refund': return Icons.replay_rounded;
-      default: return Icons.receipt_long_outlined;
+      case 'airtime':
+        return Icons.call_rounded;
+      case 'data':
+        return Icons.wifi_rounded;
+      case 'wallet_fund':
+        return Icons.account_balance_wallet_rounded;
+      case 'refund':
+        return Icons.replay_rounded;
+      default:
+        return Icons.receipt_long_outlined;
     }
   }
 
   String _typeTitle(dynamic type) {
     switch ((type?.toString() ?? '').toLowerCase()) {
-      case 'airtime': return 'Airtime Purchase';
-      case 'data': return 'Data Purchase';
-      case 'wallet_fund': return 'Wallet Funding';
-      case 'refund': return 'Refund';
-      default: return 'Transaction';
+      case 'airtime':
+        return 'Airtime Purchase';
+      case 'data':
+        return 'Data Purchase';
+      case 'wallet_fund':
+        return 'Wallet Funding';
+      case 'refund':
+        return 'Refund';
+      default:
+        return 'Transaction';
     }
   }
 
   Color _statusColor(dynamic status) {
     switch ((status?.toString() ?? '').toLowerCase()) {
-      case 'success': return AppColors.success;
-      case 'failed': return AppColors.error;
-      case 'pending': return AppColors.warning;
-      default: return AppColors.textSecondary;
+      case 'success':
+        return AppColors.success;
+      case 'failed':
+        return AppColors.error;
+      case 'pending':
+        return AppColors.warning;
+      default:
+        return AppColors.textSecondary;
     }
   }
 
@@ -1091,15 +1192,14 @@ class _TransactionDetailSheet extends StatelessWidget {
 
             // Status badge
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
               decoration: BoxDecoration(
                 color: _statusColor(status).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                    color: _statusColor(status).withValues(alpha: 0.3)),
               ),
               child: Text(
-                status?.toString().toUpperCase() ?? 'UNKNOWN',
+                (status?.toString() ?? 'unknown').toUpperCase(),
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
@@ -1107,160 +1207,29 @@ class _TransactionDetailSheet extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 24),
-
-            // Source & Destination Section
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.background,
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Source
-                  Row(
-                    children: [
-                      Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: AppColors.divider),
-                        ),
-                        child: const Icon(Icons.account_balance_wallet_rounded,
-                            size: 18, color: AppColors.primary),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('Source',
-                                style: TextStyle(
-                                    fontSize: 11,
-                                    color: AppColors.textSecondary)),
-                            Text(
-                              isWalletFund
-                                  ? (gateway != null && gateway.isNotEmpty
-                                      ? gateway
-                                      : 'Payment Gateway')
-                                  : 'Your Wallet',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  // Arrow
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Row(
-                      children: [
-                        const SizedBox(width: 18),
-                        Container(
-                          width: 1,
-                          height: 20,
-                          color: AppColors.divider,
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Destination
-                  Row(
-                    children: [
-                      Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: AppColors.divider),
-                        ),
-                        child: Icon(
-                          isWalletFund
-                              ? Icons.account_balance_wallet_outlined
-                              : (isData
-                                  ? Icons.wifi_rounded
-                                  : Icons.call_rounded),
-                          size: 18,
-                          color: _typeColor(type),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('Destination',
-                                style: TextStyle(
-                                    fontSize: 11,
-                                    color: AppColors.textSecondary)),
-                            Text(
-                              isWalletFund
-                                  ? 'Your Wallet'
-                                  : (network != null && network.isNotEmpty
-                                      ? '$network${phoneNumber != null && phoneNumber.isNotEmpty ? ' • $phoneNumber' : ''}'
-                                      : phoneNumber ?? 'N/A'),
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Detail rows
-            _detailRow('Reference', reference),
-            if (createdAt != null)
-              _detailRow(
-                'Date & Time',
-                DateFormatter.formatDateTime(DateTime.parse(createdAt)),
-              ),
-            if (isData && planName != null && planName.isNotEmpty)
-              _detailRow('Plan', planName),
-            if (isData && data != null && data.isNotEmpty)
-              _detailRow('Data Volume', data),
-            if (isData && validity != null && validity.isNotEmpty)
-              _detailRow('Validity', validity),
-
             const SizedBox(height: 20),
+            const Divider(),
+            const SizedBox(height: 12),
 
+            // Details
+            _detailRow('Reference', reference),
+            if (network != null) _detailRow('Network', network),
+            if (phoneNumber != null) _detailRow('Phone', phoneNumber),
+            if (isData && planName != null)
+              _detailRow('Plan', planName),
+            if (isData && data != null) _detailRow('Volume', data),
+            if (isData && validity != null)
+              _detailRow('Validity', validity),
+            if (isWalletFund && gateway != null)
+              _detailRow('Gateway', gateway),
+            if (createdAt != null) _detailRow('Date', createdAt),
+
+            const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () => Navigator.of(context).pop(),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text(
-                  'Close',
-                  style: TextStyle(
-                      fontSize: 15, fontWeight: FontWeight.w700),
-                ),
+                child: const Text('Close'),
               ),
             ),
           ],
@@ -1271,25 +1240,27 @@ class _TransactionDetailSheet extends StatelessWidget {
 
   Widget _detailRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-                fontSize: 13, color: AppColors.textSecondary),
+          SizedBox(
+            width: 100,
+            child: Text(
+              label,
+              style: const TextStyle(
+                  fontSize: 13, color: AppColors.textSecondary),
+            ),
           ),
-          const SizedBox(width: 16),
-          Flexible(
+          Expanded(
             child: Text(
               value,
-              textAlign: TextAlign.right,
               style: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
               ),
+              textAlign: TextAlign.end,
             ),
           ),
         ],

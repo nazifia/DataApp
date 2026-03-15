@@ -88,8 +88,12 @@ class AuthRepository {
         // Dev: correct test OTP — mock a successful auth response
         const mockToken = 'dev_access_token_123';
         await _storage.write(key: 'access_token', value: mockToken);
-        await _storage.write(key: 'refresh_token', value: 'dev_refresh_token_123');
-        return {'message': 'OTP verified (dev mode)', 'access_token': mockToken};
+        await _storage.write(
+            key: 'refresh_token', value: 'dev_refresh_token_123');
+        return {
+          'message': 'OTP verified (dev mode)',
+          'access_token': mockToken
+        };
       } else {
         throw Exception('Invalid OTP. Use test OTP: ${_config.testOtp}');
       }
@@ -164,6 +168,26 @@ class AuthRepository {
     return Map<String, dynamic>.from(response.data as Map);
   }
 
+  // Change Password
+  Future<Map<String, dynamic>> changePassword(
+      String currentPassword, String newPassword) async {
+    if (_config.useMockAuth) {
+      // Dev mode: accept any non-empty current password
+      if (currentPassword.isEmpty) {
+        throw Exception('Current password cannot be empty.');
+      }
+      return {'message': 'Password changed successfully (dev mode)'};
+    }
+    final response = await _apiClient.dio.put(
+      '/user/password',
+      data: {
+        'current_password': currentPassword,
+        'new_password': newPassword,
+      },
+    );
+    return Map<String, dynamic>.from(response.data as Map);
+  }
+
   // Get Wallet Balance
   Future<Map<String, dynamic>> getWalletBalance() async {
     if (_config.useMockAuth) {
@@ -176,7 +200,10 @@ class AuthRepository {
   // Fund Wallet
   Future<Map<String, dynamic>> fundWallet(double amount) async {
     if (_config.useMockAuth) {
-      return {'message': 'Wallet funded (dev mode)', 'balance': 5000.0 + amount};
+      return {
+        'message': 'Wallet funded (dev mode)',
+        'balance': 5000.0 + amount
+      };
     }
     final response = await _apiClient.dio.post(
       '/wallet/fund',

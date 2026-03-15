@@ -97,3 +97,13 @@ class UpdateProfilePictureEvent extends AuthEvent {
   @override
   List<Object> get props => [imageFilePath];
 }
+
+class ChangePasswordEvent extends AuthEvent {
+  final String currentPassword;
+  final String newPassword;
+
+  const ChangePasswordEvent(this.currentPassword, this.newPassword);
+
+  @override
+  List<Object> get props => [currentPassword, newPassword];
+}

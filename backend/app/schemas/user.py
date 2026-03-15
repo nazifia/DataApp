@@ -41,6 +41,22 @@ class UpdateProfileRequest(BaseModel):
         return v
 
 
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+    @field_validator("new_password")
+    @classmethod
+    def validate_new_password(cls, v: str) -> str:
+        if len(v) < 6:
+            raise ValueError("New password must be at least 6 characters.")
+        return v
+
+
+class ChangePasswordResponse(BaseModel):
+    message: str
+
+
 class UserResponse(BaseModel):
     id: UUID
     phone_number: str

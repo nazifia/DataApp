@@ -68,6 +68,12 @@ dependencies:
   fluttertoast: ^8.2.4
   loading_animation_widget: ^1.2.0+4
 
+  # QR Scanner
+  mobile_scanner: ^5.2.0
+
+  # Shared Preferences
+  shared_preferences: ^2.2.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

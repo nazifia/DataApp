@@ -26,10 +26,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<LogoutEvent>(_onLogout);
     on<ResendOtpEvent>(_onResendOtp);
     on<UpdateProfilePictureEvent>(_onUpdateProfilePicture);
+    on<ChangePasswordEvent>(_onChangePassword);
   }
 
-  Future<void> _onLogin(
-      LoginEvent event, Emitter<AuthState> emit) async {
+  Future<void> _onLogin(LoginEvent event, Emitter<AuthState> emit) async {
     emit(const AuthLoading());
     try {
       await _authRepository.login(event.phoneNumber, event.password);
@@ -151,8 +151,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onLogout(
-      LogoutEvent event, Emitter<AuthState> emit) async {
+  Future<void> _onLogout(LogoutEvent event, Emitter<AuthState> emit) async {
     await _authRepository.clearTokens();
     emit(const AuthInitial());
   }
@@ -173,6 +172,19 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       add(LoadProfileEvent());
     } catch (e) {
       emit(AuthFailure('Failed to upload profile picture: $e'));
+    }
+  }
+
+  Future<void> _onChangePassword(
+      ChangePasswordEvent event, Emitter<AuthState> emit) async {
+    emit(const AuthLoading());
+    try {
+      await _authRepository.changePassword(
+          event.currentPassword, event.newPassword);
+      emit(const PasswordChangedSuccess());
+    } catch (e) {
+      emit(PasswordChangedFailure(
+          e.toString().replaceFirst('Exception: ', '')));
     }
   }
 }

@@ -7,6 +7,8 @@ import '../event/airtime_event.dart';
 import '../state/airtime_state.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/confirmation_dialog.dart';
+import '../../../core/widgets/pin_input_dialog.dart';
+import '../../../core/services/pin_service.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/theme.dart';
 import '../../../core/utils/validation.dart';
@@ -71,12 +73,38 @@ class _AirtimePurchasePageState extends State<AirtimePurchasePage> {
 
       if (confirmed != true || !mounted) return;
 
+      // PIN verification
+      final pinVerified = await _verifyPin();
+      if (!pinVerified || !mounted) return;
+
       context.read<AirtimeBloc>().add(PurchaseAirtimeEvent(
             network: _selectedNetwork,
             phoneNumber: phoneNumber,
             amount: amount,
           ));
     }
+  }
+
+  Future<bool> _verifyPin() async {
+    final hasPin = await PinService.hasPin();
+    if (!hasPin) return true; // No PIN set, skip verification
+    if (!mounted) return false;
+    final enteredPin = await PinInputDialog.show(
+      context,
+      subtitle: 'Confirm your transaction PIN',
+    );
+    if (enteredPin == null) return false;
+    final valid = await PinService.verifyPin(enteredPin);
+    if (!valid && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Incorrect PIN. Transaction cancelled.'),
+          backgroundColor: AppColors.error,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+    return valid;
   }
 
   Future<void> _pickContact() async {
@@ -166,9 +194,11 @@ class _AirtimePurchasePageState extends State<AirtimePurchasePage> {
                 const SizedBox(height: 10),
                 TextFormField(
                   controller: _amountController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
                   inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+                    FilteringTextInputFormatter.allow(
+                        RegExp(r'^\d+\.?\d{0,2}')),
                   ],
                   decoration: InputDecoration(
                     hintText: 'Enter amount',
@@ -286,10 +316,14 @@ class _AirtimePurchasePageState extends State<AirtimePurchasePage> {
             onTap: () => setState(() => _selectedNetwork = network),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              margin: isLast ? EdgeInsets.zero : const EdgeInsets.only(right: 8),
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+              margin:
+                  isLast ? EdgeInsets.zero : const EdgeInsets.only(right: 8),
+              padding:
+                  const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
               decoration: BoxDecoration(
-                color: isSelected ? color.withValues(alpha: 0.12) : Colors.white,
+                color: isSelected
+                    ? color.withValues(alpha: 0.12)
+                    : Colors.white,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
                   color: isSelected ? color : AppColors.divider,
@@ -306,7 +340,8 @@ class _AirtimePurchasePageState extends State<AirtimePurchasePage> {
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      _networkIcons[network] ?? Icons.signal_cellular_alt,
+                      _networkIcons[network] ??
+                          Icons.signal_cellular_alt,
                       color: displayColor,
                       size: 18,
                     ),
@@ -316,8 +351,12 @@ class _AirtimePurchasePageState extends State<AirtimePurchasePage> {
                     network,
                     style: TextStyle(
                       fontSize: 11,
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                      color: isSelected ? displayColor : AppColors.textSecondary,
+                      fontWeight: isSelected
+                          ? FontWeight.w700
+                          : FontWeight.w500,
+                      color: isSelected
+                          ? displayColor
+                          : AppColors.textSecondary,
                     ),
                   ),
                 ],
@@ -336,7 +375,8 @@ class _AirtimePurchasePageState extends State<AirtimePurchasePage> {
       decoration: BoxDecoration(
         color: AppColors.primary.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+        border: Border.all(
+            color: AppColors.primary.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -436,8 +476,8 @@ class _SuccessSheet extends StatelessWidget {
                 color: AppColors.success.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child:
-                  const Icon(Icons.check_rounded, size: 40, color: AppColors.success),
+              child: const Icon(Icons.check_rounded,
+                  size: 40, color: AppColors.success),
             ),
             const SizedBox(height: 16),
             Text(
