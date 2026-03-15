@@ -117,7 +117,6 @@ class _AirtimePurchasePageState extends State<AirtimePurchasePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Buy Airtime'),
         leading: IconButton(
@@ -175,7 +174,6 @@ class _AirtimePurchasePageState extends State<AirtimePurchasePage> {
                       onPressed: _pickContact,
                     ),
                     filled: true,
-                    fillColor: Colors.white,
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -214,7 +212,6 @@ class _AirtimePurchasePageState extends State<AirtimePurchasePage> {
                       ),
                     ),
                     filled: true,
-                    fillColor: Colors.white,
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -249,13 +246,13 @@ class _AirtimePurchasePageState extends State<AirtimePurchasePage> {
                           color: _amountController.text ==
                                   amount.toInt().toString()
                               ? AppColors.primary.withValues(alpha: 0.12)
-                              : Colors.white,
+                              : Theme.of(context).colorScheme.surface,
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
                             color: _amountController.text ==
                                     amount.toInt().toString()
                                 ? AppColors.primary
-                                : AppColors.divider,
+                                : Theme.of(context).colorScheme.outlineVariant,
                           ),
                         ),
                         child: Text(
@@ -266,7 +263,7 @@ class _AirtimePurchasePageState extends State<AirtimePurchasePage> {
                             color: _amountController.text ==
                                     amount.toInt().toString()
                                 ? AppColors.primary
-                                : AppColors.textPrimary,
+                                : Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
                       ),
@@ -323,10 +320,10 @@ class _AirtimePurchasePageState extends State<AirtimePurchasePage> {
               decoration: BoxDecoration(
                 color: isSelected
                     ? color.withValues(alpha: 0.12)
-                    : Colors.white,
+                    : Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                  color: isSelected ? color : AppColors.divider,
+                  color: isSelected ? color : Theme.of(context).colorScheme.outlineVariant,
                   width: isSelected ? 2 : 1,
                 ),
               ),
@@ -356,7 +353,7 @@ class _AirtimePurchasePageState extends State<AirtimePurchasePage> {
                           : FontWeight.w500,
                       color: isSelected
                           ? displayColor
-                          : AppColors.textSecondary,
+                          : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                     ),
                   ),
                 ],
@@ -386,7 +383,6 @@ class _AirtimePurchasePageState extends State<AirtimePurchasePage> {
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 10),
@@ -399,19 +395,20 @@ class _AirtimePurchasePageState extends State<AirtimePurchasePage> {
   }
 
   Widget _summaryRow(String label, String value) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label,
-              style: const TextStyle(
-                  fontSize: 13, color: AppColors.textSecondary)),
+              style: TextStyle(
+                  fontSize: 13, color: cs.onSurface.withValues(alpha: 0.6))),
           Text(value,
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary)),
+                  color: cs.onSurface)),
         ],
       ),
     );
@@ -420,10 +417,10 @@ class _AirtimePurchasePageState extends State<AirtimePurchasePage> {
   Widget _sectionLabel(String text) {
     return Text(
       text,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.w700,
-        color: AppColors.textPrimary,
+        color: Theme.of(context).colorScheme.onSurface,
       ),
     );
   }
@@ -485,7 +482,6 @@ class _SuccessSheet extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w800,
-                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 6),
@@ -498,9 +494,9 @@ class _SuccessSheet extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            _row('Network', network),
-            _row('Recipient', phone),
-            _row('Reference', reference),
+            _row(context, 'Network', network),
+            _row(context, 'Recipient', phone),
+            _row(context, 'Reference', reference),
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
@@ -518,20 +514,21 @@ class _SuccessSheet extends StatelessWidget {
     );
   }
 
-  Widget _row(String label, String value) {
+  Widget _row(BuildContext context, String label, String value) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label,
-              style: const TextStyle(
-                  fontSize: 13, color: AppColors.textSecondary)),
+              style: TextStyle(
+                  fontSize: 13, color: cs.onSurface.withValues(alpha: 0.6))),
           Text(value,
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary)),
+                  color: cs.onSurface)),
         ],
       ),
     );

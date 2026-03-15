@@ -1,5 +1,5 @@
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -9,1540 +9,580 @@ part of 'data_state.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
-
 /// @nodoc
 mixin _$DataState {
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() initial,
-    required TResult Function() loading,
-    required TResult Function(
-      String reference,
-      double amount,
-      String network,
-      String planName,
-      String phoneNumber,
-      String data,
-      String validity,
-    )
-    success,
-    required TResult Function(String message) failure,
-    required TResult Function() plansLoading,
-    required TResult Function(List<Map<String, dynamic>> plans) plansSuccess,
-    required TResult Function(String message) plansFailure,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? initial,
-    TResult? Function()? loading,
-    TResult? Function(
-      String reference,
-      double amount,
-      String network,
-      String planName,
-      String phoneNumber,
-      String data,
-      String validity,
-    )?
-    success,
-    TResult? Function(String message)? failure,
-    TResult? Function()? plansLoading,
-    TResult? Function(List<Map<String, dynamic>> plans)? plansSuccess,
-    TResult? Function(String message)? plansFailure,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? initial,
-    TResult Function()? loading,
-    TResult Function(
-      String reference,
-      double amount,
-      String network,
-      String planName,
-      String phoneNumber,
-      String data,
-      String validity,
-    )?
-    success,
-    TResult Function(String message)? failure,
-    TResult Function()? plansLoading,
-    TResult Function(List<Map<String, dynamic>> plans)? plansSuccess,
-    TResult Function(String message)? plansFailure,
-    required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(DataInitial value) initial,
-    required TResult Function(DataLoading value) loading,
-    required TResult Function(DataSuccess value) success,
-    required TResult Function(DataFailure value) failure,
-    required TResult Function(DataPlansLoading value) plansLoading,
-    required TResult Function(DataPlansSuccess value) plansSuccess,
-    required TResult Function(DataPlansFailure value) plansFailure,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(DataInitial value)? initial,
-    TResult? Function(DataLoading value)? loading,
-    TResult? Function(DataSuccess value)? success,
-    TResult? Function(DataFailure value)? failure,
-    TResult? Function(DataPlansLoading value)? plansLoading,
-    TResult? Function(DataPlansSuccess value)? plansSuccess,
-    TResult? Function(DataPlansFailure value)? plansFailure,
-  }) => throw _privateConstructorUsedError;
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(DataInitial value)? initial,
-    TResult Function(DataLoading value)? loading,
-    TResult Function(DataSuccess value)? success,
-    TResult Function(DataFailure value)? failure,
-    TResult Function(DataPlansLoading value)? plansLoading,
-    TResult Function(DataPlansSuccess value)? plansSuccess,
-    TResult Function(DataPlansFailure value)? plansFailure,
-    required TResult orElse(),
-  }) => throw _privateConstructorUsedError;
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DataState);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'DataState()';
+}
+
+
 }
 
 /// @nodoc
-abstract class $DataStateCopyWith<$Res> {
-  factory $DataStateCopyWith(DataState value, $Res Function(DataState) then) =
-      _$DataStateCopyWithImpl<$Res, DataState>;
+class $DataStateCopyWith<$Res>  {
+$DataStateCopyWith(DataState _, $Res Function(DataState) __);
 }
 
-/// @nodoc
-class _$DataStateCopyWithImpl<$Res, $Val extends DataState>
-    implements $DataStateCopyWith<$Res> {
-  _$DataStateCopyWithImpl(this._value, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+/// Adds pattern-matching-related methods to [DataState].
+extension DataStatePatterns on DataState {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
 
-  /// Create a copy of DataState
-  /// with the given fields replaced by the non-null parameter values.
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( DataInitial value)?  initial,TResult Function( DataLoading value)?  loading,TResult Function( DataSuccess value)?  success,TResult Function( DataFailure value)?  failure,TResult Function( DataPlansLoading value)?  plansLoading,TResult Function( DataPlansSuccess value)?  plansSuccess,TResult Function( DataPlansFailure value)?  plansFailure,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case DataInitial() when initial != null:
+return initial(_that);case DataLoading() when loading != null:
+return loading(_that);case DataSuccess() when success != null:
+return success(_that);case DataFailure() when failure != null:
+return failure(_that);case DataPlansLoading() when plansLoading != null:
+return plansLoading(_that);case DataPlansSuccess() when plansSuccess != null:
+return plansSuccess(_that);case DataPlansFailure() when plansFailure != null:
+return plansFailure(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( DataInitial value)  initial,required TResult Function( DataLoading value)  loading,required TResult Function( DataSuccess value)  success,required TResult Function( DataFailure value)  failure,required TResult Function( DataPlansLoading value)  plansLoading,required TResult Function( DataPlansSuccess value)  plansSuccess,required TResult Function( DataPlansFailure value)  plansFailure,}){
+final _that = this;
+switch (_that) {
+case DataInitial():
+return initial(_that);case DataLoading():
+return loading(_that);case DataSuccess():
+return success(_that);case DataFailure():
+return failure(_that);case DataPlansLoading():
+return plansLoading(_that);case DataPlansSuccess():
+return plansSuccess(_that);case DataPlansFailure():
+return plansFailure(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( DataInitial value)?  initial,TResult? Function( DataLoading value)?  loading,TResult? Function( DataSuccess value)?  success,TResult? Function( DataFailure value)?  failure,TResult? Function( DataPlansLoading value)?  plansLoading,TResult? Function( DataPlansSuccess value)?  plansSuccess,TResult? Function( DataPlansFailure value)?  plansFailure,}){
+final _that = this;
+switch (_that) {
+case DataInitial() when initial != null:
+return initial(_that);case DataLoading() when loading != null:
+return loading(_that);case DataSuccess() when success != null:
+return success(_that);case DataFailure() when failure != null:
+return failure(_that);case DataPlansLoading() when plansLoading != null:
+return plansLoading(_that);case DataPlansSuccess() when plansSuccess != null:
+return plansSuccess(_that);case DataPlansFailure() when plansFailure != null:
+return plansFailure(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( String reference,  double amount,  String network,  String planName,  String phoneNumber,  String data,  String validity)?  success,TResult Function( String message)?  failure,TResult Function()?  plansLoading,TResult Function( List<Map<String, dynamic>> plans)?  plansSuccess,TResult Function( String message)?  plansFailure,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case DataInitial() when initial != null:
+return initial();case DataLoading() when loading != null:
+return loading();case DataSuccess() when success != null:
+return success(_that.reference,_that.amount,_that.network,_that.planName,_that.phoneNumber,_that.data,_that.validity);case DataFailure() when failure != null:
+return failure(_that.message);case DataPlansLoading() when plansLoading != null:
+return plansLoading();case DataPlansSuccess() when plansSuccess != null:
+return plansSuccess(_that.plans);case DataPlansFailure() when plansFailure != null:
+return plansFailure(_that.message);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( String reference,  double amount,  String network,  String planName,  String phoneNumber,  String data,  String validity)  success,required TResult Function( String message)  failure,required TResult Function()  plansLoading,required TResult Function( List<Map<String, dynamic>> plans)  plansSuccess,required TResult Function( String message)  plansFailure,}) {final _that = this;
+switch (_that) {
+case DataInitial():
+return initial();case DataLoading():
+return loading();case DataSuccess():
+return success(_that.reference,_that.amount,_that.network,_that.planName,_that.phoneNumber,_that.data,_that.validity);case DataFailure():
+return failure(_that.message);case DataPlansLoading():
+return plansLoading();case DataPlansSuccess():
+return plansSuccess(_that.plans);case DataPlansFailure():
+return plansFailure(_that.message);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( String reference,  double amount,  String network,  String planName,  String phoneNumber,  String data,  String validity)?  success,TResult? Function( String message)?  failure,TResult? Function()?  plansLoading,TResult? Function( List<Map<String, dynamic>> plans)?  plansSuccess,TResult? Function( String message)?  plansFailure,}) {final _that = this;
+switch (_that) {
+case DataInitial() when initial != null:
+return initial();case DataLoading() when loading != null:
+return loading();case DataSuccess() when success != null:
+return success(_that.reference,_that.amount,_that.network,_that.planName,_that.phoneNumber,_that.data,_that.validity);case DataFailure() when failure != null:
+return failure(_that.message);case DataPlansLoading() when plansLoading != null:
+return plansLoading();case DataPlansSuccess() when plansSuccess != null:
+return plansSuccess(_that.plans);case DataPlansFailure() when plansFailure != null:
+return plansFailure(_that.message);case _:
+  return null;
+
+}
 }
 
-/// @nodoc
-abstract class _$$DataInitialImplCopyWith<$Res> {
-  factory _$$DataInitialImplCopyWith(
-    _$DataInitialImpl value,
-    $Res Function(_$DataInitialImpl) then,
-  ) = __$$DataInitialImplCopyWithImpl<$Res>;
-}
-
-/// @nodoc
-class __$$DataInitialImplCopyWithImpl<$Res>
-    extends _$DataStateCopyWithImpl<$Res, _$DataInitialImpl>
-    implements _$$DataInitialImplCopyWith<$Res> {
-  __$$DataInitialImplCopyWithImpl(
-    _$DataInitialImpl _value,
-    $Res Function(_$DataInitialImpl) _then,
-  ) : super(_value, _then);
-
-  /// Create a copy of DataState
-  /// with the given fields replaced by the non-null parameter values.
-}
-
-/// @nodoc
-
-class _$DataInitialImpl implements DataInitial {
-  const _$DataInitialImpl();
-
-  @override
-  String toString() {
-    return 'DataState.initial()';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType && other is _$DataInitialImpl);
-  }
-
-  @override
-  int get hashCode => runtimeType.hashCode;
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() initial,
-    required TResult Function() loading,
-    required TResult Function(
-      String reference,
-      double amount,
-      String network,
-      String planName,
-      String phoneNumber,
-      String data,
-      String validity,
-    )
-    success,
-    required TResult Function(String message) failure,
-    required TResult Function() plansLoading,
-    required TResult Function(List<Map<String, dynamic>> plans) plansSuccess,
-    required TResult Function(String message) plansFailure,
-  }) {
-    return initial();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? initial,
-    TResult? Function()? loading,
-    TResult? Function(
-      String reference,
-      double amount,
-      String network,
-      String planName,
-      String phoneNumber,
-      String data,
-      String validity,
-    )?
-    success,
-    TResult? Function(String message)? failure,
-    TResult? Function()? plansLoading,
-    TResult? Function(List<Map<String, dynamic>> plans)? plansSuccess,
-    TResult? Function(String message)? plansFailure,
-  }) {
-    return initial?.call();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? initial,
-    TResult Function()? loading,
-    TResult Function(
-      String reference,
-      double amount,
-      String network,
-      String planName,
-      String phoneNumber,
-      String data,
-      String validity,
-    )?
-    success,
-    TResult Function(String message)? failure,
-    TResult Function()? plansLoading,
-    TResult Function(List<Map<String, dynamic>> plans)? plansSuccess,
-    TResult Function(String message)? plansFailure,
-    required TResult orElse(),
-  }) {
-    if (initial != null) {
-      return initial();
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(DataInitial value) initial,
-    required TResult Function(DataLoading value) loading,
-    required TResult Function(DataSuccess value) success,
-    required TResult Function(DataFailure value) failure,
-    required TResult Function(DataPlansLoading value) plansLoading,
-    required TResult Function(DataPlansSuccess value) plansSuccess,
-    required TResult Function(DataPlansFailure value) plansFailure,
-  }) {
-    return initial(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(DataInitial value)? initial,
-    TResult? Function(DataLoading value)? loading,
-    TResult? Function(DataSuccess value)? success,
-    TResult? Function(DataFailure value)? failure,
-    TResult? Function(DataPlansLoading value)? plansLoading,
-    TResult? Function(DataPlansSuccess value)? plansSuccess,
-    TResult? Function(DataPlansFailure value)? plansFailure,
-  }) {
-    return initial?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(DataInitial value)? initial,
-    TResult Function(DataLoading value)? loading,
-    TResult Function(DataSuccess value)? success,
-    TResult Function(DataFailure value)? failure,
-    TResult Function(DataPlansLoading value)? plansLoading,
-    TResult Function(DataPlansSuccess value)? plansSuccess,
-    TResult Function(DataPlansFailure value)? plansFailure,
-    required TResult orElse(),
-  }) {
-    if (initial != null) {
-      return initial(this);
-    }
-    return orElse();
-  }
-}
-
-abstract class DataInitial implements DataState {
-  const factory DataInitial() = _$DataInitialImpl;
-}
-
-/// @nodoc
-abstract class _$$DataLoadingImplCopyWith<$Res> {
-  factory _$$DataLoadingImplCopyWith(
-    _$DataLoadingImpl value,
-    $Res Function(_$DataLoadingImpl) then,
-  ) = __$$DataLoadingImplCopyWithImpl<$Res>;
-}
-
-/// @nodoc
-class __$$DataLoadingImplCopyWithImpl<$Res>
-    extends _$DataStateCopyWithImpl<$Res, _$DataLoadingImpl>
-    implements _$$DataLoadingImplCopyWith<$Res> {
-  __$$DataLoadingImplCopyWithImpl(
-    _$DataLoadingImpl _value,
-    $Res Function(_$DataLoadingImpl) _then,
-  ) : super(_value, _then);
-
-  /// Create a copy of DataState
-  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 
-class _$DataLoadingImpl implements DataLoading {
-  const _$DataLoadingImpl();
 
-  @override
-  String toString() {
-    return 'DataState.loading()';
-  }
+class DataInitial implements DataState {
+  const DataInitial();
+  
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType && other is _$DataLoadingImpl);
-  }
 
-  @override
-  int get hashCode => runtimeType.hashCode;
 
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() initial,
-    required TResult Function() loading,
-    required TResult Function(
-      String reference,
-      double amount,
-      String network,
-      String planName,
-      String phoneNumber,
-      String data,
-      String validity,
-    )
-    success,
-    required TResult Function(String message) failure,
-    required TResult Function() plansLoading,
-    required TResult Function(List<Map<String, dynamic>> plans) plansSuccess,
-    required TResult Function(String message) plansFailure,
-  }) {
-    return loading();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? initial,
-    TResult? Function()? loading,
-    TResult? Function(
-      String reference,
-      double amount,
-      String network,
-      String planName,
-      String phoneNumber,
-      String data,
-      String validity,
-    )?
-    success,
-    TResult? Function(String message)? failure,
-    TResult? Function()? plansLoading,
-    TResult? Function(List<Map<String, dynamic>> plans)? plansSuccess,
-    TResult? Function(String message)? plansFailure,
-  }) {
-    return loading?.call();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? initial,
-    TResult Function()? loading,
-    TResult Function(
-      String reference,
-      double amount,
-      String network,
-      String planName,
-      String phoneNumber,
-      String data,
-      String validity,
-    )?
-    success,
-    TResult Function(String message)? failure,
-    TResult Function()? plansLoading,
-    TResult Function(List<Map<String, dynamic>> plans)? plansSuccess,
-    TResult Function(String message)? plansFailure,
-    required TResult orElse(),
-  }) {
-    if (loading != null) {
-      return loading();
-    }
-    return orElse();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(DataInitial value) initial,
-    required TResult Function(DataLoading value) loading,
-    required TResult Function(DataSuccess value) success,
-    required TResult Function(DataFailure value) failure,
-    required TResult Function(DataPlansLoading value) plansLoading,
-    required TResult Function(DataPlansSuccess value) plansSuccess,
-    required TResult Function(DataPlansFailure value) plansFailure,
-  }) {
-    return loading(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(DataInitial value)? initial,
-    TResult? Function(DataLoading value)? loading,
-    TResult? Function(DataSuccess value)? success,
-    TResult? Function(DataFailure value)? failure,
-    TResult? Function(DataPlansLoading value)? plansLoading,
-    TResult? Function(DataPlansSuccess value)? plansSuccess,
-    TResult? Function(DataPlansFailure value)? plansFailure,
-  }) {
-    return loading?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(DataInitial value)? initial,
-    TResult Function(DataLoading value)? loading,
-    TResult Function(DataSuccess value)? success,
-    TResult Function(DataFailure value)? failure,
-    TResult Function(DataPlansLoading value)? plansLoading,
-    TResult Function(DataPlansSuccess value)? plansSuccess,
-    TResult Function(DataPlansFailure value)? plansFailure,
-    required TResult orElse(),
-  }) {
-    if (loading != null) {
-      return loading(this);
-    }
-    return orElse();
-  }
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DataInitial);
 }
 
-abstract class DataLoading implements DataState {
-  const factory DataLoading() = _$DataLoadingImpl;
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'DataState.initial()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
+class DataLoading implements DataState {
+  const DataLoading();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DataLoading);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'DataState.loading()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
+class DataSuccess implements DataState {
+  const DataSuccess({required this.reference, required this.amount, required this.network, required this.planName, required this.phoneNumber, required this.data, required this.validity});
+  
+
+ final  String reference;
+ final  double amount;
+ final  String network;
+ final  String planName;
+ final  String phoneNumber;
+ final  String data;
+ final  String validity;
+
+/// Create a copy of DataState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$DataSuccessCopyWith<DataSuccess> get copyWith => _$DataSuccessCopyWithImpl<DataSuccess>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DataSuccess&&(identical(other.reference, reference) || other.reference == reference)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.network, network) || other.network == network)&&(identical(other.planName, planName) || other.planName == planName)&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.data, data) || other.data == data)&&(identical(other.validity, validity) || other.validity == validity));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,reference,amount,network,planName,phoneNumber,data,validity);
+
+@override
+String toString() {
+  return 'DataState.success(reference: $reference, amount: $amount, network: $network, planName: $planName, phoneNumber: $phoneNumber, data: $data, validity: $validity)';
+}
+
+
 }
 
 /// @nodoc
-abstract class _$$DataSuccessImplCopyWith<$Res> {
-  factory _$$DataSuccessImplCopyWith(
-    _$DataSuccessImpl value,
-    $Res Function(_$DataSuccessImpl) then,
-  ) = __$$DataSuccessImplCopyWithImpl<$Res>;
-  @useResult
-  $Res call({
-    String reference,
-    double amount,
-    String network,
-    String planName,
-    String phoneNumber,
-    String data,
-    String validity,
-  });
+abstract mixin class $DataSuccessCopyWith<$Res> implements $DataStateCopyWith<$Res> {
+  factory $DataSuccessCopyWith(DataSuccess value, $Res Function(DataSuccess) _then) = _$DataSuccessCopyWithImpl;
+@useResult
+$Res call({
+ String reference, double amount, String network, String planName, String phoneNumber, String data, String validity
+});
+
+
+
+
+}
+/// @nodoc
+class _$DataSuccessCopyWithImpl<$Res>
+    implements $DataSuccessCopyWith<$Res> {
+  _$DataSuccessCopyWithImpl(this._self, this._then);
+
+  final DataSuccess _self;
+  final $Res Function(DataSuccess) _then;
+
+/// Create a copy of DataState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? reference = null,Object? amount = null,Object? network = null,Object? planName = null,Object? phoneNumber = null,Object? data = null,Object? validity = null,}) {
+  return _then(DataSuccess(
+reference: null == reference ? _self.reference : reference // ignore: cast_nullable_to_non_nullable
+as String,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
+as double,network: null == network ? _self.network : network // ignore: cast_nullable_to_non_nullable
+as String,planName: null == planName ? _self.planName : planName // ignore: cast_nullable_to_non_nullable
+as String,phoneNumber: null == phoneNumber ? _self.phoneNumber : phoneNumber // ignore: cast_nullable_to_non_nullable
+as String,data: null == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
+as String,validity: null == validity ? _self.validity : validity // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
 }
 
-/// @nodoc
-class __$$DataSuccessImplCopyWithImpl<$Res>
-    extends _$DataStateCopyWithImpl<$Res, _$DataSuccessImpl>
-    implements _$$DataSuccessImplCopyWith<$Res> {
-  __$$DataSuccessImplCopyWithImpl(
-    _$DataSuccessImpl _value,
-    $Res Function(_$DataSuccessImpl) _then,
-  ) : super(_value, _then);
 
-  /// Create a copy of DataState
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? reference = null,
-    Object? amount = null,
-    Object? network = null,
-    Object? planName = null,
-    Object? phoneNumber = null,
-    Object? data = null,
-    Object? validity = null,
-  }) {
-    return _then(
-      _$DataSuccessImpl(
-        reference: null == reference
-            ? _value.reference
-            : reference // ignore: cast_nullable_to_non_nullable
-                  as String,
-        amount: null == amount
-            ? _value.amount
-            : amount // ignore: cast_nullable_to_non_nullable
-                  as double,
-        network: null == network
-            ? _value.network
-            : network // ignore: cast_nullable_to_non_nullable
-                  as String,
-        planName: null == planName
-            ? _value.planName
-            : planName // ignore: cast_nullable_to_non_nullable
-                  as String,
-        phoneNumber: null == phoneNumber
-            ? _value.phoneNumber
-            : phoneNumber // ignore: cast_nullable_to_non_nullable
-                  as String,
-        data: null == data
-            ? _value.data
-            : data // ignore: cast_nullable_to_non_nullable
-                  as String,
-        validity: null == validity
-            ? _value.validity
-            : validity // ignore: cast_nullable_to_non_nullable
-                  as String,
-      ),
-    );
-  }
 }
 
 /// @nodoc
 
-class _$DataSuccessImpl implements DataSuccess {
-  const _$DataSuccessImpl({
-    required this.reference,
-    required this.amount,
-    required this.network,
-    required this.planName,
-    required this.phoneNumber,
-    required this.data,
-    required this.validity,
-  });
 
-  @override
-  final String reference;
-  @override
-  final double amount;
-  @override
-  final String network;
-  @override
-  final String planName;
-  @override
-  final String phoneNumber;
-  @override
-  final String data;
-  @override
-  final String validity;
+class DataFailure implements DataState {
+  const DataFailure(this.message);
+  
 
-  @override
-  String toString() {
-    return 'DataState.success(reference: $reference, amount: $amount, network: $network, planName: $planName, phoneNumber: $phoneNumber, data: $data, validity: $validity)';
-  }
+ final  String message;
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$DataSuccessImpl &&
-            (identical(other.reference, reference) ||
-                other.reference == reference) &&
-            (identical(other.amount, amount) || other.amount == amount) &&
-            (identical(other.network, network) || other.network == network) &&
-            (identical(other.planName, planName) ||
-                other.planName == planName) &&
-            (identical(other.phoneNumber, phoneNumber) ||
-                other.phoneNumber == phoneNumber) &&
-            (identical(other.data, data) || other.data == data) &&
-            (identical(other.validity, validity) ||
-                other.validity == validity));
-  }
+/// Create a copy of DataState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$DataFailureCopyWith<DataFailure> get copyWith => _$DataFailureCopyWithImpl<DataFailure>(this, _$identity);
 
-  @override
-  int get hashCode => Object.hash(
-    runtimeType,
-    reference,
-    amount,
-    network,
-    planName,
-    phoneNumber,
-    data,
-    validity,
-  );
 
-  /// Create a copy of DataState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$DataSuccessImplCopyWith<_$DataSuccessImpl> get copyWith =>
-      __$$DataSuccessImplCopyWithImpl<_$DataSuccessImpl>(this, _$identity);
 
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() initial,
-    required TResult Function() loading,
-    required TResult Function(
-      String reference,
-      double amount,
-      String network,
-      String planName,
-      String phoneNumber,
-      String data,
-      String validity,
-    )
-    success,
-    required TResult Function(String message) failure,
-    required TResult Function() plansLoading,
-    required TResult Function(List<Map<String, dynamic>> plans) plansSuccess,
-    required TResult Function(String message) plansFailure,
-  }) {
-    return success(
-      reference,
-      amount,
-      network,
-      planName,
-      phoneNumber,
-      data,
-      validity,
-    );
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? initial,
-    TResult? Function()? loading,
-    TResult? Function(
-      String reference,
-      double amount,
-      String network,
-      String planName,
-      String phoneNumber,
-      String data,
-      String validity,
-    )?
-    success,
-    TResult? Function(String message)? failure,
-    TResult? Function()? plansLoading,
-    TResult? Function(List<Map<String, dynamic>> plans)? plansSuccess,
-    TResult? Function(String message)? plansFailure,
-  }) {
-    return success?.call(
-      reference,
-      amount,
-      network,
-      planName,
-      phoneNumber,
-      data,
-      validity,
-    );
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? initial,
-    TResult Function()? loading,
-    TResult Function(
-      String reference,
-      double amount,
-      String network,
-      String planName,
-      String phoneNumber,
-      String data,
-      String validity,
-    )?
-    success,
-    TResult Function(String message)? failure,
-    TResult Function()? plansLoading,
-    TResult Function(List<Map<String, dynamic>> plans)? plansSuccess,
-    TResult Function(String message)? plansFailure,
-    required TResult orElse(),
-  }) {
-    if (success != null) {
-      return success(
-        reference,
-        amount,
-        network,
-        planName,
-        phoneNumber,
-        data,
-        validity,
-      );
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(DataInitial value) initial,
-    required TResult Function(DataLoading value) loading,
-    required TResult Function(DataSuccess value) success,
-    required TResult Function(DataFailure value) failure,
-    required TResult Function(DataPlansLoading value) plansLoading,
-    required TResult Function(DataPlansSuccess value) plansSuccess,
-    required TResult Function(DataPlansFailure value) plansFailure,
-  }) {
-    return success(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(DataInitial value)? initial,
-    TResult? Function(DataLoading value)? loading,
-    TResult? Function(DataSuccess value)? success,
-    TResult? Function(DataFailure value)? failure,
-    TResult? Function(DataPlansLoading value)? plansLoading,
-    TResult? Function(DataPlansSuccess value)? plansSuccess,
-    TResult? Function(DataPlansFailure value)? plansFailure,
-  }) {
-    return success?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(DataInitial value)? initial,
-    TResult Function(DataLoading value)? loading,
-    TResult Function(DataSuccess value)? success,
-    TResult Function(DataFailure value)? failure,
-    TResult Function(DataPlansLoading value)? plansLoading,
-    TResult Function(DataPlansSuccess value)? plansSuccess,
-    TResult Function(DataPlansFailure value)? plansFailure,
-    required TResult orElse(),
-  }) {
-    if (success != null) {
-      return success(this);
-    }
-    return orElse();
-  }
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DataFailure&&(identical(other.message, message) || other.message == message));
 }
 
-abstract class DataSuccess implements DataState {
-  const factory DataSuccess({
-    required final String reference,
-    required final double amount,
-    required final String network,
-    required final String planName,
-    required final String phoneNumber,
-    required final String data,
-    required final String validity,
-  }) = _$DataSuccessImpl;
 
-  String get reference;
-  double get amount;
-  String get network;
-  String get planName;
-  String get phoneNumber;
-  String get data;
-  String get validity;
+@override
+int get hashCode => Object.hash(runtimeType,message);
 
-  /// Create a copy of DataState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$DataSuccessImplCopyWith<_$DataSuccessImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+@override
+String toString() {
+  return 'DataState.failure(message: $message)';
+}
+
+
 }
 
 /// @nodoc
-abstract class _$$DataFailureImplCopyWith<$Res> {
-  factory _$$DataFailureImplCopyWith(
-    _$DataFailureImpl value,
-    $Res Function(_$DataFailureImpl) then,
-  ) = __$$DataFailureImplCopyWithImpl<$Res>;
-  @useResult
-  $Res call({String message});
+abstract mixin class $DataFailureCopyWith<$Res> implements $DataStateCopyWith<$Res> {
+  factory $DataFailureCopyWith(DataFailure value, $Res Function(DataFailure) _then) = _$DataFailureCopyWithImpl;
+@useResult
+$Res call({
+ String message
+});
+
+
+
+
+}
+/// @nodoc
+class _$DataFailureCopyWithImpl<$Res>
+    implements $DataFailureCopyWith<$Res> {
+  _$DataFailureCopyWithImpl(this._self, this._then);
+
+  final DataFailure _self;
+  final $Res Function(DataFailure) _then;
+
+/// Create a copy of DataState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? message = null,}) {
+  return _then(DataFailure(
+null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
 }
 
-/// @nodoc
-class __$$DataFailureImplCopyWithImpl<$Res>
-    extends _$DataStateCopyWithImpl<$Res, _$DataFailureImpl>
-    implements _$$DataFailureImplCopyWith<$Res> {
-  __$$DataFailureImplCopyWithImpl(
-    _$DataFailureImpl _value,
-    $Res Function(_$DataFailureImpl) _then,
-  ) : super(_value, _then);
 
-  /// Create a copy of DataState
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({Object? message = null}) {
-    return _then(
-      _$DataFailureImpl(
-        null == message
-            ? _value.message
-            : message // ignore: cast_nullable_to_non_nullable
-                  as String,
-      ),
-    );
-  }
 }
 
 /// @nodoc
 
-class _$DataFailureImpl implements DataFailure {
-  const _$DataFailureImpl(this.message);
 
-  @override
-  final String message;
+class DataPlansLoading implements DataState {
+  const DataPlansLoading();
+  
 
-  @override
-  String toString() {
-    return 'DataState.failure(message: $message)';
-  }
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$DataFailureImpl &&
-            (identical(other.message, message) || other.message == message));
-  }
 
-  @override
-  int get hashCode => Object.hash(runtimeType, message);
 
-  /// Create a copy of DataState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$DataFailureImplCopyWith<_$DataFailureImpl> get copyWith =>
-      __$$DataFailureImplCopyWithImpl<_$DataFailureImpl>(this, _$identity);
 
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() initial,
-    required TResult Function() loading,
-    required TResult Function(
-      String reference,
-      double amount,
-      String network,
-      String planName,
-      String phoneNumber,
-      String data,
-      String validity,
-    )
-    success,
-    required TResult Function(String message) failure,
-    required TResult Function() plansLoading,
-    required TResult Function(List<Map<String, dynamic>> plans) plansSuccess,
-    required TResult Function(String message) plansFailure,
-  }) {
-    return failure(message);
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? initial,
-    TResult? Function()? loading,
-    TResult? Function(
-      String reference,
-      double amount,
-      String network,
-      String planName,
-      String phoneNumber,
-      String data,
-      String validity,
-    )?
-    success,
-    TResult? Function(String message)? failure,
-    TResult? Function()? plansLoading,
-    TResult? Function(List<Map<String, dynamic>> plans)? plansSuccess,
-    TResult? Function(String message)? plansFailure,
-  }) {
-    return failure?.call(message);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? initial,
-    TResult Function()? loading,
-    TResult Function(
-      String reference,
-      double amount,
-      String network,
-      String planName,
-      String phoneNumber,
-      String data,
-      String validity,
-    )?
-    success,
-    TResult Function(String message)? failure,
-    TResult Function()? plansLoading,
-    TResult Function(List<Map<String, dynamic>> plans)? plansSuccess,
-    TResult Function(String message)? plansFailure,
-    required TResult orElse(),
-  }) {
-    if (failure != null) {
-      return failure(message);
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(DataInitial value) initial,
-    required TResult Function(DataLoading value) loading,
-    required TResult Function(DataSuccess value) success,
-    required TResult Function(DataFailure value) failure,
-    required TResult Function(DataPlansLoading value) plansLoading,
-    required TResult Function(DataPlansSuccess value) plansSuccess,
-    required TResult Function(DataPlansFailure value) plansFailure,
-  }) {
-    return failure(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(DataInitial value)? initial,
-    TResult? Function(DataLoading value)? loading,
-    TResult? Function(DataSuccess value)? success,
-    TResult? Function(DataFailure value)? failure,
-    TResult? Function(DataPlansLoading value)? plansLoading,
-    TResult? Function(DataPlansSuccess value)? plansSuccess,
-    TResult? Function(DataPlansFailure value)? plansFailure,
-  }) {
-    return failure?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(DataInitial value)? initial,
-    TResult Function(DataLoading value)? loading,
-    TResult Function(DataSuccess value)? success,
-    TResult Function(DataFailure value)? failure,
-    TResult Function(DataPlansLoading value)? plansLoading,
-    TResult Function(DataPlansSuccess value)? plansSuccess,
-    TResult Function(DataPlansFailure value)? plansFailure,
-    required TResult orElse(),
-  }) {
-    if (failure != null) {
-      return failure(this);
-    }
-    return orElse();
-  }
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DataPlansLoading);
 }
 
-abstract class DataFailure implements DataState {
-  const factory DataFailure(final String message) = _$DataFailureImpl;
 
-  String get message;
+@override
+int get hashCode => runtimeType.hashCode;
 
-  /// Create a copy of DataState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$DataFailureImplCopyWith<_$DataFailureImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+@override
+String toString() {
+  return 'DataState.plansLoading()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
+class DataPlansSuccess implements DataState {
+  const DataPlansSuccess(final  List<Map<String, dynamic>> plans): _plans = plans;
+  
+
+ final  List<Map<String, dynamic>> _plans;
+ List<Map<String, dynamic>> get plans {
+  if (_plans is EqualUnmodifiableListView) return _plans;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_plans);
+}
+
+
+/// Create a copy of DataState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$DataPlansSuccessCopyWith<DataPlansSuccess> get copyWith => _$DataPlansSuccessCopyWithImpl<DataPlansSuccess>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DataPlansSuccess&&const DeepCollectionEquality().equals(other._plans, _plans));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_plans));
+
+@override
+String toString() {
+  return 'DataState.plansSuccess(plans: $plans)';
+}
+
+
 }
 
 /// @nodoc
-abstract class _$$DataPlansLoadingImplCopyWith<$Res> {
-  factory _$$DataPlansLoadingImplCopyWith(
-    _$DataPlansLoadingImpl value,
-    $Res Function(_$DataPlansLoadingImpl) then,
-  ) = __$$DataPlansLoadingImplCopyWithImpl<$Res>;
+abstract mixin class $DataPlansSuccessCopyWith<$Res> implements $DataStateCopyWith<$Res> {
+  factory $DataPlansSuccessCopyWith(DataPlansSuccess value, $Res Function(DataPlansSuccess) _then) = _$DataPlansSuccessCopyWithImpl;
+@useResult
+$Res call({
+ List<Map<String, dynamic>> plans
+});
+
+
+
+
+}
+/// @nodoc
+class _$DataPlansSuccessCopyWithImpl<$Res>
+    implements $DataPlansSuccessCopyWith<$Res> {
+  _$DataPlansSuccessCopyWithImpl(this._self, this._then);
+
+  final DataPlansSuccess _self;
+  final $Res Function(DataPlansSuccess) _then;
+
+/// Create a copy of DataState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? plans = null,}) {
+  return _then(DataPlansSuccess(
+null == plans ? _self._plans : plans // ignore: cast_nullable_to_non_nullable
+as List<Map<String, dynamic>>,
+  ));
 }
 
-/// @nodoc
-class __$$DataPlansLoadingImplCopyWithImpl<$Res>
-    extends _$DataStateCopyWithImpl<$Res, _$DataPlansLoadingImpl>
-    implements _$$DataPlansLoadingImplCopyWith<$Res> {
-  __$$DataPlansLoadingImplCopyWithImpl(
-    _$DataPlansLoadingImpl _value,
-    $Res Function(_$DataPlansLoadingImpl) _then,
-  ) : super(_value, _then);
 
-  /// Create a copy of DataState
-  /// with the given fields replaced by the non-null parameter values.
 }
 
 /// @nodoc
 
-class _$DataPlansLoadingImpl implements DataPlansLoading {
-  const _$DataPlansLoadingImpl();
 
-  @override
-  String toString() {
-    return 'DataState.plansLoading()';
-  }
+class DataPlansFailure implements DataState {
+  const DataPlansFailure(this.message);
+  
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType && other is _$DataPlansLoadingImpl);
-  }
+ final  String message;
 
-  @override
-  int get hashCode => runtimeType.hashCode;
+/// Create a copy of DataState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$DataPlansFailureCopyWith<DataPlansFailure> get copyWith => _$DataPlansFailureCopyWithImpl<DataPlansFailure>(this, _$identity);
 
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() initial,
-    required TResult Function() loading,
-    required TResult Function(
-      String reference,
-      double amount,
-      String network,
-      String planName,
-      String phoneNumber,
-      String data,
-      String validity,
-    )
-    success,
-    required TResult Function(String message) failure,
-    required TResult Function() plansLoading,
-    required TResult Function(List<Map<String, dynamic>> plans) plansSuccess,
-    required TResult Function(String message) plansFailure,
-  }) {
-    return plansLoading();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? initial,
-    TResult? Function()? loading,
-    TResult? Function(
-      String reference,
-      double amount,
-      String network,
-      String planName,
-      String phoneNumber,
-      String data,
-      String validity,
-    )?
-    success,
-    TResult? Function(String message)? failure,
-    TResult? Function()? plansLoading,
-    TResult? Function(List<Map<String, dynamic>> plans)? plansSuccess,
-    TResult? Function(String message)? plansFailure,
-  }) {
-    return plansLoading?.call();
-  }
 
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? initial,
-    TResult Function()? loading,
-    TResult Function(
-      String reference,
-      double amount,
-      String network,
-      String planName,
-      String phoneNumber,
-      String data,
-      String validity,
-    )?
-    success,
-    TResult Function(String message)? failure,
-    TResult Function()? plansLoading,
-    TResult Function(List<Map<String, dynamic>> plans)? plansSuccess,
-    TResult Function(String message)? plansFailure,
-    required TResult orElse(),
-  }) {
-    if (plansLoading != null) {
-      return plansLoading();
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(DataInitial value) initial,
-    required TResult Function(DataLoading value) loading,
-    required TResult Function(DataSuccess value) success,
-    required TResult Function(DataFailure value) failure,
-    required TResult Function(DataPlansLoading value) plansLoading,
-    required TResult Function(DataPlansSuccess value) plansSuccess,
-    required TResult Function(DataPlansFailure value) plansFailure,
-  }) {
-    return plansLoading(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(DataInitial value)? initial,
-    TResult? Function(DataLoading value)? loading,
-    TResult? Function(DataSuccess value)? success,
-    TResult? Function(DataFailure value)? failure,
-    TResult? Function(DataPlansLoading value)? plansLoading,
-    TResult? Function(DataPlansSuccess value)? plansSuccess,
-    TResult? Function(DataPlansFailure value)? plansFailure,
-  }) {
-    return plansLoading?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(DataInitial value)? initial,
-    TResult Function(DataLoading value)? loading,
-    TResult Function(DataSuccess value)? success,
-    TResult Function(DataFailure value)? failure,
-    TResult Function(DataPlansLoading value)? plansLoading,
-    TResult Function(DataPlansSuccess value)? plansSuccess,
-    TResult Function(DataPlansFailure value)? plansFailure,
-    required TResult orElse(),
-  }) {
-    if (plansLoading != null) {
-      return plansLoading(this);
-    }
-    return orElse();
-  }
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DataPlansFailure&&(identical(other.message, message) || other.message == message));
 }
 
-abstract class DataPlansLoading implements DataState {
-  const factory DataPlansLoading() = _$DataPlansLoadingImpl;
+
+@override
+int get hashCode => Object.hash(runtimeType,message);
+
+@override
+String toString() {
+  return 'DataState.plansFailure(message: $message)';
+}
+
+
 }
 
 /// @nodoc
-abstract class _$$DataPlansSuccessImplCopyWith<$Res> {
-  factory _$$DataPlansSuccessImplCopyWith(
-    _$DataPlansSuccessImpl value,
-    $Res Function(_$DataPlansSuccessImpl) then,
-  ) = __$$DataPlansSuccessImplCopyWithImpl<$Res>;
-  @useResult
-  $Res call({List<Map<String, dynamic>> plans});
-}
+abstract mixin class $DataPlansFailureCopyWith<$Res> implements $DataStateCopyWith<$Res> {
+  factory $DataPlansFailureCopyWith(DataPlansFailure value, $Res Function(DataPlansFailure) _then) = _$DataPlansFailureCopyWithImpl;
+@useResult
+$Res call({
+ String message
+});
 
+
+
+
+}
 /// @nodoc
-class __$$DataPlansSuccessImplCopyWithImpl<$Res>
-    extends _$DataStateCopyWithImpl<$Res, _$DataPlansSuccessImpl>
-    implements _$$DataPlansSuccessImplCopyWith<$Res> {
-  __$$DataPlansSuccessImplCopyWithImpl(
-    _$DataPlansSuccessImpl _value,
-    $Res Function(_$DataPlansSuccessImpl) _then,
-  ) : super(_value, _then);
+class _$DataPlansFailureCopyWithImpl<$Res>
+    implements $DataPlansFailureCopyWith<$Res> {
+  _$DataPlansFailureCopyWithImpl(this._self, this._then);
 
-  /// Create a copy of DataState
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({Object? plans = null}) {
-    return _then(
-      _$DataPlansSuccessImpl(
-        null == plans
-            ? _value._plans
-            : plans // ignore: cast_nullable_to_non_nullable
-                  as List<Map<String, dynamic>>,
-      ),
-    );
-  }
+  final DataPlansFailure _self;
+  final $Res Function(DataPlansFailure) _then;
+
+/// Create a copy of DataState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? message = null,}) {
+  return _then(DataPlansFailure(
+null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
 }
 
-/// @nodoc
 
-class _$DataPlansSuccessImpl implements DataPlansSuccess {
-  const _$DataPlansSuccessImpl(final List<Map<String, dynamic>> plans)
-    : _plans = plans;
-
-  final List<Map<String, dynamic>> _plans;
-  @override
-  List<Map<String, dynamic>> get plans {
-    if (_plans is EqualUnmodifiableListView) return _plans;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_plans);
-  }
-
-  @override
-  String toString() {
-    return 'DataState.plansSuccess(plans: $plans)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$DataPlansSuccessImpl &&
-            const DeepCollectionEquality().equals(other._plans, _plans));
-  }
-
-  @override
-  int get hashCode =>
-      Object.hash(runtimeType, const DeepCollectionEquality().hash(_plans));
-
-  /// Create a copy of DataState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$DataPlansSuccessImplCopyWith<_$DataPlansSuccessImpl> get copyWith =>
-      __$$DataPlansSuccessImplCopyWithImpl<_$DataPlansSuccessImpl>(
-        this,
-        _$identity,
-      );
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() initial,
-    required TResult Function() loading,
-    required TResult Function(
-      String reference,
-      double amount,
-      String network,
-      String planName,
-      String phoneNumber,
-      String data,
-      String validity,
-    )
-    success,
-    required TResult Function(String message) failure,
-    required TResult Function() plansLoading,
-    required TResult Function(List<Map<String, dynamic>> plans) plansSuccess,
-    required TResult Function(String message) plansFailure,
-  }) {
-    return plansSuccess(plans);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? initial,
-    TResult? Function()? loading,
-    TResult? Function(
-      String reference,
-      double amount,
-      String network,
-      String planName,
-      String phoneNumber,
-      String data,
-      String validity,
-    )?
-    success,
-    TResult? Function(String message)? failure,
-    TResult? Function()? plansLoading,
-    TResult? Function(List<Map<String, dynamic>> plans)? plansSuccess,
-    TResult? Function(String message)? plansFailure,
-  }) {
-    return plansSuccess?.call(plans);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? initial,
-    TResult Function()? loading,
-    TResult Function(
-      String reference,
-      double amount,
-      String network,
-      String planName,
-      String phoneNumber,
-      String data,
-      String validity,
-    )?
-    success,
-    TResult Function(String message)? failure,
-    TResult Function()? plansLoading,
-    TResult Function(List<Map<String, dynamic>> plans)? plansSuccess,
-    TResult Function(String message)? plansFailure,
-    required TResult orElse(),
-  }) {
-    if (plansSuccess != null) {
-      return plansSuccess(plans);
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(DataInitial value) initial,
-    required TResult Function(DataLoading value) loading,
-    required TResult Function(DataSuccess value) success,
-    required TResult Function(DataFailure value) failure,
-    required TResult Function(DataPlansLoading value) plansLoading,
-    required TResult Function(DataPlansSuccess value) plansSuccess,
-    required TResult Function(DataPlansFailure value) plansFailure,
-  }) {
-    return plansSuccess(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(DataInitial value)? initial,
-    TResult? Function(DataLoading value)? loading,
-    TResult? Function(DataSuccess value)? success,
-    TResult? Function(DataFailure value)? failure,
-    TResult? Function(DataPlansLoading value)? plansLoading,
-    TResult? Function(DataPlansSuccess value)? plansSuccess,
-    TResult? Function(DataPlansFailure value)? plansFailure,
-  }) {
-    return plansSuccess?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(DataInitial value)? initial,
-    TResult Function(DataLoading value)? loading,
-    TResult Function(DataSuccess value)? success,
-    TResult Function(DataFailure value)? failure,
-    TResult Function(DataPlansLoading value)? plansLoading,
-    TResult Function(DataPlansSuccess value)? plansSuccess,
-    TResult Function(DataPlansFailure value)? plansFailure,
-    required TResult orElse(),
-  }) {
-    if (plansSuccess != null) {
-      return plansSuccess(this);
-    }
-    return orElse();
-  }
 }
 
-abstract class DataPlansSuccess implements DataState {
-  const factory DataPlansSuccess(final List<Map<String, dynamic>> plans) =
-      _$DataPlansSuccessImpl;
-
-  List<Map<String, dynamic>> get plans;
-
-  /// Create a copy of DataState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$DataPlansSuccessImplCopyWith<_$DataPlansSuccessImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class _$$DataPlansFailureImplCopyWith<$Res> {
-  factory _$$DataPlansFailureImplCopyWith(
-    _$DataPlansFailureImpl value,
-    $Res Function(_$DataPlansFailureImpl) then,
-  ) = __$$DataPlansFailureImplCopyWithImpl<$Res>;
-  @useResult
-  $Res call({String message});
-}
-
-/// @nodoc
-class __$$DataPlansFailureImplCopyWithImpl<$Res>
-    extends _$DataStateCopyWithImpl<$Res, _$DataPlansFailureImpl>
-    implements _$$DataPlansFailureImplCopyWith<$Res> {
-  __$$DataPlansFailureImplCopyWithImpl(
-    _$DataPlansFailureImpl _value,
-    $Res Function(_$DataPlansFailureImpl) _then,
-  ) : super(_value, _then);
-
-  /// Create a copy of DataState
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({Object? message = null}) {
-    return _then(
-      _$DataPlansFailureImpl(
-        null == message
-            ? _value.message
-            : message // ignore: cast_nullable_to_non_nullable
-                  as String,
-      ),
-    );
-  }
-}
-
-/// @nodoc
-
-class _$DataPlansFailureImpl implements DataPlansFailure {
-  const _$DataPlansFailureImpl(this.message);
-
-  @override
-  final String message;
-
-  @override
-  String toString() {
-    return 'DataState.plansFailure(message: $message)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$DataPlansFailureImpl &&
-            (identical(other.message, message) || other.message == message));
-  }
-
-  @override
-  int get hashCode => Object.hash(runtimeType, message);
-
-  /// Create a copy of DataState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$DataPlansFailureImplCopyWith<_$DataPlansFailureImpl> get copyWith =>
-      __$$DataPlansFailureImplCopyWithImpl<_$DataPlansFailureImpl>(
-        this,
-        _$identity,
-      );
-
-  @override
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>({
-    required TResult Function() initial,
-    required TResult Function() loading,
-    required TResult Function(
-      String reference,
-      double amount,
-      String network,
-      String planName,
-      String phoneNumber,
-      String data,
-      String validity,
-    )
-    success,
-    required TResult Function(String message) failure,
-    required TResult Function() plansLoading,
-    required TResult Function(List<Map<String, dynamic>> plans) plansSuccess,
-    required TResult Function(String message) plansFailure,
-  }) {
-    return plansFailure(message);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function()? initial,
-    TResult? Function()? loading,
-    TResult? Function(
-      String reference,
-      double amount,
-      String network,
-      String planName,
-      String phoneNumber,
-      String data,
-      String validity,
-    )?
-    success,
-    TResult? Function(String message)? failure,
-    TResult? Function()? plansLoading,
-    TResult? Function(List<Map<String, dynamic>> plans)? plansSuccess,
-    TResult? Function(String message)? plansFailure,
-  }) {
-    return plansFailure?.call(message);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>({
-    TResult Function()? initial,
-    TResult Function()? loading,
-    TResult Function(
-      String reference,
-      double amount,
-      String network,
-      String planName,
-      String phoneNumber,
-      String data,
-      String validity,
-    )?
-    success,
-    TResult Function(String message)? failure,
-    TResult Function()? plansLoading,
-    TResult Function(List<Map<String, dynamic>> plans)? plansSuccess,
-    TResult Function(String message)? plansFailure,
-    required TResult orElse(),
-  }) {
-    if (plansFailure != null) {
-      return plansFailure(message);
-    }
-    return orElse();
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>({
-    required TResult Function(DataInitial value) initial,
-    required TResult Function(DataLoading value) loading,
-    required TResult Function(DataSuccess value) success,
-    required TResult Function(DataFailure value) failure,
-    required TResult Function(DataPlansLoading value) plansLoading,
-    required TResult Function(DataPlansSuccess value) plansSuccess,
-    required TResult Function(DataPlansFailure value) plansFailure,
-  }) {
-    return plansFailure(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(DataInitial value)? initial,
-    TResult? Function(DataLoading value)? loading,
-    TResult? Function(DataSuccess value)? success,
-    TResult? Function(DataFailure value)? failure,
-    TResult? Function(DataPlansLoading value)? plansLoading,
-    TResult? Function(DataPlansSuccess value)? plansSuccess,
-    TResult? Function(DataPlansFailure value)? plansFailure,
-  }) {
-    return plansFailure?.call(this);
-  }
-
-  @override
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>({
-    TResult Function(DataInitial value)? initial,
-    TResult Function(DataLoading value)? loading,
-    TResult Function(DataSuccess value)? success,
-    TResult Function(DataFailure value)? failure,
-    TResult Function(DataPlansLoading value)? plansLoading,
-    TResult Function(DataPlansSuccess value)? plansSuccess,
-    TResult Function(DataPlansFailure value)? plansFailure,
-    required TResult orElse(),
-  }) {
-    if (plansFailure != null) {
-      return plansFailure(this);
-    }
-    return orElse();
-  }
-}
-
-abstract class DataPlansFailure implements DataState {
-  const factory DataPlansFailure(final String message) = _$DataPlansFailureImpl;
-
-  String get message;
-
-  /// Create a copy of DataState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$DataPlansFailureImplCopyWith<_$DataPlansFailureImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
+// dart format on

@@ -95,7 +95,7 @@ class _WalletFundPageState extends State<WalletFundPage> {
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
@@ -114,7 +114,7 @@ class _WalletFundPageState extends State<WalletFundPage> {
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
@@ -143,23 +143,23 @@ class _WalletFundPageState extends State<WalletFundPage> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Scanned value:',
+              Text('Scanned value:',
                   style: TextStyle(
-                      fontSize: 12, color: AppColors.textSecondary)),
+                      fontSize: 12, color: Theme.of(ctx).colorScheme.onSurface.withValues(alpha: 0.6))),
               const SizedBox(height: 6),
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.background,
+                  color: Theme.of(ctx).colorScheme.surface,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColors.divider),
+                  border: Border.all(color: Theme.of(ctx).colorScheme.outlineVariant),
                 ),
                 child: Text(
                   result,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                    color: Theme.of(ctx).colorScheme.onSurface,
                   ),
                 ),
               ),
@@ -194,7 +194,6 @@ class _WalletFundPageState extends State<WalletFundPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Fund Wallet'),
         leading: IconButton(
@@ -271,12 +270,12 @@ class _WalletFundPageState extends State<WalletFundPage> {
                 const SizedBox(height: 28),
 
                 // Amount input
-                const Text(
+                Text(
                   'Enter Amount',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -297,7 +296,7 @@ class _WalletFundPageState extends State<WalletFundPage> {
                     hintStyle: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w700,
-                      color: Colors.grey[300],
+                      color: Theme.of(context).colorScheme.outlineVariant,
                     ),
                     prefixIcon: Padding(
                       padding: const EdgeInsets.fromLTRB(16, 16, 0, 16),
@@ -306,12 +305,11 @@ class _WalletFundPageState extends State<WalletFundPage> {
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.w700,
-                          color: Colors.grey[700],
+                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                         ),
                       ),
                     ),
                     filled: true,
-                    fillColor: Colors.white,
                   ),
                   onChanged: (_) => setState(() {}),
                   validator: (value) {
@@ -350,12 +348,12 @@ class _WalletFundPageState extends State<WalletFundPage> {
                         decoration: BoxDecoration(
                           color: selected
                               ? AppColors.primary.withValues(alpha: 0.1)
-                              : Colors.white,
+                              : Theme.of(context).colorScheme.surface,
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
                             color: selected
                                 ? AppColors.primary
-                                : AppColors.divider,
+                                : Theme.of(context).colorScheme.outlineVariant,
                           ),
                         ),
                         child: Text(
@@ -365,7 +363,7 @@ class _WalletFundPageState extends State<WalletFundPage> {
                             fontWeight: FontWeight.w600,
                             color: selected
                                 ? AppColors.primary
-                                : AppColors.textPrimary,
+                                : Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
                       ),
@@ -375,12 +373,12 @@ class _WalletFundPageState extends State<WalletFundPage> {
                 const SizedBox(height: 28),
 
                 // Payment method selection
-                const Text(
+                Text(
                   'Payment Method',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -398,12 +396,12 @@ class _WalletFundPageState extends State<WalletFundPage> {
                       decoration: BoxDecoration(
                         color: isSelected
                             ? method.color.withValues(alpha: 0.06)
-                            : Colors.white,
+                            : Theme.of(context).colorScheme.surface,
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(
                           color: isSelected
                               ? method.color
-                              : AppColors.divider,
+                              : Theme.of(context).colorScheme.outlineVariant,
                           width: isSelected ? 2 : 1,
                         ),
                       ),
@@ -427,17 +425,17 @@ class _WalletFundPageState extends State<WalletFundPage> {
                               children: [
                                 Text(
                                   method.name,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w700,
-                                    color: AppColors.textPrimary,
+                                    color: Theme.of(context).colorScheme.onSurface,
                                   ),
                                 ),
                                 Text(
                                   method.description,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 12,
-                                    color: AppColors.textSecondary,
+                                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                                   ),
                                 ),
                               ],
@@ -448,7 +446,7 @@ class _WalletFundPageState extends State<WalletFundPage> {
                                 color: method.color, size: 22)
                           else
                             Icon(Icons.radio_button_unchecked_rounded,
-                                color: Colors.grey[300], size: 22),
+                                color: Theme.of(context).colorScheme.outlineVariant, size: 22),
                         ],
                       ),
                     ),
@@ -471,11 +469,11 @@ class _WalletFundPageState extends State<WalletFundPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Summary',
+                        Text('Summary',
                             style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.textPrimary)),
+                                color: Theme.of(context).colorScheme.onSurface)),
                         const SizedBox(height: 10),
                         _summaryRow(
                             'Amount',
@@ -527,13 +525,13 @@ class _WalletFundPageState extends State<WalletFundPage> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label,
-              style: const TextStyle(
-                  fontSize: 13, color: AppColors.textSecondary)),
+              style: TextStyle(
+                  fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6))),
           Text(value,
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary)),
+                  color: Theme.of(context).colorScheme.onSurface)),
         ],
       ),
     );
@@ -627,16 +625,6 @@ class _CardPaymentSheetState extends State<_CardPaymentSheet> {
     super.dispose();
   }
 
-  String _formatCardNumber(String value) {
-    final digits = value.replaceAll(' ', '');
-    final buffer = StringBuffer();
-    for (int i = 0; i < digits.length; i++) {
-      if (i > 0 && i % 4 == 0) buffer.write(' ');
-      buffer.write(digits[i]);
-    }
-    return buffer.toString();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -658,7 +646,7 @@ class _CardPaymentSheetState extends State<_CardPaymentSheet> {
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: AppColors.divider,
+                      color: Theme.of(context).colorScheme.outlineVariant,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -680,12 +668,12 @@ class _CardPaymentSheetState extends State<_CardPaymentSheet> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Card Payment',
                           style: TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.w800,
-                            color: AppColors.textPrimary,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
                         Text(
@@ -703,11 +691,11 @@ class _CardPaymentSheetState extends State<_CardPaymentSheet> {
                 const SizedBox(height: 24),
 
                 // Card Number
-                const Text('Card Number',
+                Text('Card Number',
                     style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.textSecondary)),
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6))),
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _cardNumberCtrl,
@@ -722,7 +710,6 @@ class _CardPaymentSheetState extends State<_CardPaymentSheet> {
                     prefixIcon:
                         Icon(Icons.credit_card_rounded),
                     filled: true,
-                    fillColor: Colors.white,
                   ),
                   validator: (v) {
                     if (v == null || v.replaceAll(' ', '').length < 16) {
@@ -740,11 +727,11 @@ class _CardPaymentSheetState extends State<_CardPaymentSheet> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Expiry Date',
+                          Text('Expiry Date',
                               style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
-                                  color: AppColors.textSecondary)),
+                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6))),
                           const SizedBox(height: 8),
                           TextFormField(
                             controller: _expiryCtrl,
@@ -758,7 +745,6 @@ class _CardPaymentSheetState extends State<_CardPaymentSheet> {
                               hintText: 'MM/YY',
                               prefixIcon: Icon(Icons.calendar_month_rounded),
                               filled: true,
-                              fillColor: Colors.white,
                             ),
                             validator: (v) {
                               if (v == null || v.length < 5) {
@@ -775,11 +761,11 @@ class _CardPaymentSheetState extends State<_CardPaymentSheet> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('CVV',
+                          Text('CVV',
                               style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
-                                  color: AppColors.textSecondary)),
+                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6))),
                           const SizedBox(height: 8),
                           TextFormField(
                             controller: _cvvCtrl,
@@ -793,7 +779,6 @@ class _CardPaymentSheetState extends State<_CardPaymentSheet> {
                               hintText: '•••',
                               prefixIcon: Icon(Icons.lock_outline_rounded),
                               filled: true,
-                              fillColor: Colors.white,
                             ),
                             validator: (v) {
                               if (v == null || v.length < 3) {
@@ -810,11 +795,11 @@ class _CardPaymentSheetState extends State<_CardPaymentSheet> {
                 const SizedBox(height: 16),
 
                 // Cardholder Name
-                const Text('Cardholder Name',
+                Text('Cardholder Name',
                     style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.textSecondary)),
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6))),
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _nameCtrl,
@@ -823,7 +808,6 @@ class _CardPaymentSheetState extends State<_CardPaymentSheet> {
                     hintText: 'Name on card',
                     prefixIcon: Icon(Icons.person_outline_rounded),
                     filled: true,
-                    fillColor: Colors.white,
                   ),
                   validator: (v) {
                     if (v == null || v.trim().length < 3) {
@@ -843,7 +827,7 @@ class _CardPaymentSheetState extends State<_CardPaymentSheet> {
                     Text(
                       'Your card details are encrypted and secure',
                       style: TextStyle(
-                          fontSize: 11, color: Colors.grey[500]),
+                          fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4)),
                     ),
                   ],
                 ),
@@ -911,19 +895,19 @@ class _UssdSheet extends StatelessWidget {
   String _ussdCode(String bankName, int amountInt) {
     switch (bankName) {
       case 'GTBank':
-        return '*737*${amountInt}*1#';
+        return '*737*$amountInt*1#';
       case 'Access Bank':
-        return '*901*${amountInt}#';
+        return '*901*$amountInt#';
       case 'First Bank':
-        return '*894*${amountInt}#';
+        return '*894*$amountInt#';
       case 'Zenith Bank':
-        return '*966*${amountInt}#';
+        return '*966*$amountInt#';
       case 'UBA':
-        return '*919*${amountInt}#';
+        return '*919*$amountInt#';
       case 'Fidelity Bank':
-        return '*770*${amountInt}#';
+        return '*770*$amountInt#';
       case 'FCMB':
-        return '*329*${amountInt}#';
+        return '*329*$amountInt#';
       default:
         return '#';
     }
@@ -942,8 +926,8 @@ class _UssdSheet extends StatelessWidget {
           children: [
             Text(
               'Dial this USSD code from your $bankName registered phone number:',
-              style: const TextStyle(
-                  fontSize: 13, color: AppColors.textSecondary),
+              style: TextStyle(
+                  fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
@@ -969,10 +953,10 @@ class _UssdSheet extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               'Amount: ${CurrencyFormatter.formatNaira(amount)}',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
           ],
@@ -1016,7 +1000,7 @@ class _UssdSheet extends StatelessWidget {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.divider,
+                  color: Theme.of(context).colorScheme.outlineVariant,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -1038,12 +1022,12 @@ class _UssdSheet extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Bank USSD Payment',
                       style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w800,
-                        color: AppColors.textPrimary,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     Text(
@@ -1059,10 +1043,10 @@ class _UssdSheet extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Select your bank to get the USSD code',
               style: TextStyle(
-                  fontSize: 13, color: AppColors.textSecondary),
+                  fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
             ),
             const SizedBox(height: 20),
             // Bank list
@@ -1082,22 +1066,22 @@ class _UssdSheet extends StatelessWidget {
                 ),
                 title: Text(
                   bank.name,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 subtitle: Text(
                   code,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
-                    color: AppColors.textSecondary,
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                     fontFamily: 'monospace',
                   ),
                 ),
-                trailing: const Icon(Icons.chevron_right_rounded,
-                    color: AppColors.textSecondary),
+                trailing: Icon(Icons.chevron_right_rounded,
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
                 onTap: () => _showUssdCode(context, bank.name),
               );
             }),

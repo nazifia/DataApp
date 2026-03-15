@@ -17,7 +17,9 @@ import '../../transaction_history/event/transaction_history_event.dart';
 import '../../transaction_history/state/transaction_history_state.dart';
 import '../../../core/constants/theme.dart';
 import '../../../core/utils/validation.dart';
-import '../../../main.dart' show routeObserver;
+import '../../../main.dart' show routeObserver, themeModeNotifier;
+import '../../../core/services/biometric_service.dart';
+import '../../../core/services/theme_service.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -28,6 +30,8 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage> with RouteAware {
   bool _balanceVisible = true;
+  bool _biometricEnabled = false;
+  bool _biometricCapable = false;
 
   void _refreshData() {
     context.read<WalletBloc>().add(const LoadWalletEvent());
@@ -39,6 +43,7 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
   void initState() {
     super.initState();
     _refreshData();
+    _loadBiometricStatus();
   }
 
   @override
@@ -59,10 +64,55 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
     _refreshData();
   }
 
+  Future<void> _loadBiometricStatus() async {
+    final capable = await BiometricService.isDeviceCapable();
+    final enabled = await BiometricService.isBiometricEnabled();
+    if (mounted) {
+      setState(() {
+        _biometricCapable = capable;
+        _biometricEnabled = enabled;
+      });
+    }
+  }
+
+  Future<void> _toggleBiometric(bool enable) async {
+    if (enable) {
+      final success = await BiometricService.enable();
+      if (!mounted) return;
+      if (success) {
+        setState(() => _biometricEnabled = true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Biometric login enabled'),
+            backgroundColor: AppColors.success,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Biometric verification failed or not available'),
+            backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } else {
+      await BiometricService.disable();
+      if (!mounted) return;
+      setState(() => _biometricEnabled = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Biometric login disabled'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Row(
           children: [
@@ -153,12 +203,12 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Quick Actions',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -211,12 +261,12 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
+                          Text(
                             'Recent Transactions',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
+                              color: Theme.of(context).colorScheme.onSurface,
                             ),
                           ),
                           TextButton(
@@ -486,9 +536,9 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.divider),
+          border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.03),
@@ -512,10 +562,10 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
             Text(
               label,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
           ],
@@ -560,9 +610,9 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
           margin: const EdgeInsets.only(bottom: 10),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.divider),
+            border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
           ),
           child: Row(
             children: [
@@ -570,7 +620,7 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: Colors.grey[200],
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
@@ -582,15 +632,15 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
                     Container(
                         width: double.infinity,
                         height: 14,
-                        color: Colors.grey[200]),
+                        color: Theme.of(context).colorScheme.surfaceContainerHighest),
                     const SizedBox(height: 6),
                     Container(
-                        width: 80, height: 11, color: Colors.grey[200]),
+                        width: 80, height: 11, color: Theme.of(context).colorScheme.surfaceContainerHighest),
                   ],
                 ),
               ),
               const SizedBox(width: 8),
-              Container(width: 70, height: 14, color: Colors.grey[200]),
+              Container(width: 70, height: 14, color: Theme.of(context).colorScheme.surfaceContainerHighest),
             ],
           ),
         );
@@ -602,26 +652,26 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
     return Container(
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.divider),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
       child: Column(
         children: [
-          Icon(Icons.receipt_long_outlined, size: 48, color: Colors.grey[300]),
+          Icon(Icons.receipt_long_outlined, size: 48, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3)),
           const SizedBox(height: 12),
           Text(
             'No transactions yet',
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w600,
-              color: Colors.grey[600],
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
             ),
           ),
           const SizedBox(height: 4),
           Text(
             'Buy airtime or data to see history',
-            style: TextStyle(fontSize: 13, color: Colors.grey[400]),
+            style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4)),
           ),
         ],
       ),
@@ -649,9 +699,9 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.divider),
+          border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
         ),
         child: Row(
           children: [
@@ -676,10 +726,10 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
                 children: [
                   Text(
                     _txTitle(transaction['type']),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 3),
@@ -688,9 +738,9 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
                             transaction['reference'] ??
                             'N/A')
                         .toString(),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
-                      color: AppColors.textSecondary,
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -850,14 +900,14 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
                   Navigator.of(context).pushNamed('/profile');
                 }),
                 const Divider(height: 1, indent: 16, endIndent: 16),
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(16, 12, 16, 4),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
                   child: Text(
                     'SERVICES',
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textSecondary,
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                       letterSpacing: 1.2,
                     ),
                   ),
@@ -886,6 +936,79 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
                     Icons.help_outline_rounded, 'Help & Support', () {
                   Navigator.of(context).pop();
                 }),
+                const Divider(height: 1, indent: 16, endIndent: 16),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                  child: Text(
+                    'SETTINGS',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                ),
+                // Dark Mode toggle
+                ValueListenableBuilder<ThemeMode>(
+                  valueListenable: themeModeNotifier,
+                  builder: (context, mode, _) {
+                    final isDark = mode == ThemeMode.dark;
+                    return SwitchListTile.adaptive(
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 0),
+                      secondary: Icon(
+                        isDark
+                            ? Icons.dark_mode_rounded
+                            : Icons.light_mode_rounded,
+                        color: Colors.indigo,
+                        size: 22,
+                      ),
+                      title: const Text(
+                        'Dark Mode',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                      ),
+                      value: isDark,
+                      thumbColor: WidgetStateProperty.resolveWith(
+                        (states) => states.contains(WidgetState.selected)
+                            ? AppColors.primary
+                            : null,
+                      ),
+                      onChanged: (value) async {
+                        final newMode =
+                            value ? ThemeMode.dark : ThemeMode.light;
+                        themeModeNotifier.value = newMode;
+                        await ThemeService.saveThemeMode(newMode);
+                      },
+                    );
+                  },
+                ),
+                // Biometric toggle
+                if (_biometricCapable)
+                  SwitchListTile.adaptive(
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 0),
+                    secondary: const Icon(
+                      Icons.fingerprint_rounded,
+                      color: Colors.teal,
+                      size: 22,
+                    ),
+                    title: const Text(
+                      'Biometric Login',
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                    ),
+                    value: _biometricEnabled,
+                    thumbColor: WidgetStateProperty.resolveWith(
+                      (states) => states.contains(WidgetState.selected)
+                          ? AppColors.primary
+                          : null,
+                    ),
+                    onChanged: (value) {
+                      Navigator.of(context).pop();
+                      _toggleBiometric(value);
+                    },
+                  ),
+                const Divider(height: 1, indent: 16, endIndent: 16),
                 _drawerItem(
                   Icons.logout_rounded,
                   'Sign Out',
@@ -911,13 +1034,13 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
       {Color? color}) {
     return ListTile(
       leading:
-          Icon(icon, color: color ?? AppColors.textSecondary, size: 22),
+          Icon(icon, color: color ?? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), size: 22),
       title: Text(
         title,
         style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w500,
-          color: color ?? AppColors.textPrimary,
+          color: color ?? Theme.of(context).colorScheme.onSurface,
         ),
       ),
       onTap: onTap,
@@ -928,10 +1051,10 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
 
   Widget _buildBottomNav(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: AppColors.divider)),
-        boxShadow: [
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        border: Border(top: BorderSide(color: Theme.of(context).colorScheme.outlineVariant)),
+        boxShadow: const [
           BoxShadow(
             color: Color(0x0A000000),
             blurRadius: 12,
@@ -971,8 +1094,9 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon,
-                color:
-                    active ? AppColors.primary : AppColors.textSecondary,
+                color: active
+                    ? AppColors.primary
+                    : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                 size: 24),
             const SizedBox(height: 3),
             Text(
@@ -980,8 +1104,9 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: active ? FontWeight.w700 : FontWeight.w400,
-                color:
-                    active ? AppColors.primary : AppColors.textSecondary,
+                color: active
+                    ? AppColors.primary
+                    : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
               ),
             ),
           ],
@@ -1145,7 +1270,7 @@ class _TransactionDetailSheet extends StatelessWidget {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -1182,10 +1307,10 @@ class _TransactionDetailSheet extends StatelessWidget {
             // Type label
             Text(
               _typeTitle(type),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 8),
@@ -1212,17 +1337,17 @@ class _TransactionDetailSheet extends StatelessWidget {
             const SizedBox(height: 12),
 
             // Details
-            _detailRow('Reference', reference),
-            if (network != null) _detailRow('Network', network),
-            if (phoneNumber != null) _detailRow('Phone', phoneNumber),
+            _detailRow(context, 'Reference', reference),
+            if (network != null) _detailRow(context, 'Network', network),
+            if (phoneNumber != null) _detailRow(context, 'Phone', phoneNumber),
             if (isData && planName != null)
-              _detailRow('Plan', planName),
-            if (isData && data != null) _detailRow('Volume', data),
+              _detailRow(context, 'Plan', planName),
+            if (isData && data != null) _detailRow(context, 'Volume', data),
             if (isData && validity != null)
-              _detailRow('Validity', validity),
+              _detailRow(context, 'Validity', validity),
             if (isWalletFund && gateway != null)
-              _detailRow('Gateway', gateway),
-            if (createdAt != null) _detailRow('Date', createdAt),
+              _detailRow(context, 'Gateway', gateway),
+            if (createdAt != null) _detailRow(context, 'Date', createdAt),
 
             const SizedBox(height: 24),
             SizedBox(
@@ -1238,7 +1363,7 @@ class _TransactionDetailSheet extends StatelessWidget {
     );
   }
 
-  Widget _detailRow(String label, String value) {
+  Widget _detailRow(BuildContext context, String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
@@ -1248,17 +1373,17 @@ class _TransactionDetailSheet extends StatelessWidget {
             width: 100,
             child: Text(
               label,
-              style: const TextStyle(
-                  fontSize: 13, color: AppColors.textSecondary),
+              style: TextStyle(
+                  fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
             ),
           ),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
               textAlign: TextAlign.end,
             ),

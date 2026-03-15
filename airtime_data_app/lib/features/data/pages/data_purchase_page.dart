@@ -119,7 +119,6 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Buy Data'),
         leading: IconButton(
@@ -191,7 +190,6 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
                       onPressed: _pickContact,
                     ),
                     filled: true,
-                    fillColor: Colors.white,
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -258,10 +256,10 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
               decoration: BoxDecoration(
                 color: isSelected
                     ? color.withValues(alpha: 0.12)
-                    : Colors.white,
+                    : Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                  color: isSelected ? color : AppColors.divider,
+                  color: isSelected ? color : Theme.of(context).colorScheme.outlineVariant,
                   width: isSelected ? 2 : 1,
                 ),
               ),
@@ -287,7 +285,7 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
                           : FontWeight.w500,
                       color: isSelected
                           ? displayColor
-                          : AppColors.textSecondary,
+                          : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                     ),
                   ),
                 ],
@@ -318,13 +316,13 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: 3,
-      itemBuilder: (_, _) => Container(
+      itemBuilder: (_, index) => Container(
         margin: const EdgeInsets.only(bottom: 10),
         height: 72,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.divider),
+          border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
         ),
       ),
     );
@@ -404,10 +402,10 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
             decoration: BoxDecoration(
               color: isSelected
                   ? color.withValues(alpha: 0.06)
-                  : Colors.white,
+                  : Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color: isSelected ? color : AppColors.divider,
+                color: isSelected ? color : Theme.of(context).colorScheme.outlineVariant,
                 width: isSelected ? 2 : 1,
               ),
             ),
@@ -420,7 +418,7 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
                   decoration: BoxDecoration(
                     color: isSelected
                         ? displayColor.withValues(alpha: 0.12)
-                        : AppColors.background,
+                        : Theme.of(context).colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
@@ -439,7 +437,6 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 3),
@@ -455,13 +452,11 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
                           if (plan['validity'] != null) ...[
                             const Text(' • ',
                                 style: TextStyle(
-                                    color: AppColors.textSecondary,
                                     fontSize: 12)),
                             Text(
                               plan['validity'] as String,
                               style: const TextStyle(
                                 fontSize: 12,
-                                color: AppColors.textSecondary,
                               ),
                             ),
                           ],
@@ -483,7 +478,7 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
                         fontWeight: FontWeight.w800,
                         color: isSelected
                             ? displayColor
-                            : AppColors.textPrimary,
+                            : Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     if (isSelected)
@@ -514,8 +509,7 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
           const Text('Summary',
               style: TextStyle(
                   fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary)),
+                  fontWeight: FontWeight.w700)),
           const SizedBox(height: 10),
           _summaryRow('Network', _selectedNetwork),
           _summaryRow('Plan', _selectedPlanName),
@@ -528,19 +522,20 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
   }
 
   Widget _summaryRow(String label, String value) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label,
-              style: const TextStyle(
-                  fontSize: 13, color: AppColors.textSecondary)),
+              style: TextStyle(
+                  fontSize: 13, color: cs.onSurface.withValues(alpha: 0.6))),
           Text(value,
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary)),
+                  color: cs.onSurface)),
         ],
       ),
     );
@@ -549,10 +544,10 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
   Widget _sectionLabel(String text) {
     return Text(
       text,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.w700,
-        color: AppColors.textPrimary,
+        color: Theme.of(context).colorScheme.onSurface,
       ),
     );
   }
@@ -618,19 +613,20 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
   }
 
   Widget _detailRow(String label, String value) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label,
-              style: const TextStyle(
-                  fontSize: 13, color: AppColors.textSecondary)),
+              style: TextStyle(
+                  fontSize: 13, color: cs.onSurface.withValues(alpha: 0.6))),
           Text(value,
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary)),
+                  color: cs.onSurface)),
         ],
       ),
     );

@@ -32,44 +32,45 @@ dependencies:
     sdk: flutter
 
   # State Management
-  flutter_bloc: ^8.1.3
+  flutter_bloc: ^9.1.1
 
   # API Calls
   dio: ^5.4.0
 
   # State Management & Serialization
-  freezed: ^2.4.5
-  freezed_annotation: ^2.4.4
+  freezed: ^3.2.5
+  freezed_annotation: ^3.1.0
   json_serializable: ^6.7.1
 
   # Security
-  flutter_secure_storage: ^9.0.0
-  device_info_plus: ^9.0.2
-  local_auth: ^2.1.6
+  flutter_secure_storage: ^10.0.0
+  device_info_plus: ^12.3.0
+  local_auth: ^3.0.1
 
   # Utilities
-  intl: ^0.18.1
+  intl: ^0.20.2
   equatable: ^2.0.5
 
   # UI Enhancement
   flutter_svg: ^2.0.9
   cached_network_image: ^3.3.0
-  shimmer: ^2.0.0
+  shimmer: ^3.0.0
   pull_to_refresh: ^2.0.0
 
   # Contacts
-  flutter_contacts: ^1.1.7+1
-  permission_handler: ^11.3.1
+  flutter_contacts: ^2.0.0
+  permission_handler: ^12.0.1
 
   # Image Picking
   image_picker: ^1.0.7
 
   # Loading & Dialogs
-  fluttertoast: ^8.2.4
+  fluttertoast: ^9.0.0
   loading_animation_widget: ^1.2.0+4
 
   # QR Scanner
-  mobile_scanner: ^5.2.0
+  mobile_scanner: ^7.2.0
+  vector_math: ^2.1.0
 
   # Shared Preferences
   shared_preferences: ^2.2.2

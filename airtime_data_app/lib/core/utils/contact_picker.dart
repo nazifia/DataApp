@@ -23,7 +23,9 @@ class ContactPicker {
     }
 
     // Fetch contacts with phone numbers
-    final contacts = await FlutterContacts.getContacts(withProperties: true);
+    final contacts = await FlutterContacts.getAll(
+      properties: {ContactProperty.phone},
+    );
     if (contacts.isEmpty) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -69,7 +71,7 @@ class _ContactPickerSheetState extends State<_ContactPickerSheet> {
     _filtered = widget.contacts
         .where((c) => c.phones.isNotEmpty)
         .toList()
-      ..sort((a, b) => a.displayName.compareTo(b.displayName));
+      ..sort((a, b) => (a.displayName ?? '').compareTo(b.displayName ?? ''));
   }
 
   void _onSearch(String query) {
@@ -77,10 +79,10 @@ class _ContactPickerSheetState extends State<_ContactPickerSheet> {
       _filtered = widget.contacts
           .where((c) =>
               c.phones.isNotEmpty &&
-              (c.displayName.toLowerCase().contains(query.toLowerCase()) ||
+              ((c.displayName ?? '').toLowerCase().contains(query.toLowerCase()) ||
                   c.phones.any((p) => p.number.contains(query))))
           .toList()
-        ..sort((a, b) => a.displayName.compareTo(b.displayName));
+        ..sort((a, b) => (a.displayName ?? '').compareTo(b.displayName ?? ''));
     });
   }
 
@@ -151,8 +153,8 @@ class _ContactPickerSheetState extends State<_ContactPickerSheet> {
                           backgroundColor:
                               Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
                           child: Text(
-                            contact.displayName.isNotEmpty
-                                ? contact.displayName[0].toUpperCase()
+                            (contact.displayName?.isNotEmpty ?? false)
+                                ? contact.displayName![0].toUpperCase()
                                 : '?',
                             style: TextStyle(
                               fontWeight: FontWeight.w700,
@@ -161,7 +163,7 @@ class _ContactPickerSheetState extends State<_ContactPickerSheet> {
                           ),
                         ),
                         title: Text(
-                          contact.displayName,
+                          contact.displayName ?? '',
                           style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
                         subtitle: Text(
@@ -194,7 +196,7 @@ class _ContactPickerSheetState extends State<_ContactPickerSheet> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text(contact.displayName),
+        title: Text(contact.displayName ?? ''),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: contact.phones
@@ -202,8 +204,9 @@ class _ContactPickerSheetState extends State<_ContactPickerSheet> {
                 (p) => ListTile(
                   leading: const Icon(Icons.phone_outlined),
                   title: Text(p.number),
-                  subtitle:
-                      p.label.name.isNotEmpty ? Text(p.label.name) : null,
+                  subtitle: (p.label.customLabel?.isNotEmpty ?? false)
+                      ? Text(p.label.customLabel!)
+                      : null,
                   onTap: () {
                     Navigator.of(context).pop();
                     Navigator.of(context).pop(

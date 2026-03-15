@@ -1,6 +1,7 @@
 // QR Scanner Page — uses mobile_scanner package
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:vector_math/vector_math_64.dart' show Vector3;
 import '../../../core/constants/theme.dart';
 
 class QrScannerPage extends StatefulWidget {
@@ -14,6 +15,7 @@ class _QrScannerPageState extends State<QrScannerPage>
     with SingleTickerProviderStateMixin {
   MobileScannerController? _controller;
   bool _scanned = false;
+  bool _torchOn = false;
   late AnimationController _animController;
   late Animation<double> _scanLineAnimation;
 
@@ -76,18 +78,16 @@ class _QrScannerPageState extends State<QrScannerPage>
         ),
         actions: [
           // Torch toggle
-          ValueListenableBuilder(
-            valueListenable: _controller!.torchState,
-            builder: (context, state, _) {
-              final icon = state == TorchState.on
-                  ? Icons.flash_on_rounded
-                  : Icons.flash_off_rounded;
-              return IconButton(
-                icon: Icon(icon, color: Colors.white),
-                onPressed: () => _controller?.toggleTorch(),
-                tooltip: 'Toggle torch',
-              );
+          IconButton(
+            icon: Icon(
+              _torchOn ? Icons.flash_on_rounded : Icons.flash_off_rounded,
+              color: Colors.white,
+            ),
+            onPressed: () {
+              _controller?.toggleTorch();
+              setState(() => _torchOn = !_torchOn);
             },
+            tooltip: 'Toggle torch',
           ),
           // Flip camera
           IconButton(
@@ -236,7 +236,7 @@ class _QrScannerPageState extends State<QrScannerPage>
     return Transform(
       alignment: Alignment.center,
       transform: Matrix4.identity()
-        ..scale(flipX ? -1.0 : 1.0, flipY ? -1.0 : 1.0),
+        ..scaleByVector3(Vector3(flipX ? -1.0 : 1.0, flipY ? -1.0 : 1.0, 1.0)),
       child: CustomPaint(
         size: const Size(28, 28),
         painter: _CornerPainter(),

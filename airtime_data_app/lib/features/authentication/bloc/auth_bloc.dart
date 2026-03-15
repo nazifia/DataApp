@@ -51,10 +51,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       }
       final authenticated = await _localAuth.authenticate(
         localizedReason: 'Authenticate to sign in to ADP Nigeria',
-        options: const AuthenticationOptions(
-          biometricOnly: false,
-          stickyAuth: true,
-        ),
       );
       if (authenticated) {
         emit(const LoginSuccess());

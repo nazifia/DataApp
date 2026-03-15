@@ -8,9 +8,7 @@ import '../../authentication/state/auth_state.dart';
 import '../../../core/widgets/confirmation_dialog.dart';
 import '../../../core/widgets/pin_input_dialog.dart';
 import '../../../core/services/pin_service.dart';
-import '../../../core/services/theme_service.dart';
 import '../../../core/constants/theme.dart';
-import '../../../main.dart' show themeModeNotifier;
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -113,7 +111,7 @@ class _ProfilePageState extends State<ProfilePage>
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
@@ -162,7 +160,7 @@ class _ProfilePageState extends State<ProfilePage>
                                 width: 40,
                                 height: 4,
                                 decoration: BoxDecoration(
-                                  color: AppColors.divider,
+                                  color: Theme.of(ctx).colorScheme.outlineVariant,
                                   borderRadius: BorderRadius.circular(2),
                                 ),
                               ),
@@ -187,7 +185,6 @@ class _ProfilePageState extends State<ProfilePage>
                                   style: TextStyle(
                                     fontSize: 17,
                                     fontWeight: FontWeight.w800,
-                                    color: AppColors.textPrimary,
                                   ),
                                 ),
                               ],
@@ -212,7 +209,6 @@ class _ProfilePageState extends State<ProfilePage>
                                       obscureCurrent = !obscureCurrent),
                                 ),
                                 filled: true,
-                                fillColor: Colors.white,
                               ),
                               validator: (v) {
                                 if (v == null || v.isEmpty) {
@@ -240,7 +236,6 @@ class _ProfilePageState extends State<ProfilePage>
                                       () => obscureNew = !obscureNew),
                                 ),
                                 filled: true,
-                                fillColor: Colors.white,
                               ),
                               validator: (v) {
                                 if (v == null || v.length < 6) {
@@ -269,7 +264,6 @@ class _ProfilePageState extends State<ProfilePage>
                                       obscureConfirm = !obscureConfirm),
                                 ),
                                 filled: true,
-                                fillColor: Colors.white,
                               ),
                               validator: (v) {
                                 if (v != newPwCtrl.text) {
@@ -410,7 +404,7 @@ class _ProfilePageState extends State<ProfilePage>
   Future<void> _showImagePickerOptions() async {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -424,7 +418,7 @@ class _ProfilePageState extends State<ProfilePage>
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.divider,
+                  color: Theme.of(context).colorScheme.outlineVariant,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -434,7 +428,6 @@ class _ProfilePageState extends State<ProfilePage>
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 24),
@@ -504,7 +497,7 @@ class _ProfilePageState extends State<ProfilePage>
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: color ?? AppColors.textPrimary,
+              color: color ?? Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ],
@@ -543,7 +536,6 @@ class _ProfilePageState extends State<ProfilePage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('My Profile'),
         leading: IconButton(
@@ -783,8 +775,8 @@ class _ProfilePageState extends State<ProfilePage>
                                 prefixIcon: const Icon(
                                     Icons.person_outline_rounded),
                                 fillColor: _isEditing
-                                    ? Colors.white
-                                    : Colors.grey[50],
+                                    ? Theme.of(context).colorScheme.surface
+                                    : Theme.of(context).colorScheme.surfaceContainerHighest,
                                 filled: true,
                               ),
                               validator: (value) {
@@ -812,8 +804,8 @@ class _ProfilePageState extends State<ProfilePage>
                                 prefixIcon:
                                     const Icon(Icons.email_outlined),
                                 fillColor: _isEditing
-                                    ? Colors.white
-                                    : Colors.grey[50],
+                                    ? Theme.of(context).colorScheme.surface
+                                    : Theme.of(context).colorScheme.surfaceContainerHighest,
                                 filled: true,
                               ),
                               validator: (value) {
@@ -840,25 +832,25 @@ class _ProfilePageState extends State<ProfilePage>
                               decoration: InputDecoration(
                                 prefixIcon:
                                     const Icon(Icons.phone_outlined),
-                                fillColor: Colors.grey[50],
+                                fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                                 filled: true,
                                 disabledBorder: OutlineInputBorder(
                                   borderRadius:
                                       BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
-                                      color: AppColors.divider),
+                                  borderSide: BorderSide(
+                                      color: Theme.of(context).colorScheme.outlineVariant),
                                 ),
-                                suffixIcon: const Tooltip(
+                                suffixIcon: Tooltip(
                                   message:
                                       'Phone number cannot be changed',
                                   child: Icon(
                                       Icons.lock_outline_rounded,
                                       size: 18,
-                                      color: AppColors.textSecondary),
+                                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4)),
                                 ),
                               ),
-                              style: const TextStyle(
-                                  color: AppColors.textSecondary),
+                              style: TextStyle(
+                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
                             ),
                           ],
                         ),
@@ -963,7 +955,6 @@ class _ProfilePageState extends State<ProfilePage>
                                 style: TextStyle(
                                   fontWeight: FontWeight.w600,
                                   fontSize: 14,
-                                  color: AppColors.textPrimary,
                                 ),
                               ),
                               subtitle: const Text(
@@ -971,8 +962,7 @@ class _ProfilePageState extends State<ProfilePage>
                                 style: TextStyle(fontSize: 12),
                               ),
                               trailing: const Icon(
-                                  Icons.chevron_right_rounded,
-                                  color: AppColors.textSecondary),
+                                  Icons.chevron_right_rounded),
                               onTap: _showChangePasswordSheet,
                             ),
                             const Divider(height: 1),
@@ -1001,7 +991,6 @@ class _ProfilePageState extends State<ProfilePage>
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w600,
                                   fontSize: 14,
-                                  color: AppColors.textPrimary,
                                 ),
                               ),
                               subtitle: Text(
@@ -1035,75 +1024,10 @@ class _ProfilePageState extends State<ProfilePage>
                                       ),
                                     ),
                                   const SizedBox(width: 4),
-                                  const Icon(
-                                      Icons.chevron_right_rounded,
-                                      color: AppColors.textSecondary),
+                                  const Icon(Icons.chevron_right_rounded),
                                 ],
                               ),
                               onTap: _handleTransactionPin,
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // ── Appearance Card ────────────────────────────────
-                        _cardContainer(
-                          title: 'Appearance',
-                          children: [
-                            ValueListenableBuilder<ThemeMode>(
-                              valueListenable: themeModeNotifier,
-                              builder: (context, mode, _) {
-                                final isDark =
-                                    mode == ThemeMode.dark;
-                                return ListTile(
-                                  contentPadding: EdgeInsets.zero,
-                                  leading: Container(
-                                    width: 40,
-                                    height: 40,
-                                    decoration: BoxDecoration(
-                                      color: Colors.indigo
-                                          .withValues(alpha: 0.1),
-                                      borderRadius:
-                                          BorderRadius.circular(10),
-                                    ),
-                                    child: Icon(
-                                      isDark
-                                          ? Icons.dark_mode_rounded
-                                          : Icons.light_mode_rounded,
-                                      color: Colors.indigo,
-                                      size: 20,
-                                    ),
-                                  ),
-                                  title: const Text(
-                                    'Dark Mode',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 14,
-                                      color: AppColors.textPrimary,
-                                    ),
-                                  ),
-                                  subtitle: Text(
-                                    isDark
-                                        ? 'Dark theme is on'
-                                        : 'Light theme is on',
-                                    style: const TextStyle(
-                                        fontSize: 12),
-                                  ),
-                                  trailing: Switch.adaptive(
-                                    value: isDark,
-                                    activeColor: AppColors.primary,
-                                    onChanged: (value) async {
-                                      final newMode = value
-                                          ? ThemeMode.dark
-                                          : ThemeMode.light;
-                                      themeModeNotifier.value = newMode;
-                                      await ThemeService.saveThemeMode(
-                                          newMode);
-                                    },
-                                  ),
-                                );
-                              },
                             ),
                           ],
                         ),
@@ -1141,8 +1065,7 @@ class _ProfilePageState extends State<ProfilePage>
                                 style: TextStyle(fontSize: 12),
                               ),
                               trailing: const Icon(
-                                  Icons.chevron_right_rounded,
-                                  color: AppColors.textSecondary),
+                                  Icons.chevron_right_rounded),
                               onTap: () async {
                                 final confirmed =
                                     await ConfirmationDialog.show(
@@ -1186,29 +1109,33 @@ class _ProfilePageState extends State<ProfilePage>
     required String title,
     required List<Widget> children,
   }) {
+    final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.divider),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: cs.outlineVariant),
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 16,
+                  offset: const Offset(0, 4),
+                ),
+              ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color: cs.onSurface,
             ),
           ),
           const SizedBox(height: 16),
@@ -1221,10 +1148,10 @@ class _ProfilePageState extends State<ProfilePage>
   Widget _fieldLabel(String label) {
     return Text(
       label,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 13,
         fontWeight: FontWeight.w600,
-        color: AppColors.textSecondary,
+        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
       ),
     );
   }
