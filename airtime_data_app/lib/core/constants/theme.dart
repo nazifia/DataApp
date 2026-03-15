@@ -297,16 +297,5 @@ class AppTheme {
       backgroundColor: Color(0xFF1E293B),
       contentTextStyle: TextStyle(color: Color(0xFFE2E8F0)),
     ),
-    textTheme: const TextTheme(
-      bodyLarge: TextStyle(color: Color(0xFFE2E8F0)),
-      bodyMedium: TextStyle(color: Color(0xFFE2E8F0)),
-      bodySmall: TextStyle(color: Color(0xFF94A3B8)),
-      titleLarge: TextStyle(color: Color(0xFFE2E8F0), fontWeight: FontWeight.w700),
-      titleMedium: TextStyle(color: Color(0xFFE2E8F0), fontWeight: FontWeight.w600),
-      titleSmall: TextStyle(color: Color(0xFFCBD5E1), fontWeight: FontWeight.w600),
-      labelLarge: TextStyle(color: Color(0xFFE2E8F0)),
-      labelMedium: TextStyle(color: Color(0xFF94A3B8)),
-      labelSmall: TextStyle(color: Color(0xFF64748B)),
-    ),
   );
 }

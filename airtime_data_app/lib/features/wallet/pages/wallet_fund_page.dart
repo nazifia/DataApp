@@ -870,10 +870,24 @@ class _CardPaymentSheetState extends State<_CardPaymentSheet> {
 
 // ─── USSD Sheet ───────────────────────────────────────────────────────────
 
-class _UssdSheet extends StatelessWidget {
+class _UssdSheet extends StatefulWidget {
   final double amount;
 
   const _UssdSheet({required this.amount});
+
+  @override
+  State<_UssdSheet> createState() => _UssdSheetState();
+}
+
+class _UssdSheetState extends State<_UssdSheet> {
+  final _searchCtrl = TextEditingController();
+  String _query = '';
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
 
   static final _banks = [
     _BankUssd(name: 'GTBank', logo: Icons.account_balance_rounded,
@@ -914,7 +928,7 @@ class _UssdSheet extends StatelessWidget {
   }
 
   void _showUssdCode(BuildContext context, String bankName) {
-    final code = _ussdCode(bankName, amount.toInt());
+    final code = _ussdCode(bankName, widget.amount.toInt());
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -952,7 +966,7 @@ class _UssdSheet extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'Amount: ${CurrencyFormatter.formatNaira(amount)}',
+              'Amount: ${CurrencyFormatter.formatNaira(widget.amount)}',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -988,6 +1002,13 @@ class _UssdSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final filtered = _query.isEmpty
+        ? _banks
+        : _banks
+            .where((b) =>
+                b.name.toLowerCase().contains(_query.toLowerCase()))
+            .toList();
+
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
@@ -1019,72 +1040,112 @@ class _UssdSheet extends StatelessWidget {
                       color: Colors.purple, size: 22),
                 ),
                 const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Bank USSD Payment',
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w800,
-                        color: Theme.of(context).colorScheme.onSurface,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Bank USSD Payment',
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                       ),
-                    ),
-                    Text(
-                      'Amount: ${CurrencyFormatter.formatNaira(amount)}',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Colors.purple,
-                        fontWeight: FontWeight.w600,
+                      Text(
+                        'Amount: ${CurrencyFormatter.formatNaira(widget.amount)}',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Colors.purple,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Select your bank to get the USSD code',
-              style: TextStyle(
-                  fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
+            const SizedBox(height: 16),
+            // Search field
+            TextField(
+              controller: _searchCtrl,
+              onChanged: (v) => setState(() => _query = v),
+              decoration: InputDecoration(
+                hintText: 'Search bank...',
+                prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                suffixIcon: _query.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.close_rounded, size: 18),
+                        onPressed: () {
+                          _searchCtrl.clear();
+                          setState(() => _query = '');
+                        },
+                      )
+                    : null,
+                filled: true,
+                contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16, vertical: 10),
+                isDense: true,
+              ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 8),
             // Bank list
-            ..._banks.map((bank) {
-              final code = _ussdCode(bank.name, amount.toInt());
-              return ListTile(
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                leading: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: bank.color.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(bank.logo, color: bank.color, size: 22),
-                ),
-                title: Text(
-                  bank.name,
+            if (filtered.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: Text(
+                  'No bank found for "$_query"',
                   style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).colorScheme.onSurface,
+                    fontSize: 13,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.5),
                   ),
                 ),
-                subtitle: Text(
-                  code,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                    fontFamily: 'monospace',
+              )
+            else
+              ...filtered.map((bank) {
+                final code = _ussdCode(bank.name, widget.amount.toInt());
+                return ListTile(
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  leading: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: bank.color.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(bank.logo, color: bank.color, size: 22),
                   ),
-                ),
-                trailing: Icon(Icons.chevron_right_rounded,
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
-                onTap: () => _showUssdCode(context, bank.name),
-              );
-            }),
+                  title: Text(
+                    bank.name,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                  subtitle: Text(
+                    code,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.6),
+                      fontFamily: 'monospace',
+                    ),
+                  ),
+                  trailing: Icon(Icons.chevron_right_rounded,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.6)),
+                  onTap: () => _showUssdCode(context, bank.name),
+                );
+              }),
           ],
         ),
       ),
