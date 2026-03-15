@@ -7,10 +7,29 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models.user import User, UserRole
-from app.utils.admin_auth import create_admin_session_token, get_current_admin
+from app.utils.admin_auth import create_admin_session_token, get_current_admin, is_admin_role, has_minimum_role
 
 router = APIRouter(tags=["Admin Pages"])
 templates = Jinja2Templates(directory="templates")
+
+
+def _admin_context(admin: User, active_page: str) -> dict:
+    """Build common template context with admin info and permission flags."""
+    return {
+        "admin_name": admin.full_name or admin.phone_number,
+        "admin_role": admin.role.value,
+        "active_page": active_page,
+        "can_manage_users": has_minimum_role(admin, UserRole.admin),
+        "can_create_users": has_minimum_role(admin, UserRole.admin),
+        "can_manage_wallets": has_minimum_role(admin, UserRole.admin),
+        "can_view_wallets": has_minimum_role(admin, UserRole.moderator),
+        "can_manage_data_plans": has_minimum_role(admin, UserRole.admin),
+        "can_view_data_plans": has_minimum_role(admin, UserRole.moderator),
+        "can_view_settings": has_minimum_role(admin, UserRole.admin),
+        "can_toggle_dev_mode": has_minimum_role(admin, UserRole.super_admin),
+        "can_view_audit_log": has_minimum_role(admin, UserRole.admin),
+        "is_super_admin": has_minimum_role(admin, UserRole.super_admin),
+    }
 
 
 @router.get("/admin/login", response_class=HTMLResponse)
@@ -43,7 +62,7 @@ async def login_submit(
             status_code=401,
         )
 
-    if user.role != UserRole.admin:
+    if not is_admin_role(user.role):
         return templates.TemplateResponse(
             "admin/login.html",
             {"request": request, "error": "Access denied: admin role required"},
@@ -79,79 +98,69 @@ async def logout():
 
 @router.get("/admin/dashboard", response_class=HTMLResponse)
 async def dashboard_page(request: Request, admin: User = Depends(get_current_admin)):
-    return templates.TemplateResponse(
-        "admin/dashboard.html",
-        {"request": request, "admin_name": admin.full_name or admin.phone_number, "active_page": "dashboard"},
-    )
+    ctx = _admin_context(admin, "dashboard")
+    ctx["request"] = request
+    return templates.TemplateResponse("admin/dashboard.html", ctx)
 
 
 @router.get("/admin/users", response_class=HTMLResponse)
 async def users_page(request: Request, admin: User = Depends(get_current_admin)):
-    return templates.TemplateResponse(
-        "admin/users.html",
-        {"request": request, "admin_name": admin.full_name or admin.phone_number, "active_page": "users"},
-    )
+    ctx = _admin_context(admin, "users")
+    ctx["request"] = request
+    return templates.TemplateResponse("admin/users.html", ctx)
 
 
 @router.get("/admin/users/{user_id}", response_class=HTMLResponse)
 async def user_detail_page(request: Request, user_id: str, admin: User = Depends(get_current_admin)):
-    return templates.TemplateResponse(
-        "admin/user_detail.html",
-        {"request": request, "admin_name": admin.full_name or admin.phone_number, "active_page": "users"},
-    )
+    ctx = _admin_context(admin, "users")
+    ctx["request"] = request
+    return templates.TemplateResponse("admin/user_detail.html", ctx)
 
 
 @router.get("/admin/transactions", response_class=HTMLResponse)
 async def transactions_page(request: Request, admin: User = Depends(get_current_admin)):
-    return templates.TemplateResponse(
-        "admin/transactions.html",
-        {"request": request, "admin_name": admin.full_name or admin.phone_number, "active_page": "transactions"},
-    )
+    ctx = _admin_context(admin, "transactions")
+    ctx["request"] = request
+    return templates.TemplateResponse("admin/transactions.html", ctx)
 
 
 @router.get("/admin/transactions/{txn_id}", response_class=HTMLResponse)
 async def transaction_detail_page(request: Request, txn_id: str, admin: User = Depends(get_current_admin)):
-    return templates.TemplateResponse(
-        "admin/transaction_detail.html",
-        {"request": request, "admin_name": admin.full_name or admin.phone_number, "active_page": "transactions"},
-    )
+    ctx = _admin_context(admin, "transactions")
+    ctx["request"] = request
+    return templates.TemplateResponse("admin/transaction_detail.html", ctx)
 
 
 @router.get("/admin/wallets", response_class=HTMLResponse)
 async def wallets_page(request: Request, admin: User = Depends(get_current_admin)):
-    return templates.TemplateResponse(
-        "admin/wallets.html",
-        {"request": request, "admin_name": admin.full_name or admin.phone_number, "active_page": "wallets"},
-    )
+    ctx = _admin_context(admin, "wallets")
+    ctx["request"] = request
+    return templates.TemplateResponse("admin/wallets.html", ctx)
 
 
 @router.get("/admin/data-plans", response_class=HTMLResponse)
 async def data_plans_page(request: Request, admin: User = Depends(get_current_admin)):
-    return templates.TemplateResponse(
-        "admin/data_plans.html",
-        {"request": request, "admin_name": admin.full_name or admin.phone_number, "active_page": "data_plans"},
-    )
+    ctx = _admin_context(admin, "data_plans")
+    ctx["request"] = request
+    return templates.TemplateResponse("admin/data_plans.html", ctx)
 
 
 @router.get("/admin/analytics", response_class=HTMLResponse)
 async def analytics_page(request: Request, admin: User = Depends(get_current_admin)):
-    return templates.TemplateResponse(
-        "admin/analytics.html",
-        {"request": request, "admin_name": admin.full_name or admin.phone_number, "active_page": "analytics"},
-    )
+    ctx = _admin_context(admin, "analytics")
+    ctx["request"] = request
+    return templates.TemplateResponse("admin/analytics.html", ctx)
 
 
 @router.get("/admin/settings", response_class=HTMLResponse)
 async def settings_page(request: Request, admin: User = Depends(get_current_admin)):
-    return templates.TemplateResponse(
-        "admin/settings.html",
-        {"request": request, "admin_name": admin.full_name or admin.phone_number, "active_page": "settings"},
-    )
+    ctx = _admin_context(admin, "settings")
+    ctx["request"] = request
+    return templates.TemplateResponse("admin/settings.html", ctx)
 
 
 @router.get("/admin/audit-log", response_class=HTMLResponse)
 async def audit_log_page(request: Request, admin: User = Depends(get_current_admin)):
-    return templates.TemplateResponse(
-        "admin/audit_log.html",
-        {"request": request, "admin_name": admin.full_name or admin.phone_number, "active_page": "audit_log"},
-    )
+    ctx = _admin_context(admin, "audit_log")
+    ctx["request"] = request
+    return templates.TemplateResponse("admin/audit_log.html", ctx)

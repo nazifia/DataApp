@@ -7,10 +7,10 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session, joinedload
 
 from app.database import get_db
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.models.audit_log import AdminAuditLog
 from app.schemas.admin import AdminAuditLogItem, PaginatedResponse
-from app.utils.admin_auth import get_current_admin
+from app.utils.admin_auth import get_current_admin, require_role
 
 router = APIRouter(tags=["Admin Audit"])
 
@@ -24,7 +24,7 @@ async def list_audit_logs(
     date_from: Optional[str] = None,
     date_to: Optional[str] = None,
     db: Session = Depends(get_db),
-    admin: User = Depends(get_current_admin),
+    admin: User = Depends(require_role(UserRole.admin)),
 ):
     """List admin audit logs with pagination and filters."""
     query = db.query(AdminAuditLog).options(joinedload(AdminAuditLog.admin_id))

@@ -2,7 +2,9 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Generic, List, Optional, TypeVar
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
+from app.models.user import UserRole
 
 T = TypeVar("T")
 
@@ -136,6 +138,32 @@ class AdminAuditLogItem(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# --- Admin User Creation ---
+class AdminCreateUserRequest(BaseModel):
+    phone_number: str = Field(..., min_length=10, max_length=15, description="User phone number")
+    full_name: Optional[str] = Field(None, max_length=100, description="User full name")
+    password: str = Field(..., min_length=6, description="User password (min 6 chars)")
+    role: str = Field(default="user", description="User role")
+    is_active: bool = Field(default=True, description="Whether user is active")
+
+    @field_validator("role")
+    @classmethod
+    def validate_role(cls, v: str) -> str:
+        valid_roles = [r.value for r in UserRole]
+        if v not in valid_roles:
+            raise ValueError(f"Invalid role. Must be one of: {', '.join(valid_roles)}")
+        return v
+
+
+class AdminCreateUserResponse(BaseModel):
+    id: str
+    phone_number: str
+    full_name: Optional[str]
+    role: str
+    is_active: bool
+    message: str
 
 
 # --- Pagination ---

@@ -12,7 +12,10 @@ from app.database import Base
 
 class UserRole(str, enum.Enum):
     user = "user"
+    support = "support"
+    moderator = "moderator"
     admin = "admin"
+    super_admin = "super_admin"
 
 
 class GUID(TypeDecorator):

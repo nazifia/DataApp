@@ -9,11 +9,11 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session, joinedload
 
 from app.database import get_db
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.models.wallet import Wallet
 from app.models.transaction import Transaction, TransactionType, TransactionStatus
 from app.schemas.admin import AdminWalletItem, AdminWalletCreditRequest, AdminWalletDebitRequest, PaginatedResponse
-from app.utils.admin_auth import get_current_admin, log_admin_action
+from app.utils.admin_auth import get_current_admin, log_admin_action, require_role
 
 router = APIRouter(tags=["Admin Wallets"])
 
@@ -26,7 +26,7 @@ async def list_wallets(
     min_balance: Optional[float] = None,
     max_balance: Optional[float] = None,
     db: Session = Depends(get_db),
-    admin: User = Depends(get_current_admin),
+    admin: User = Depends(require_role(UserRole.moderator)),
 ):
     """List wallets with pagination and filters."""
     query = db.query(Wallet).options(joinedload(Wallet.user))
@@ -80,7 +80,7 @@ async def credit_wallet(
     body: AdminWalletCreditRequest,
     request: Request,
     db: Session = Depends(get_db),
-    admin: User = Depends(get_current_admin),
+    admin: User = Depends(require_role(UserRole.admin)),
 ):
     """Credit a user's wallet."""
     user = db.query(User).filter(User.id == user_id).first()
@@ -125,7 +125,7 @@ async def debit_wallet(
     body: AdminWalletDebitRequest,
     request: Request,
     db: Session = Depends(get_db),
-    admin: User = Depends(get_current_admin),
+    admin: User = Depends(require_role(UserRole.admin)),
 ):
     """Debit a user's wallet."""
     user = db.query(User).filter(User.id == user_id).first()

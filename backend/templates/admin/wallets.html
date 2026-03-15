@@ -134,8 +134,12 @@ async function loadWallets(page) {
                 <td class="px-6 py-3 text-sm text-gray-500">${formatDateTime(wallet.updated_at)}</td>
                 <td class="px-6 py-3">
                     <div class="flex gap-2">
+                        {% if can_manage_wallets %}
                         <button onclick="openCreditModal('${wallet.user_id}', '${wallet.user_phone}')" class="text-green-600 hover:text-green-800 text-sm">Credit</button>
                         <button onclick="openDebitModal('${wallet.user_id}', '${wallet.user_phone}')" class="text-red-600 hover:text-red-800 text-sm">Debit</button>
+                        {% else %}
+                        <span class="text-gray-400 text-sm">View only</span>
+                        {% endif %}
                     </div>
                 </td>
             </tr>

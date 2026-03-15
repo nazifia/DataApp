@@ -26,6 +26,11 @@
         <a href="/api/v1/admin/export/users.csv" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
             <i data-lucide="download" class="w-4 h-4 inline"></i> Export CSV
         </a>
+        {% if can_create_users %}
+        <button onclick="openCreateUserModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+            <i data-lucide="user-plus" class="w-4 h-4 inline"></i> Create User
+        </button>
+        {% endif %}
     </div>
 </div>
 
@@ -53,11 +58,70 @@
         <div id="pagination"></div>
     </div>
 </div>
+
+<!-- Create User Modal -->
+<div id="create-user-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop">
+    <div class="bg-white rounded-xl shadow-xl p-6 w-full max-w-md mx-4">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Create New User</h3>
+        <form onsubmit="submitCreateUser(event)">
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                <input type="tel" id="create-user-phone" required placeholder="e.g., 08012345678"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none">
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Full Name (Optional)</label>
+                <input type="text" id="create-user-name" placeholder="e.g., John Doe"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none">
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <input type="password" id="create-user-password" required minlength="6" placeholder="Min 6 characters"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none">
+            </div>
+            {% if is_super_admin %}
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                <select id="create-user-role" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none">
+                    <option value="user">User</option>
+                    <option value="support">Support</option>
+                    <option value="moderator">Moderator</option>
+                    <option value="admin">Admin</option>
+                    <option value="super_admin">Super Admin</option>
+                </select>
+            </div>
+            {% else %}
+            <input type="hidden" id="create-user-role" value="user">
+            {% endif %}
+            <div class="mb-4">
+                <label class="flex items-center gap-2">
+                    <input type="checkbox" id="create-user-active" checked class="rounded border-gray-300">
+                    <span class="text-sm text-gray-700">Active</span>
+                </label>
+            </div>
+            <div class="flex gap-3">
+                <button type="button" onclick="closeCreateUserModal()" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Cancel</button>
+                <button type="submit" class="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Create User</button>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
 <script>
 let currentPage = 1;
+
+function getRoleBadgeClass(role) {
+    const classes = {
+        'super_admin': 'bg-purple-100 text-purple-800',
+        'admin': 'bg-blue-100 text-blue-800',
+        'moderator': 'bg-green-100 text-green-800',
+        'support': 'bg-yellow-100 text-yellow-800',
+        'user': 'bg-gray-100 text-gray-800',
+    };
+    return classes[role] || 'bg-gray-100 text-gray-800';
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     loadUsers(1);
@@ -83,7 +147,7 @@ async function loadUsers(page) {
                 <td class="px-6 py-3 text-sm text-gray-900">${user.phone_number}</td>
                 <td class="px-6 py-3 text-sm text-gray-600">${user.full_name || '-'}</td>
                 <td class="px-6 py-3 text-sm">
-                    <span class="px-2 py-1 text-xs font-medium rounded-full ${user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'}">${user.role}</span>
+                    <span class="px-2 py-1 text-xs font-medium rounded-full ${getRoleBadgeClass(user.role)}">${user.role}</span>
                 </td>
                 <td class="px-6 py-3 text-sm font-medium text-gray-900">${formatCurrency(user.wallet_balance || 0)}</td>
                 <td class="px-6 py-3">${statusBadge(user.is_active ? 'active' : 'inactive')}</td>
@@ -114,6 +178,49 @@ async function toggleUserStatus(userId, newStatus) {
         loadUsers(currentPage);
     } catch (error) {
         showToast(`Failed to ${action} user: ${error.message}`, 'error');
+    }
+}
+
+// Create User Modal
+function openCreateUserModal() {
+    document.getElementById('create-user-phone').value = '';
+    document.getElementById('create-user-name').value = '';
+    document.getElementById('create-user-password').value = '';
+    document.getElementById('create-user-role').value = 'user';
+    document.getElementById('create-user-active').checked = true;
+    document.getElementById('create-user-modal').classList.remove('hidden');
+    document.getElementById('create-user-modal').classList.add('flex');
+}
+
+function closeCreateUserModal() {
+    document.getElementById('create-user-modal').classList.add('hidden');
+    document.getElementById('create-user-modal').classList.remove('flex');
+}
+
+async function submitCreateUser(e) {
+    e.preventDefault();
+    const phone = document.getElementById('create-user-phone').value;
+    const name = document.getElementById('create-user-name').value;
+    const password = document.getElementById('create-user-password').value;
+    const role = document.getElementById('create-user-role').value;
+    const isActive = document.getElementById('create-user-active').checked;
+
+    try {
+        const result = await fetchJSON('/api/v1/admin/users/users', {
+            method: 'POST',
+            body: JSON.stringify({
+                phone_number: phone,
+                full_name: name || null,
+                password: password,
+                role: role,
+                is_active: isActive,
+            }),
+        });
+        showToast(result.message, 'success');
+        closeCreateUserModal();
+        loadUsers(currentPage);
+    } catch (error) {
+        showToast(`Failed to create user: ${error.message}`, 'error');
     }
 }
 </script>

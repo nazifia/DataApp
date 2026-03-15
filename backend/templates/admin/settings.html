@@ -20,9 +20,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <p class="text-sm text-gray-500">Development Mode</p>
                     <div class="flex items-center justify-between mt-2">
                         <p class="text-lg font-medium text-gray-900">${settings.dev_mode ? 'Enabled' : 'Disabled'}</p>
+                        {% if can_toggle_dev_mode %}
                         <button onclick="toggleDevMode()" class="px-3 py-1 text-sm ${settings.dev_mode ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-green-100 text-green-700 hover:bg-green-200'} rounded-lg">
                             ${settings.dev_mode ? 'Disable' : 'Enable'}
                         </button>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="p-4 bg-gray-50 rounded-lg">

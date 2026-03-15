@@ -36,26 +36,34 @@
                 <i data-lucide="arrow-left-right" class="w-5 h-5"></i>
                 <span>Transactions</span>
             </a>
+            {% if can_view_wallets %}
             <a href="/admin/wallets" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800 {% if active_page == 'wallets' %}bg-slate-800{% endif %}">
                 <i data-lucide="wallet" class="w-5 h-5"></i>
                 <span>Wallets</span>
             </a>
+            {% endif %}
+            {% if can_view_data_plans %}
             <a href="/admin/data-plans" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800 {% if active_page == 'data_plans' %}bg-slate-800{% endif %}">
                 <i data-lucide="database" class="w-5 h-5"></i>
                 <span>Data Plans</span>
             </a>
+            {% endif %}
             <a href="/admin/analytics" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800 {% if active_page == 'analytics' %}bg-slate-800{% endif %}">
                 <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
                 <span>Analytics</span>
             </a>
+            {% if can_view_settings %}
             <a href="/admin/settings" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800 {% if active_page == 'settings' %}bg-slate-800{% endif %}">
                 <i data-lucide="settings" class="w-5 h-5"></i>
                 <span>Settings</span>
             </a>
+            {% endif %}
+            {% if can_view_audit_log %}
             <a href="/admin/audit-log" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800 {% if active_page == 'audit_log' %}bg-slate-800{% endif %}">
                 <i data-lucide="scroll-text" class="w-5 h-5"></i>
                 <span>Audit Log</span>
             </a>
+            {% endif %}
         </nav>
     </aside>
 
@@ -71,7 +79,17 @@
                     <h2 class="text-lg font-semibold text-gray-800">{% block page_title %}Dashboard{% endblock %}</h2>
                 </div>
                 <div class="flex items-center gap-4">
-                    <span class="text-sm text-gray-600">{{ admin_name|default('Admin') }}</span>
+                    <div class="text-right">
+                        <span class="text-sm text-gray-600 block">{{ admin_name|default('Admin') }}</span>
+                        <span class="text-xs px-2 py-0.5 rounded-full
+                            {% if admin_role == 'super_admin' %}bg-purple-100 text-purple-800
+                            {% elif admin_role == 'admin' %}bg-blue-100 text-blue-800
+                            {% elif admin_role == 'moderator' %}bg-green-100 text-green-800
+                            {% elif admin_role == 'support' %}bg-yellow-100 text-yellow-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ admin_role|default('admin') }}
+                        </span>
+                    </div>
                     <a href="/admin/logout" class="flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg">
                         <i data-lucide="log-out" class="w-4 h-4"></i>
                         Logout

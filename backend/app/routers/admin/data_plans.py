@@ -2,10 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.schemas.admin import AdminDataPlanItem, AdminDataPlanCreateRequest
 from app.services.data_service import MOCK_DATA_PLANS
-from app.utils.admin_auth import get_current_admin
+from app.utils.admin_auth import get_current_admin, require_role
 
 router = APIRouter(tags=["Admin Data Plans"])
 
@@ -34,7 +34,7 @@ def _init_plans():
 @router.get("/data-plans")
 async def list_data_plans(
     db: Session = Depends(get_db),
-    admin: User = Depends(get_current_admin),
+    admin: User = Depends(require_role(UserRole.moderator)),
 ):
     """Get all data plans grouped by network."""
     _init_plans()
@@ -45,7 +45,7 @@ async def list_data_plans(
 async def create_or_update_plan(
     body: AdminDataPlanCreateRequest,
     db: Session = Depends(get_db),
-    admin: User = Depends(get_current_admin),
+    admin: User = Depends(require_role(UserRole.admin)),
 ):
     """Create or update a data plan."""
     _init_plans()
@@ -83,7 +83,7 @@ async def create_or_update_plan(
 async def delete_plan(
     plan_id: str,
     db: Session = Depends(get_db),
-    admin: User = Depends(get_current_admin),
+    admin: User = Depends(require_role(UserRole.admin)),
 ):
     """Delete a data plan."""
     _init_plans()

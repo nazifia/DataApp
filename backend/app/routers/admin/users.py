@@ -1,16 +1,24 @@
 import math
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+import bcrypt as bcrypt_lib
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy import or_
 from sqlalchemy.orm import Session, joinedload
 
 from app.database import get_db
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.models.wallet import Wallet
 from app.models.transaction import Transaction, TransactionStatus
-from app.schemas.admin import AdminUserListItem, AdminUserDetail, AdminTransactionItem, PaginatedResponse
-from app.utils.admin_auth import get_current_admin, log_admin_action
+from app.schemas.admin import (
+    AdminUserListItem,
+    AdminUserDetail,
+    AdminTransactionItem,
+    AdminCreateUserRequest,
+    AdminCreateUserResponse,
+    PaginatedResponse,
+)
+from app.utils.admin_auth import get_current_admin, log_admin_action, require_role, has_minimum_role
 
 router = APIRouter(tags=["Admin Users"])
 
@@ -70,6 +78,74 @@ async def list_users(
         page=page,
         page_size=page_size,
         total_pages=math.ceil(total / page_size) if total > 0 else 1,
+    )
+
+
+@router.post("/users", response_model=AdminCreateUserResponse)
+async def create_user(
+    body: AdminCreateUserRequest,
+    request: Request,
+    db: Session = Depends(get_db),
+    admin: User = Depends(get_current_admin),
+):
+    """Create a new user with role specification."""
+    target_role = UserRole(body.role)
+
+    # Permission checks
+    # super_admin can assign any role
+    if has_minimum_role(admin, UserRole.super_admin):
+        pass  # Allowed
+    # admin can only create user role
+    elif has_minimum_role(admin, UserRole.admin):
+        if target_role != UserRole.user:
+            raise HTTPException(
+                status_code=403,
+                detail="Admins can only create users with the 'user' role",
+            )
+    # moderator/support are blocked
+    else:
+        raise HTTPException(
+            status_code=403,
+            detail="Access denied: insufficient permissions to create users",
+        )
+
+    # Check if phone number already exists
+    existing = db.query(User).filter(User.phone_number == body.phone_number).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Phone number already registered")
+
+    # Create user
+    hashed_password = bcrypt_lib.hashpw(body.password.encode("utf-8"), bcrypt_lib.gensalt()).decode("utf-8")
+    new_user = User(
+        phone_number=body.phone_number,
+        full_name=body.full_name,
+        password_hash=hashed_password,
+        is_active=body.is_active,
+        role=target_role,
+    )
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    # Audit log
+    client_ip = request.client.host if request.client else None
+    log_admin_action(
+        db,
+        admin_id=admin.id,
+        action="create_user",
+        target_type="user",
+        target_id=str(new_user.id),
+        details=f"Created user {body.phone_number} with role {target_role.value}",
+        ip=client_ip,
+    )
+
+    return AdminCreateUserResponse(
+        id=str(new_user.id),
+        phone_number=new_user.phone_number,
+        full_name=new_user.full_name,
+        role=new_user.role.value,
+        is_active=new_user.is_active,
+        message=f"User created successfully with role {target_role.value}",
     )
 
 

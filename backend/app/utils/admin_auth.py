@@ -12,6 +12,50 @@ from app.models.user import User, UserRole
 from app.models.audit_log import AdminAuditLog
 
 
+# Role hierarchy: maps roles to numeric permission levels
+ROLE_HIERARCHY = {
+    UserRole.super_admin: 4,
+    UserRole.admin: 3,
+    UserRole.moderator: 2,
+    UserRole.support: 1,
+    UserRole.user: 0,
+}
+
+
+def is_admin_role(role: UserRole) -> bool:
+    """Check if a role is any admin-tier role (support, moderator, admin, super_admin)."""
+    return role in ROLE_HIERARCHY and ROLE_HIERARCHY[role] >= 1
+
+
+def has_minimum_role(user: User, minimum_role: UserRole) -> bool:
+    """Check if a user has at least the specified role level."""
+    user_level = ROLE_HIERARCHY.get(user.role, 0)
+    required_level = ROLE_HIERARCHY.get(minimum_role, 0)
+    return user_level >= required_level
+
+
+def require_role(minimum_role: UserRole):
+    """
+    FastAPI dependency factory that enforces a minimum role level.
+    Returns a dependency function that checks the current admin's role.
+    """
+    async def role_checker(
+        request: Request,
+        db: Session = Depends(get_db),
+    ) -> User:
+        # First get the admin user using the standard auth flow
+        admin = await get_current_admin(request, db)
+
+        if not has_minimum_role(admin, minimum_role):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Access denied: {minimum_role.value} role or higher required",
+            )
+        return admin
+
+    return role_checker
+
+
 def create_admin_session_token(user_id: str) -> str:
     """Create a JWT token for admin session with 8-hour expiry."""
     expire = datetime.utcnow() + timedelta(hours=8)
@@ -90,7 +134,7 @@ async def get_current_admin(
             detail="Admin account is inactive",
         )
 
-    if user.role != UserRole.admin:
+    if not is_admin_role(user.role):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Access denied: admin role required",

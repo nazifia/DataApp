@@ -3,9 +3,9 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.database import get_db
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.schemas.admin import AdminSettingsResponse
-from app.utils.admin_auth import get_current_admin
+from app.utils.admin_auth import get_current_admin, require_role
 
 router = APIRouter(tags=["Admin Settings"])
 
@@ -13,7 +13,7 @@ router = APIRouter(tags=["Admin Settings"])
 @router.get("/settings", response_model=AdminSettingsResponse)
 async def get_settings(
     db: Session = Depends(get_db),
-    admin: User = Depends(get_current_admin),
+    admin: User = Depends(require_role(UserRole.admin)),
 ):
     """Get system configuration settings."""
     db_type = "sqlite" if settings.database_url.startswith("sqlite") else "postgresql"
@@ -30,7 +30,7 @@ async def get_settings(
 @router.put("/settings/dev-mode")
 async def toggle_dev_mode(
     db: Session = Depends(get_db),
-    admin: User = Depends(get_current_admin),
+    admin: User = Depends(require_role(UserRole.super_admin)),
 ):
     """Toggle development mode (note: requires restart to fully take effect)."""
     # In a real implementation, this would update a config file or database setting

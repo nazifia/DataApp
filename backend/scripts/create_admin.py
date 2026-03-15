@@ -26,23 +26,26 @@ def hash_password(password: str) -> str:
     return bcrypt_lib.hashpw(password.encode('utf-8'), bcrypt_lib.gensalt()).decode('utf-8')
 
 
-def create_admin(phone: str, password: str, name: str = "Admin"):
-    """Create an admin user or promote an existing user to admin."""
+def create_admin(phone: str, password: str, name: str = "Admin", role: str = "admin"):
+    """Create an admin user or promote an existing user to the specified role."""
     db = SessionLocal()
     try:
+        # Validate role
+        target_role = UserRole(role)
+
         # Check if user already exists
         user = db.query(User).filter(User.phone_number == phone).first()
 
         if user:
-            # Promote existing user to admin
-            user.role = UserRole.admin
+            # Promote existing user to specified role
+            user.role = target_role
             if password:
                 user.password_hash = hash_password(password)
             if name:
                 user.full_name = name
             db.commit()
             db.refresh(user)
-            print(f"SUCCESS: User {phone} promoted to admin role.")
+            print(f"SUCCESS: User {phone} promoted to {target_role.value} role.")
             print(f"  User ID: {user.id}")
             print(f"  Name: {user.full_name}")
             print(f"  Role: {user.role}")
@@ -55,7 +58,7 @@ def create_admin(phone: str, password: str, name: str = "Admin"):
             full_name=name,
             password_hash=hashed_password,
             is_active=True,
-            role=UserRole.admin,
+            role=target_role,
         )
         db.add(new_admin)
         db.commit()
@@ -68,6 +71,10 @@ def create_admin(phone: str, password: str, name: str = "Admin"):
         print(f"  Role: {new_admin.role}")
         return new_admin
 
+    except ValueError as e:
+        db.rollback()
+        print(f"ERROR: Invalid role '{role}'. Must be one of: {', '.join([r.value for r in UserRole])}")
+        sys.exit(1)
     except Exception as e:
         db.rollback()
         print(f"ERROR: Failed to create admin: {e}")
@@ -81,9 +88,15 @@ def main():
     parser.add_argument("--phone", required=True, help="Phone number for the admin user (e.g., 08012345678)")
     parser.add_argument("--password", required=True, help="Password for the admin user")
     parser.add_argument("--name", default="Admin", help="Full name for the admin user (default: Admin)")
+    parser.add_argument(
+        "--role",
+        default="admin",
+        choices=["super_admin", "admin", "moderator", "support"],
+        help="Role for the admin user (default: admin)",
+    )
 
     args = parser.parse_args()
-    create_admin(args.phone, args.password, args.name)
+    create_admin(args.phone, args.password, args.name, args.role)
 
 
 if __name__ == "__main__":
