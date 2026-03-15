@@ -1,0 +1,59 @@
+{% extends "admin/base.html" %}
+{% block title %}Settings{% endblock %}
+{% block page_title %}Settings{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+    <h3 class="text-lg font-semibold text-gray-900 mb-6">System Configuration</h3>
+    <div id="settings-content" class="space-y-4">Loading...</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const settings = await fetchJSON('/api/v1/admin/settings/settings');
+        document.getElementById('settings-content').innerHTML = `
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="p-4 bg-gray-50 rounded-lg">
+                    <p class="text-sm text-gray-500">Development Mode</p>
+                    <div class="flex items-center justify-between mt-2">
+                        <p class="text-lg font-medium text-gray-900">${settings.dev_mode ? 'Enabled' : 'Disabled'}</p>
+                        <button onclick="toggleDevMode()" class="px-3 py-1 text-sm ${settings.dev_mode ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-green-100 text-green-700 hover:bg-green-200'} rounded-lg">
+                            ${settings.dev_mode ? 'Disable' : 'Enable'}
+                        </button>
+                    </div>
+                </div>
+                <div class="p-4 bg-gray-50 rounded-lg">
+                    <p class="text-sm text-gray-500">Database Type</p>
+                    <p class="text-lg font-medium text-gray-900 capitalize mt-2">${settings.database_type}</p>
+                </div>
+                <div class="p-4 bg-gray-50 rounded-lg">
+                    <p class="text-sm text-gray-500">SMS Provider</p>
+                    <p class="text-lg font-medium text-gray-900 capitalize mt-2">${settings.sms_provider}</p>
+                </div>
+                <div class="p-4 bg-gray-50 rounded-lg">
+                    <p class="text-sm text-gray-500">VTPass Configured</p>
+                    <p class="text-lg font-medium mt-2 ${settings.vtpass_configured ? 'text-green-600' : 'text-red-600'}">
+                        ${settings.vtpass_configured ? 'Yes' : 'No'}
+                    </p>
+                </div>
+            </div>
+        `;
+    } catch (error) {
+        showToast('Failed to load settings', 'error');
+    }
+});
+
+async function toggleDevMode() {
+    try {
+        await fetchJSON('/api/v1/admin/settings/settings/dev-mode', { method: 'PUT' });
+        showToast('Dev mode toggled', 'success');
+        location.reload();
+    } catch (error) {
+        showToast(`Failed to toggle dev mode: ${error.message}`, 'error');
+    }
+}
+</script>
+{% endblock %}

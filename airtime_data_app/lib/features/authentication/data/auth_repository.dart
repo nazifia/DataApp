@@ -250,6 +250,7 @@ class AuthRepository {
     final response = await _apiClient.dio.put(
       '/user/profile/picture',
       data: formData,
+      options: Options(contentType: 'multipart/form-data'),
     );
     return Map<String, dynamic>.from(response.data as Map);
   }

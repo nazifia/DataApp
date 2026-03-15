@@ -73,7 +73,12 @@ class OtpFailure extends AuthState {
 }
 
 class OtpVerified extends AuthState {
-  const OtpVerified();
+  final bool isNewUser;
+
+  const OtpVerified({this.isNewUser = true});
+
+  @override
+  List<Object> get props => [isNewUser];
 }
 
 class OtpVerificationFailed extends AuthState {

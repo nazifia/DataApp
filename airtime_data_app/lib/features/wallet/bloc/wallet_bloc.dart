@@ -12,6 +12,7 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
         super(const WalletInitial()) {
     on<LoadWalletEvent>(_onLoadWallet);
     on<FundWalletEvent>(_onFundWallet);
+    on<LoadBankDetailsEvent>(_onLoadBankDetails);
   }
 
   Future<void> _onLoadWallet(
@@ -22,6 +23,22 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
       emit(WalletSuccess((response['balance'] as num).toDouble()));
     } catch (e) {
       emit(WalletFailure('Failed to load wallet: $e'));
+    }
+  }
+
+  Future<void> _onLoadBankDetails(
+      LoadBankDetailsEvent event, Emitter<WalletState> emit) async {
+    emit(const WalletLoading());
+    try {
+      final data = await _walletRepository.getBankTransferDetails();
+      emit(BankDetailsLoaded(
+        bankName: data['bank_name'] as String,
+        accountNumber: data['account_number'] as String,
+        accountName: data['account_name'] as String,
+        note: data['note'] as String,
+      ));
+    } catch (e) {
+      emit(WalletFailure('Failed to load bank details: $e'));
     }
   }
 

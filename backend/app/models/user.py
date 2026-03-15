@@ -1,12 +1,18 @@
 import uuid
+import enum
 from datetime import datetime
 
-from sqlalchemy import Boolean, Column, DateTime, String
+from sqlalchemy import Boolean, Column, DateTime, Enum, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import TypeDecorator, CHAR
 import sqlalchemy as sa
 
 from app.database import Base
+
+
+class UserRole(str, enum.Enum):
+    user = "user"
+    admin = "admin"
 
 
 class GUID(TypeDecorator):
@@ -41,7 +47,9 @@ class User(Base):
     full_name = Column(String, nullable=True)
     password_hash = Column(String, nullable=True)
     device_id = Column(String, nullable=True)
+    profile_picture_url = Column(String, nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
+    role = Column(Enum(UserRole), default=UserRole.user, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 

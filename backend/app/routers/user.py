@@ -1,6 +1,8 @@
 import logging
+import os
+import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
@@ -121,3 +123,50 @@ def change_password(
     logger.info("Password changed for user %s", current_user.id)
 
     return ChangePasswordResponse(message="Password changed successfully.")
+
+
+UPLOAD_DIR = "static/profile_pictures"
+ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
+MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 MB
+
+
+@router.put("/profile/picture", response_model=UserProfileResponse, status_code=status.HTTP_200_OK)
+async def upload_profile_picture(
+    profile_picture: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Upload or replace the authenticated user's profile picture."""
+    ext = os.path.splitext(profile_picture.filename or "")[1].lower()
+    if ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unsupported file type. Allowed: {', '.join(ALLOWED_EXTENSIONS)}",
+        )
+
+    contents = await profile_picture.read()
+    if len(contents) > MAX_FILE_SIZE:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail="File too large. Maximum size is 5 MB.",
+        )
+
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+    # Delete old picture file if it exists
+    if current_user.profile_picture_url:
+        old_path = current_user.profile_picture_url.lstrip("/")
+        if os.path.isfile(old_path):
+            os.remove(old_path)
+
+    filename = f"{current_user.id}_{uuid.uuid4().hex}{ext}"
+    file_path = os.path.join(UPLOAD_DIR, filename)
+    with open(file_path, "wb") as f:
+        f.write(contents)
+
+    current_user.profile_picture_url = f"/{file_path.replace(os.sep, '/')}"
+    db.commit()
+    db.refresh(current_user)
+    logger.info("Profile picture updated for user %s", current_user.id)
+
+    return UserProfileResponse(user=UserResponse.model_validate(current_user))

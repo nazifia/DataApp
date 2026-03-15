@@ -77,8 +77,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       VerifyOtpEvent event, Emitter<AuthState> emit) async {
     emit(const OtpLoading());
     try {
-      await _authRepository.verifyOtp(event.phoneNumber, event.otp);
-      emit(const OtpVerified());
+      final data = await _authRepository.verifyOtp(event.phoneNumber, event.otp);
+      final isNewUser = data['is_new_user'] as bool? ?? true;
+      emit(OtpVerified(isNewUser: isNewUser));
     } catch (e) {
       emit(OtpVerificationFailed('Invalid OTP: $e'));
     }
@@ -94,7 +95,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         userId: response['user']['id'].toString(),
         phoneNumber: Validators.formatNigerianPhone(event.phoneNumber),
         fullName: event.fullName,
-        profilePicture: response['user']['profile_picture']?.toString(),
+        profilePicture: response['user']['profile_picture_url']?.toString(),
       ));
     } catch (e) {
       emit(AuthFailure('Failed to create profile: $e'));

@@ -9,7 +9,7 @@ from app.database import get_db
 from app.models.transaction import Transaction, TransactionStatus, TransactionType
 from app.models.user import User
 from app.models.wallet import Wallet
-from app.schemas.wallet import FundWalletRequest, FundWalletResponse, WalletBalanceResponse
+from app.schemas.wallet import BankTransferDetailsResponse, FundWalletRequest, FundWalletResponse, WalletBalanceResponse
 from app.utils.auth import get_current_user
 
 logger = logging.getLogger(__name__)
@@ -32,6 +32,30 @@ def _generate_reference() -> str:
     timestamp = int(time.time() * 1000)
     suffix = random.randint(1000, 9999)
     return f"ADP-{timestamp}-{suffix}"
+
+
+@router.get("/bank-details", response_model=BankTransferDetailsResponse, status_code=status.HTTP_200_OK)
+def get_bank_transfer_details(
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Return the virtual bank account details the user should transfer funds to.
+    The account number is derived deterministically from the user's UUID so it is
+    always the same for the same user without requiring extra DB storage.
+    """
+    # Derive a stable 10-digit account number from the user UUID
+    uid_digits = ''.join(filter(str.isdigit, str(current_user.id).replace('-', '')))
+    account_number = uid_digits[:10].ljust(10, '0')
+
+    full_name = current_user.full_name or "ADP User"
+    account_name = f"ADP/{full_name.split()[0].upper()}"
+
+    return BankTransferDetailsResponse(
+        bank_name="Providus Bank",
+        account_number=account_number,
+        account_name=account_name,
+        note="Transfer the exact amount shown. Your wallet will be credited automatically once the transfer is confirmed.",
+    )
 
 
 @router.get("/balance", response_model=WalletBalanceResponse, status_code=status.HTTP_200_OK)

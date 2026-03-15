@@ -1,0 +1,91 @@
+{% extends "admin/base.html" %}
+{% block title %}Audit Log{% endblock %}
+{% block page_title %}Audit Log{% endblock %}
+
+{% block content %}
+<!-- Filters -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
+    <div class="flex flex-wrap gap-4 items-end">
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Action</label>
+            <input type="text" id="action-filter" placeholder="e.g., wallet_credit"
+                   class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">From</label>
+            <input type="date" id="date-from" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">To</label>
+            <input type="date" id="date-to" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+        </div>
+        <button onclick="loadLogs(1)" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            <i data-lucide="search" class="w-4 h-4 inline"></i> Filter
+        </button>
+    </div>
+</div>
+
+<!-- Audit Log Table -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-100">
+    <div class="overflow-x-auto">
+        <table class="admin-table w-full">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Admin</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Target</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Details</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">IP</th>
+                </tr>
+            </thead>
+            <tbody id="logs-body" class="divide-y divide-gray-100">
+                <tr><td colspan="6" class="px-4 py-8 text-center text-gray-400">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="px-6 py-4 border-t border-gray-100">
+        <div id="pagination"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentPage = 1;
+
+document.addEventListener('DOMContentLoaded', () => loadLogs(1));
+
+async function loadLogs(page) {
+    currentPage = page;
+    const params = new URLSearchParams({ page, page_size: 20 });
+
+    const action = document.getElementById('action-filter').value;
+    const dateFrom = document.getElementById('date-from').value;
+    const dateTo = document.getElementById('date-to').value;
+
+    if (action) params.append('action', action);
+    if (dateFrom) params.append('date_from', dateFrom);
+    if (dateTo) params.append('date_to', dateTo);
+
+    try {
+        const data = await fetchJSON(`/api/v1/admin/audit/audit-logs?${params}`);
+        renderTable('logs-body', data.items, (log) => `
+            <tr>
+                <td class="px-6 py-3 text-sm text-gray-500 whitespace-nowrap">${formatDateTime(log.created_at)}</td>
+                <td class="px-6 py-3 text-sm text-gray-900">${log.admin_name || log.admin_phone || log.admin_id}</td>
+                <td class="px-6 py-3">
+                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">${log.action}</span>
+                </td>
+                <td class="px-6 py-3 text-sm text-gray-600">${log.target_type ? `${log.target_type}:${log.target_id}` : '-'}</td>
+                <td class="px-6 py-3 text-sm text-gray-600 max-w-xs truncate" title="${log.details || ''}">${log.details || '-'}</td>
+                <td class="px-6 py-3 text-sm text-gray-500 font-mono">${log.ip_address || '-'}</td>
+            </tr>
+        `);
+        renderPagination('pagination', data.page, data.total_pages, 'loadLogs');
+    } catch (error) {
+        showToast('Failed to load audit logs', 'error');
+    }
+}
+</script>
+{% endblock %}

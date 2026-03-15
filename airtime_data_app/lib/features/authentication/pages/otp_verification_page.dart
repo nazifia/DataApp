@@ -139,10 +139,12 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is OtpVerified) {
-            if (widget.isLogin) {
+            if (!state.isNewUser) {
+              // Existing user — go straight to dashboard
               Navigator.of(context)
                   .pushNamedAndRemoveUntil('/dashboard', (route) => false);
             } else {
+              // New user — complete profile setup
               Navigator.of(context).pushNamed(
                 '/profile-setup',
                 arguments: widget.phoneNumber,

@@ -4,11 +4,15 @@ import traceback
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 
 from app.config import settings
 from app.database import engine
-from app.models import user, wallet, transaction
+from app.models import user, wallet, transaction, audit_log
 from app.routers import auth, user as user_router, wallet as wallet_router, airtime, data, transactions
+from app.routers import admin_pages
+from app.routers import admin as admin_router
 
 # Configure logging
 logging.basicConfig(
@@ -22,6 +26,7 @@ logger = logging.getLogger(__name__)
 user.Base.metadata.create_all(bind=engine)
 wallet.Base.metadata.create_all(bind=engine)
 transaction.Base.metadata.create_all(bind=engine)
+audit_log.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="ADP Nigeria API",
@@ -49,6 +54,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Mount static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 # Register routers
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(user_router.router, prefix="/api/v1")
@@ -56,6 +64,8 @@ app.include_router(wallet_router.router, prefix="/api/v1")
 app.include_router(airtime.router, prefix="/api/v1")
 app.include_router(data.router, prefix="/api/v1")
 app.include_router(transactions.router, prefix="/api/v1")
+app.include_router(admin_pages.router)
+app.include_router(admin_router.router, prefix="/api/v1")
 
 
 @app.get("/", tags=["Health"])

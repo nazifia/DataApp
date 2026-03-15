@@ -41,6 +41,12 @@ class _WalletFundPageState extends State<WalletFundPage> {
       description: 'Pay with debit/credit card',
     ),
     _PaymentMethod(
+      name: 'Bank Transfer',
+      icon: Icons.account_balance_rounded,
+      color: Color(0xFF1A7F5A),
+      description: 'Transfer directly from your bank',
+    ),
+    _PaymentMethod(
       name: 'Bank USSD',
       icon: Icons.dialpad_rounded,
       color: Colors.purple,
@@ -71,13 +77,15 @@ class _WalletFundPageState extends State<WalletFundPage> {
         // Card / Account
         await _showCardPaymentSheet(amount);
       case 1:
+        // Bank Transfer
+        await _showBankTransferSheet(amount);
+      case 2:
         // Bank USSD
         await _showUssdSheet(amount);
-      case 2:
+      case 3:
         // QR Code
         await _openQrScanner();
       default:
-        // Fallback: use original wallet fund flow
         final confirmed = await ConfirmationDialog.show(
           context: context,
           title: 'Confirm Funding',
@@ -106,6 +114,28 @@ class _WalletFundPageState extends State<WalletFundPage> {
           // Trigger wallet funding through WalletBloc
           context.read<WalletBloc>().add(FundWalletEvent(amount));
         },
+      ),
+    );
+  }
+
+  Future<void> _showBankTransferSheet(double amount) async {
+    context.read<WalletBloc>().add(const LoadBankDetailsEvent());
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (_) => BlocProvider.value(
+        value: context.read<WalletBloc>(),
+        child: _BankTransferSheet(
+          amount: amount,
+          onConfirm: () {
+            Navigator.of(context).pop();
+            context.read<WalletBloc>().add(FundWalletEvent(amount));
+          },
+        ),
       ),
     );
   }
@@ -510,8 +540,10 @@ class _WalletFundPageState extends State<WalletFundPage> {
       case 0:
         return 'Pay with Card';
       case 1:
-        return 'Get USSD Code';
+        return 'Get Account Details';
       case 2:
+        return 'Get USSD Code';
+      case 3:
         return 'Scan QR Code';
       default:
         return 'Proceed';
@@ -863,6 +895,333 @@ class _CardPaymentSheetState extends State<_CardPaymentSheet> {
           ),
         ),
       ),
+    );
+  }
+}
+
+// ─── Bank Transfer Sheet ──────────────────────────────────────────────────
+
+class _BankTransferSheet extends StatelessWidget {
+  final double amount;
+  final VoidCallback onConfirm;
+
+  const _BankTransferSheet({required this.amount, required this.onConfirm});
+
+  @override
+  Widget build(BuildContext context) {
+    const bankColor = Color(0xFF1A7F5A);
+
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+          child: BlocBuilder<WalletBloc, WalletState>(
+            builder: (context, state) {
+              final bankName = state is BankDetailsLoaded
+                  ? state.bankName
+                  : 'Providus Bank';
+              final accountNumber = state is BankDetailsLoaded
+                  ? state.accountNumber
+                  : '—';
+              final accountName = state is BankDetailsLoaded
+                  ? state.accountName
+                  : '—';
+              final note = state is BankDetailsLoaded
+                  ? state.note
+                  : 'Transfer the exact amount shown. Your wallet will be credited automatically.';
+
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Handle
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Header
+                  Row(
+                    children: [
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: bankColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.account_balance_rounded,
+                            color: bankColor, size: 22),
+                      ),
+                      const SizedBox(width: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Bank Transfer',
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w800,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                          ),
+                          Text(
+                            'Amount: ${CurrencyFormatter.formatNaira(amount)}',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: bankColor,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+
+                  if (state is WalletLoading)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(vertical: 32),
+                        child: CircularProgressIndicator(),
+                      ),
+                    )
+                  else if (state is WalletFailure)
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 24),
+                        child: Text(state.message,
+                            style: const TextStyle(color: AppColors.error)),
+                      ),
+                    )
+                  else ...[
+
+                    // Steps
+                    _StepRow(number: '1', text: 'Open your bank app or internet banking'),
+                    const SizedBox(height: 8),
+                    _StepRow(number: '2', text: 'Transfer exactly ${CurrencyFormatter.formatNaira(amount)} to the account below'),
+                    const SizedBox(height: 8),
+                    _StepRow(number: '3', text: 'Tap "I\'ve Made the Transfer" to confirm'),
+                    const SizedBox(height: 20),
+
+                    // Account details card
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: bankColor.withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: bankColor.withValues(alpha: 0.25)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.account_balance_rounded,
+                                  size: 16, color: bankColor),
+                              const SizedBox(width: 6),
+                              Text(
+                                bankName,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: bankColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
+                          _DetailRow(label: 'Account Number', value: accountNumber, copyable: true),
+                          const SizedBox(height: 10),
+                          _DetailRow(label: 'Account Name', value: accountName),
+                          const SizedBox(height: 10),
+                          _DetailRow(
+                            label: 'Amount',
+                            value: CurrencyFormatter.formatNaira(amount),
+                            highlight: true,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Info note
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(Icons.info_outline_rounded,
+                              size: 16, color: Colors.amber),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              note,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                                height: 1.4,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Confirm button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed: onConfirm,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: bankColor,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        child: const Text(
+                          "I've Made the Transfer",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _StepRow extends StatelessWidget {
+  final String number;
+  final String text;
+
+  const _StepRow({required this.number, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 22,
+          height: 22,
+          decoration: const BoxDecoration(
+            color: Color(0xFF1A7F5A),
+            shape: BoxShape.circle,
+          ),
+          child: Center(
+            child: Text(
+              number,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 13,
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.75),
+              height: 1.4,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DetailRow extends StatelessWidget {
+  final String label;
+  final String value;
+  final bool copyable;
+  final bool highlight;
+
+  const _DetailRow({
+    required this.label,
+    required this.value,
+    this.copyable = false,
+    this.highlight = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55),
+          ),
+        ),
+        Row(
+          children: [
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: highlight ? 16 : 14,
+                fontWeight: FontWeight.w700,
+                color: highlight
+                    ? const Color(0xFF1A7F5A)
+                    : Theme.of(context).colorScheme.onSurface,
+                letterSpacing: copyable ? 1.2 : 0,
+              ),
+            ),
+            if (copyable) ...[
+              const SizedBox(width: 6),
+              GestureDetector(
+                onTap: () {
+                  Clipboard.setData(ClipboardData(text: value));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Account number copied'),
+                      behavior: SnackBarBehavior.floating,
+                      backgroundColor: Color(0xFF1A7F5A),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                },
+                child: const Icon(Icons.copy_rounded,
+                    size: 15, color: Color(0xFF1A7F5A)),
+              ),
+            ],
+          ],
+        ),
+      ],
     );
   }
 }

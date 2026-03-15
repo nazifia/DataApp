@@ -20,3 +20,7 @@ class FundWalletEvent extends WalletEvent {
   @override
   List<Object> get props => [amount];
 }
+
+class LoadBankDetailsEvent extends WalletEvent {
+  const LoadBankDetailsEvent();
+}

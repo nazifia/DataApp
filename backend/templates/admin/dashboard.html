@@ -1,0 +1,242 @@
+{% extends "admin/base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-500">Total Users</p>
+                <p class="text-2xl font-bold text-gray-900" id="stat-total-users">-</p>
+            </div>
+            <div class="p-3 bg-blue-50 rounded-lg">
+                <i data-lucide="users" class="w-6 h-6 text-blue-600"></i>
+            </div>
+        </div>
+        <p class="text-xs text-gray-400 mt-2"><span id="stat-active-users">-</span> active</p>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-500">Total Transactions</p>
+                <p class="text-2xl font-bold text-gray-900" id="stat-total-txns">-</p>
+            </div>
+            <div class="p-3 bg-green-50 rounded-lg">
+                <i data-lucide="arrow-left-right" class="w-6 h-6 text-green-600"></i>
+            </div>
+        </div>
+        <p class="text-xs text-gray-400 mt-2"><span id="stat-successful-txns">-</span> successful</p>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-500">Total Revenue</p>
+                <p class="text-2xl font-bold text-gray-900" id="stat-total-revenue">-</p>
+            </div>
+            <div class="p-3 bg-purple-50 rounded-lg">
+                <i data-lucide="trending-up" class="w-6 h-6 text-purple-600"></i>
+            </div>
+        </div>
+        <p class="text-xs text-gray-400 mt-2">Today: <span id="stat-today-revenue">-</span></p>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-500">Wallet Balance</p>
+                <p class="text-2xl font-bold text-gray-900" id="stat-wallet-balance">-</p>
+            </div>
+            <div class="p-3 bg-orange-50 rounded-lg">
+                <i data-lucide="wallet" class="w-6 h-6 text-orange-600"></i>
+            </div>
+        </div>
+        <p class="text-xs text-gray-400 mt-2">Across all users</p>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Revenue (Last 30 Days)</h3>
+        <div class="chart-container">
+            <canvas id="revenueChart"></canvas>
+        </div>
+    </div>
+    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Transaction Types</h3>
+        <div class="chart-container">
+            <canvas id="txnTypeChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Transactions -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 mb-8">
+    <div class="flex items-center justify-between p-6 border-b border-gray-100">
+        <h3 class="text-lg font-semibold text-gray-900">Recent Transactions</h3>
+        <a href="/admin/transactions" class="text-sm text-blue-600 hover:text-blue-800">View all</a>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="admin-table w-full">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Reference</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                </tr>
+            </thead>
+            <tbody id="recent-txns-body" class="divide-y divide-gray-100">
+                <tr><td colspan="6" class="px-4 py-8 text-center text-gray-400">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Recent Users -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-100">
+    <div class="flex items-center justify-between p-6 border-b border-gray-100">
+        <h3 class="text-lg font-semibold text-gray-900">Recent Users</h3>
+        <a href="/admin/users" class="text-sm text-blue-600 hover:text-blue-800">View all</a>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="admin-table w-full">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Joined</th>
+                </tr>
+            </thead>
+            <tbody id="recent-users-body" class="divide-y divide-gray-100">
+                <tr><td colspan="4" class="px-4 py-8 text-center text-gray-400">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadDashboardStats();
+    await loadRecentTransactions();
+    await loadRecentUsers();
+});
+
+async function loadDashboardStats() {
+    try {
+        const stats = await fetchJSON('/api/v1/admin/dashboard/stats');
+        document.getElementById('stat-total-users').textContent = stats.total_users.toLocaleString();
+        document.getElementById('stat-active-users').textContent = stats.active_users.toLocaleString();
+        document.getElementById('stat-total-txns').textContent = stats.total_transactions.toLocaleString();
+        document.getElementById('stat-successful-txns').textContent = stats.successful_transactions.toLocaleString();
+        document.getElementById('stat-total-revenue').textContent = formatCurrency(stats.total_revenue);
+        document.getElementById('stat-today-revenue').textContent = formatCurrency(stats.today_revenue);
+        document.getElementById('stat-wallet-balance').textContent = formatCurrency(stats.total_wallet_balance);
+
+        // Load revenue chart
+        loadRevenueChart();
+        // Load txn type chart
+        loadTransactionTypeChart();
+    } catch (error) {
+        showToast('Failed to load dashboard stats', 'error');
+    }
+}
+
+async function loadRevenueChart() {
+    try {
+        const data = await fetchJSON('/api/v1/admin/analytics/revenue?period=daily&days=30');
+        initChart('revenueChart', {
+            type: 'line',
+            data: {
+                labels: data.map(d => d.date),
+                datasets: [{
+                    label: 'Revenue (₦)',
+                    data: data.map(d => d.revenue),
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    fill: true,
+                    tension: 0.3,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { callback: v => '₦' + v.toLocaleString() } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Revenue chart error:', error);
+    }
+}
+
+async function loadTransactionTypeChart() {
+    try {
+        const data = await fetchJSON('/api/v1/admin/analytics/transaction-types');
+        initChart('txnTypeChart', {
+            type: 'doughnut',
+            data: {
+                labels: data.map(d => d.type),
+                datasets: [{
+                    data: data.map(d => d.count),
+                    backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'],
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    } catch (error) {
+        console.error('Transaction type chart error:', error);
+    }
+}
+
+async function loadRecentTransactions() {
+    try {
+        const data = await fetchJSON('/api/v1/admin/dashboard/recent-transactions');
+        renderTable('recent-txns-body', data, (txn) => `
+            <tr>
+                <td class="px-6 py-3 text-sm font-mono text-gray-900">${txn.reference}</td>
+                <td class="px-6 py-3 text-sm text-gray-600">${txn.user_phone || '-'}</td>
+                <td class="px-6 py-3 text-sm text-gray-600 capitalize">${txn.type}</td>
+                <td class="px-6 py-3 text-sm font-medium text-gray-900">${formatCurrency(txn.amount)}</td>
+                <td class="px-6 py-3">${statusBadge(txn.status)}</td>
+                <td class="px-6 py-3 text-sm text-gray-500">${formatDateTime(txn.created_at)}</td>
+            </tr>
+        `);
+    } catch (error) {
+        showToast('Failed to load recent transactions', 'error');
+    }
+}
+
+async function loadRecentUsers() {
+    try {
+        const data = await fetchJSON('/api/v1/admin/dashboard/recent-users');
+        renderTable('recent-users-body', data, (user) => `
+            <tr>
+                <td class="px-6 py-3 text-sm text-gray-900">${user.phone_number}</td>
+                <td class="px-6 py-3 text-sm text-gray-600">${user.full_name || '-'}</td>
+                <td class="px-6 py-3">${statusBadge(user.is_active ? 'active' : 'inactive')}</td>
+                <td class="px-6 py-3 text-sm text-gray-500">${formatDateTime(user.created_at)}</td>
+            </tr>
+        `);
+    } catch (error) {
+        showToast('Failed to load recent users', 'error');
+    }
+}
+</script>
+{% endblock %}

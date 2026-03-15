@@ -1,0 +1,120 @@
+{% extends "admin/base.html" %}
+{% block title %}Users{% endblock %}
+{% block page_title %}Users{% endblock %}
+
+{% block content %}
+<!-- Filters -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
+    <div class="flex flex-wrap gap-4 items-center">
+        <div class="flex-1 min-w-64">
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i data-lucide="search" class="w-5 h-5 text-gray-400"></i>
+                </div>
+                <input type="text" id="search-input" placeholder="Search by phone or name..."
+                       class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+            </div>
+        </div>
+        <select id="status-filter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+            <option value="">All Status</option>
+            <option value="true">Active</option>
+            <option value="false">Inactive</option>
+        </select>
+        <button onclick="loadUsers(1)" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            <i data-lucide="search" class="w-4 h-4 inline"></i> Search
+        </button>
+        <a href="/api/v1/admin/export/users.csv" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+            <i data-lucide="download" class="w-4 h-4 inline"></i> Export CSV
+        </a>
+    </div>
+</div>
+
+<!-- Users Table -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-100">
+    <div class="overflow-x-auto">
+        <table class="admin-table w-full">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Wallet</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Joined</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="users-body" class="divide-y divide-gray-100">
+                <tr><td colspan="7" class="px-4 py-8 text-center text-gray-400">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="px-6 py-4 border-t border-gray-100">
+        <div id="pagination"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentPage = 1;
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadUsers(1);
+
+    document.getElementById('search-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') loadUsers(1);
+    });
+});
+
+async function loadUsers(page) {
+    currentPage = page;
+    const search = document.getElementById('search-input').value;
+    const isActive = document.getElementById('status-filter').value;
+
+    let url = `/api/v1/admin/users/users?page=${page}&page_size=20`;
+    if (search) url += `&search=${encodeURIComponent(search)}`;
+    if (isActive) url += `&is_active=${isActive}`;
+
+    try {
+        const data = await fetchJSON(url);
+        renderTable('users-body', data.items, (user) => `
+            <tr>
+                <td class="px-6 py-3 text-sm text-gray-900">${user.phone_number}</td>
+                <td class="px-6 py-3 text-sm text-gray-600">${user.full_name || '-'}</td>
+                <td class="px-6 py-3 text-sm">
+                    <span class="px-2 py-1 text-xs font-medium rounded-full ${user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'}">${user.role}</span>
+                </td>
+                <td class="px-6 py-3 text-sm font-medium text-gray-900">${formatCurrency(user.wallet_balance || 0)}</td>
+                <td class="px-6 py-3">${statusBadge(user.is_active ? 'active' : 'inactive')}</td>
+                <td class="px-6 py-3 text-sm text-gray-500">${formatDateTime(user.created_at)}</td>
+                <td class="px-6 py-3">
+                    <div class="flex gap-2">
+                        <a href="/admin/users/${user.id}" class="text-blue-600 hover:text-blue-800 text-sm">View</a>
+                        <button onclick="toggleUserStatus('${user.id}', ${!user.is_active})" class="text-${user.is_active ? 'red' : 'green'}-600 hover:text-${user.is_active ? 'red' : 'green'}-800 text-sm">
+                            ${user.is_active ? 'Deactivate' : 'Activate'}
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `);
+        renderPagination('pagination', data.page, data.total_pages, 'loadUsers');
+    } catch (error) {
+        showToast('Failed to load users', 'error');
+    }
+}
+
+async function toggleUserStatus(userId, newStatus) {
+    const action = newStatus ? 'activate' : 'deactivate';
+    if (!confirm(`Are you sure you want to ${action} this user?`)) return;
+
+    try {
+        await fetchJSON(`/api/v1/admin/users/users/${userId}/toggle-active`, { method: 'PUT' });
+        showToast(`User ${action}d successfully`, 'success');
+        loadUsers(currentPage);
+    } catch (error) {
+        showToast(`Failed to ${action} user: ${error.message}`, 'error');
+    }
+}
+</script>
+{% endblock %}

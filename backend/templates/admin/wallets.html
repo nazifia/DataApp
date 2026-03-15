@@ -1,0 +1,211 @@
+{% extends "admin/base.html" %}
+{% block title %}Wallets{% endblock %}
+{% block page_title %}Wallets{% endblock %}
+
+{% block content %}
+<!-- Filters -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
+    <div class="flex flex-wrap gap-4 items-end">
+        <div class="flex-1 min-w-48">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+            <input type="text" id="search-input" placeholder="Phone or name..."
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Min Balance</label>
+            <input type="number" id="min-balance" placeholder="0" min="0"
+                   class="w-32 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Max Balance</label>
+            <input type="number" id="max-balance" placeholder="No limit" min="0"
+                   class="w-32 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+        </div>
+        <button onclick="loadWallets(1)" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            <i data-lucide="search" class="w-4 h-4 inline"></i> Filter
+        </button>
+    </div>
+</div>
+
+<!-- Wallets Table -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-100">
+    <div class="overflow-x-auto">
+        <table class="admin-table w-full">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Balance</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Last Updated</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="wallets-body" class="divide-y divide-gray-100">
+                <tr><td colspan="5" class="px-4 py-8 text-center text-gray-400">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="px-6 py-4 border-t border-gray-100">
+        <div id="pagination"></div>
+    </div>
+</div>
+
+<!-- Credit Modal -->
+<div id="credit-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop">
+    <div class="bg-white rounded-xl shadow-xl p-6 w-full max-w-md mx-4">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Credit Wallet</h3>
+        <p class="text-sm text-gray-600 mb-4">User: <span id="credit-user-phone" class="font-medium"></span></p>
+        <form onsubmit="submitCredit(event)">
+            <input type="hidden" id="credit-user-id">
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Amount (₦)</label>
+                <input type="number" id="credit-amount" min="1" step="0.01" required
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none">
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Reason</label>
+                <textarea id="credit-reason" required rows="3"
+                          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none"></textarea>
+            </div>
+            <div class="flex gap-3">
+                <button type="button" onclick="closeCreditModal()" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Cancel</button>
+                <button type="submit" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Credit</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Debit Modal -->
+<div id="debit-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop">
+    <div class="bg-white rounded-xl shadow-xl p-6 w-full max-w-md mx-4">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Debit Wallet</h3>
+        <p class="text-sm text-gray-600 mb-4">User: <span id="debit-user-phone" class="font-medium"></span></p>
+        <form onsubmit="submitDebit(event)">
+            <input type="hidden" id="debit-user-id">
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Amount (₦)</label>
+                <input type="number" id="debit-amount" min="1" step="0.01" required
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none">
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Reason</label>
+                <textarea id="debit-reason" required rows="3"
+                          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none"></textarea>
+            </div>
+            <div class="flex gap-3">
+                <button type="button" onclick="closeDebitModal()" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Cancel</button>
+                <button type="submit" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Debit</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentPage = 1;
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadWallets(1);
+    document.getElementById('search-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') loadWallets(1);
+    });
+});
+
+async function loadWallets(page) {
+    currentPage = page;
+    const params = new URLSearchParams({ page, page_size: 20 });
+
+    const search = document.getElementById('search-input').value;
+    const minBalance = document.getElementById('min-balance').value;
+    const maxBalance = document.getElementById('max-balance').value;
+
+    if (search) params.append('search', search);
+    if (minBalance) params.append('min_balance', minBalance);
+    if (maxBalance) params.append('max_balance', maxBalance);
+
+    try {
+        const data = await fetchJSON(`/api/v1/admin/wallets/wallets?${params}`);
+        renderTable('wallets-body', data.items, (wallet) => `
+            <tr>
+                <td class="px-6 py-3 text-sm text-gray-900">${wallet.user_name || '-'}</td>
+                <td class="px-6 py-3 text-sm text-gray-600">${wallet.user_phone}</td>
+                <td class="px-6 py-3 text-sm font-bold text-gray-900">${formatCurrency(wallet.balance)}</td>
+                <td class="px-6 py-3 text-sm text-gray-500">${formatDateTime(wallet.updated_at)}</td>
+                <td class="px-6 py-3">
+                    <div class="flex gap-2">
+                        <button onclick="openCreditModal('${wallet.user_id}', '${wallet.user_phone}')" class="text-green-600 hover:text-green-800 text-sm">Credit</button>
+                        <button onclick="openDebitModal('${wallet.user_id}', '${wallet.user_phone}')" class="text-red-600 hover:text-red-800 text-sm">Debit</button>
+                    </div>
+                </td>
+            </tr>
+        `);
+        renderPagination('pagination', data.page, data.total_pages, 'loadWallets');
+    } catch (error) {
+        showToast('Failed to load wallets', 'error');
+    }
+}
+
+function openCreditModal(userId, phone) {
+    document.getElementById('credit-user-id').value = userId;
+    document.getElementById('credit-user-phone').textContent = phone;
+    document.getElementById('credit-modal').classList.remove('hidden');
+    document.getElementById('credit-modal').classList.add('flex');
+}
+
+function closeCreditModal() {
+    document.getElementById('credit-modal').classList.add('hidden');
+    document.getElementById('credit-modal').classList.remove('flex');
+}
+
+function openDebitModal(userId, phone) {
+    document.getElementById('debit-user-id').value = userId;
+    document.getElementById('debit-user-phone').textContent = phone;
+    document.getElementById('debit-modal').classList.remove('hidden');
+    document.getElementById('debit-modal').classList.add('flex');
+}
+
+function closeDebitModal() {
+    document.getElementById('debit-modal').classList.add('hidden');
+    document.getElementById('debit-modal').classList.remove('flex');
+}
+
+async function submitCredit(e) {
+    e.preventDefault();
+    const userId = document.getElementById('credit-user-id').value;
+    const amount = document.getElementById('credit-amount').value;
+    const reason = document.getElementById('credit-reason').value;
+
+    try {
+        await fetchJSON(`/api/v1/admin/wallets/wallets/${userId}/credit`, {
+            method: 'POST',
+            body: JSON.stringify({ amount: parseFloat(amount), reason }),
+        });
+        showToast('Wallet credited successfully', 'success');
+        closeCreditModal();
+        loadWallets(currentPage);
+    } catch (error) {
+        showToast(`Failed to credit wallet: ${error.message}`, 'error');
+    }
+}
+
+async function submitDebit(e) {
+    e.preventDefault();
+    const userId = document.getElementById('debit-user-id').value;
+    const amount = document.getElementById('debit-amount').value;
+    const reason = document.getElementById('debit-reason').value;
+
+    try {
+        await fetchJSON(`/api/v1/admin/wallets/wallets/${userId}/debit`, {
+            method: 'POST',
+            body: JSON.stringify({ amount: parseFloat(amount), reason }),
+        });
+        showToast('Wallet debited successfully', 'success');
+        closeDebitModal();
+        loadWallets(currentPage);
+    } catch (error) {
+        showToast(`Failed to debit wallet: ${error.message}`, 'error');
+    }
+}
+</script>
+{% endblock %}

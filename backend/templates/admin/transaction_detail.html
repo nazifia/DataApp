@@ -1,0 +1,72 @@
+{% extends "admin/base.html" %}
+{% block title %}Transaction Detail{% endblock %}
+{% block page_title %}Transaction Detail{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+    <div class="flex items-center justify-between mb-6">
+        <h3 class="text-lg font-semibold text-gray-900">Transaction Details</h3>
+        <a href="/admin/transactions" class="text-sm text-blue-600 hover:text-blue-800">Back to Transactions</a>
+    </div>
+    <div id="txn-details" class="grid grid-cols-1 md:grid-cols-2 gap-6">Loading...</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const txnId = window.location.pathname.split('/').pop();
+
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const txn = await fetchJSON(`/api/v1/admin/transactions/transactions/${txnId}`);
+        document.getElementById('txn-details').innerHTML = `
+            <div>
+                <p class="text-sm text-gray-500">Reference</p>
+                <p class="text-lg font-mono font-medium text-gray-900">${txn.reference}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500">Status</p>
+                <p>${statusBadge(txn.status)}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500">Type</p>
+                <p class="text-lg font-medium text-gray-900 capitalize">${txn.type}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500">Amount</p>
+                <p class="text-lg font-bold text-gray-900">${formatCurrency(txn.amount)}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500">User</p>
+                <p class="text-lg font-medium">
+                    <a href="/admin/users/${txn.user_id}" class="text-blue-600 hover:text-blue-800">${txn.user_phone || txn.user_id}</a>
+                </p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500">User Name</p>
+                <p class="text-lg font-medium text-gray-900">${txn.user_name || '-'}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500">Network</p>
+                <p class="text-lg font-medium text-gray-900 uppercase">${txn.network || '-'}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500">Phone Number</p>
+                <p class="text-lg font-medium text-gray-900">${txn.phone_number || '-'}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500">Plan ID</p>
+                <p class="text-lg font-mono text-gray-900">${txn.plan_id || '-'}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500">Created At</p>
+                <p class="text-lg font-medium text-gray-900">${formatDateTime(txn.created_at)}</p>
+            </div>
+        `;
+    } catch (error) {
+        showToast('Failed to load transaction details', 'error');
+        document.getElementById('txn-details').innerHTML = '<p class="text-red-500">Failed to load transaction</p>';
+    }
+});
+</script>
+{% endblock %}

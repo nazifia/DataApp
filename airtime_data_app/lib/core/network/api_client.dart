@@ -34,9 +34,35 @@ class ApiClient {
       onResponse: (response, handler) {
         return handler.next(response);
       },
-      onError: (DioException error, handler) {
+      onError: (DioException error, handler) async {
         if (error.response?.statusCode == 401) {
-          // Token expired or invalid
+          // Attempt to refresh the access token
+          final refreshToken = await _storage.read(key: 'refresh_token');
+          if (refreshToken != null) {
+            try {
+              final refreshResponse = await Dio().post(
+                '${config.baseUrl}/auth/refresh-token',
+                data: {'refresh_token': refreshToken},
+              );
+              final newAccessToken =
+                  refreshResponse.data['access_token'] as String?;
+              if (newAccessToken != null) {
+                await _storage.write(
+                    key: 'access_token', value: newAccessToken);
+                // Retry the original request with the new token
+                final retryOptions = error.requestOptions;
+                retryOptions.headers['Authorization'] =
+                    'Bearer $newAccessToken';
+                final retryResponse = await _dio.fetch(retryOptions);
+                return handler.resolve(retryResponse);
+              }
+            } catch (_) {
+              // Refresh failed — clear tokens so the app redirects to login
+              await clearTokens();
+            }
+          } else {
+            await clearTokens();
+          }
         }
         return handler.next(error);
       },

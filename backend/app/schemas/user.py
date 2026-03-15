@@ -62,6 +62,7 @@ class UserResponse(BaseModel):
     phone_number: str
     full_name: Optional[str]
     device_id: Optional[str]
+    profile_picture_url: Optional[str] = None
     is_active: bool
     created_at: datetime
     updated_at: datetime

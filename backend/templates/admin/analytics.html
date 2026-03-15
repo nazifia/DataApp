@@ -1,0 +1,186 @@
+{% extends "admin/base.html" %}
+{% block title %}Analytics{% endblock %}
+{% block page_title %}Analytics{% endblock %}
+
+{% block content %}
+<!-- Period Selector -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
+    <div class="flex gap-4 items-center">
+        <label class="text-sm font-medium text-gray-700">Period:</label>
+        <select id="period-select" onchange="reloadCharts()" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+            <option value="7">Last 7 days</option>
+            <option value="30" selected>Last 30 days</option>
+            <option value="90">Last 90 days</option>
+        </select>
+    </div>
+</div>
+
+<!-- Charts Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Revenue Over Time</h3>
+        <div class="chart-container">
+            <canvas id="revenueChart"></canvas>
+        </div>
+    </div>
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Network Distribution</h3>
+        <div class="chart-container">
+            <canvas id="networkChart"></canvas>
+        </div>
+    </div>
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Transaction Types</h3>
+        <div class="chart-container">
+            <canvas id="typeChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Top Users -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-100">
+    <div class="px-6 py-4 border-b border-gray-100">
+        <h3 class="text-lg font-semibold text-gray-900">Top Users by Spend</h3>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="admin-table w-full">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">#</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Transactions</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Spent</th>
+                </tr>
+            </thead>
+            <tbody id="top-users-body" class="divide-y divide-gray-100">
+                <tr><td colspan="5" class="px-4 py-8 text-center text-gray-400">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', reloadCharts);
+
+async function reloadCharts() {
+    const days = document.getElementById('period-select').value;
+    await Promise.all([
+        loadRevenueChart(days),
+        loadNetworkChart(),
+        loadTypeChart(),
+        loadTopUsers(),
+    ]);
+}
+
+async function loadRevenueChart(days) {
+    try {
+        const data = await fetchJSON(`/api/v1/admin/analytics/revenue?period=daily&days=${days}`);
+        initChart('revenueChart', {
+            type: 'line',
+            data: {
+                labels: data.map(d => d.date),
+                datasets: [{
+                    label: 'Revenue (₦)',
+                    data: data.map(d => d.revenue),
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    fill: true,
+                    tension: 0.3,
+                }, {
+                    label: 'Transactions',
+                    data: data.map(d => d.transactions),
+                    borderColor: '#10b981',
+                    backgroundColor: 'transparent',
+                    tension: 0.3,
+                    yAxisID: 'y1',
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, ticks: { callback: v => '₦' + v.toLocaleString() } },
+                    y1: { position: 'right', beginAtZero: true, grid: { display: false } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Revenue chart error:', error);
+    }
+}
+
+async function loadNetworkChart() {
+    try {
+        const data = await fetchJSON('/api/v1/admin/analytics/network-distribution');
+        initChart('networkChart', {
+            type: 'doughnut',
+            data: {
+                labels: data.map(d => d.network.toUpperCase()),
+                datasets: [{
+                    data: data.map(d => d.revenue),
+                    backgroundColor: ['#eab308', '#ef4444', '#22c55e', '#3b82f6'],
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ₦${ctx.raw.toLocaleString()}` } }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Network chart error:', error);
+    }
+}
+
+async function loadTypeChart() {
+    try {
+        const data = await fetchJSON('/api/v1/admin/analytics/transaction-types');
+        initChart('typeChart', {
+            type: 'bar',
+            data: {
+                labels: data.map(d => d.type.charAt(0).toUpperCase() + d.type.slice(1)),
+                datasets: [{
+                    label: 'Count',
+                    data: data.map(d => d.count),
+                    backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'],
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Type chart error:', error);
+    }
+}
+
+async function loadTopUsers() {
+    try {
+        const data = await fetchJSON('/api/v1/admin/analytics/top-users?limit=10');
+        renderTable('top-users-body', data, (user, idx) => `
+            <tr>
+                <td class="px-6 py-3 text-sm font-medium text-gray-900">${idx + 1}</td>
+                <td class="px-6 py-3 text-sm text-gray-900">${user.phone_number}</td>
+                <td class="px-6 py-3 text-sm text-gray-600">${user.full_name || '-'}</td>
+                <td class="px-6 py-3 text-sm text-gray-900">${user.transaction_count}</td>
+                <td class="px-6 py-3 text-sm font-bold text-gray-900">${formatCurrency(user.total_spent)}</td>
+            </tr>
+        `);
+    } catch (error) {
+        showToast('Failed to load top users', 'error');
+    }
+}
+</script>
+{% endblock %}

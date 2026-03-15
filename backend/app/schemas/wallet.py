@@ -21,3 +21,10 @@ class FundWalletRequest(BaseModel):
 class FundWalletResponse(BaseModel):
     message: str
     balance: float
+
+
+class BankTransferDetailsResponse(BaseModel):
+    bank_name: str
+    account_number: str
+    account_name: str
+    note: str

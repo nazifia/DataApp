@@ -43,3 +43,20 @@ class WalletFailure extends WalletState {
   @override
   List<Object> get props => [message];
 }
+
+class BankDetailsLoaded extends WalletState {
+  final String bankName;
+  final String accountNumber;
+  final String accountName;
+  final String note;
+
+  const BankDetailsLoaded({
+    required this.bankName,
+    required this.accountNumber,
+    required this.accountName,
+    required this.note,
+  });
+
+  @override
+  List<Object> get props => [bankName, accountNumber, accountName, note];
+}
