@@ -102,11 +102,5 @@ class TransactionItem(BaseModel):
     model_config = {"from_attributes": True}
 
 
-class TransactionReverseResponse(BaseModel):
-    message: str
-    refund_reference: str
-    new_wallet_balance: float
-
-
 class TransactionListResponse(BaseModel):
     transactions: List[TransactionItem]

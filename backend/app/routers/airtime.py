@@ -105,7 +105,7 @@ async def purchase_airtime(
         txn.status = TransactionStatus.failed
         db.commit()
 
-        refund_reference = _generate_reference()
+        refund_reference = f"REV-{reference}"
         wallet.balance = float(wallet.balance) + request.amount
         refund_txn = Transaction(
             user_id=current_user.id,

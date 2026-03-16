@@ -139,7 +139,7 @@ async def purchase_data(
         txn.status = TransactionStatus.failed
         db.commit()
 
-        refund_reference = _generate_reference()
+        refund_reference = f"REV-{reference}"
         wallet.balance = float(wallet.balance) + plan_price
         refund_txn = Transaction(
             user_id=current_user.id,
