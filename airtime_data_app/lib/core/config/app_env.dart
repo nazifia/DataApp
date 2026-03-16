@@ -18,12 +18,12 @@ class AppConfig {
 
   bool get isDev => environment == AppEnvironment.dev;
 
-  // Public tunnel URL — works on any device without needing same WiFi
+  // Dev/mock mode — no backend needed, free testing on any device
   static const AppConfig dev = AppConfig(
     environment: AppEnvironment.dev,
     baseUrl: 'https://topupnaija-adp.loca.lt/api/v1',
     enableLogging: true,
-    useMockAuth: false,
+    useMockAuth: true,
     testOtp: '123456',
   );
 
