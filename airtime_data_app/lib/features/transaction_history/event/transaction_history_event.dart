@@ -15,3 +15,12 @@ class LoadTransactionHistoryEvent extends TransactionHistoryEvent {
 class RefreshTransactionHistoryEvent extends TransactionHistoryEvent {
   const RefreshTransactionHistoryEvent();
 }
+
+class ReverseTransactionEvent extends TransactionHistoryEvent {
+  final String transactionId;
+
+  const ReverseTransactionEvent(this.transactionId);
+
+  @override
+  List<Object> get props => [transactionId];
+}

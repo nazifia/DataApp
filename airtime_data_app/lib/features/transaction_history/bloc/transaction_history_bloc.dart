@@ -12,6 +12,7 @@ class TransactionHistoryBloc extends Bloc<TransactionHistoryEvent, TransactionHi
         super(const TransactionHistoryInitial()) {
     on<LoadTransactionHistoryEvent>(_onLoadTransactionHistory);
     on<RefreshTransactionHistoryEvent>(_onRefreshTransactionHistory);
+    on<ReverseTransactionEvent>(_onReverseTransaction);
   }
 
   Future<void> _onLoadTransactionHistory(
@@ -33,6 +34,27 @@ class TransactionHistoryBloc extends Bloc<TransactionHistoryEvent, TransactionHi
       emit(TransactionHistorySuccess(List<Map<String, dynamic>>.from(response['transactions'] as List)));
     } catch (e) {
       emit(TransactionHistoryFailure('Failed to refresh transaction history: $e'));
+    }
+  }
+
+  Future<void> _onReverseTransaction(
+      ReverseTransactionEvent event, Emitter<TransactionHistoryState> emit) async {
+    emit(const TransactionReversalLoading());
+    try {
+      final result = await _transactionHistoryRepository.reverseTransaction(event.transactionId);
+      emit(TransactionReversalSuccess(
+        message: result['message'] as String? ?? 'Transaction reversed successfully.',
+        refundReference: result['refund_reference'] as String? ?? '',
+        newWalletBalance: (result['new_wallet_balance'] as num?)?.toDouble() ?? 0.0,
+      ));
+      // Reload the transaction list so is_reversed flags are up to date
+      final response = await _transactionHistoryRepository.getTransactionHistory();
+      emit(TransactionHistorySuccess(List<Map<String, dynamic>>.from(response['transactions'] as List)));
+    } catch (e) {
+      final msg = e.toString().contains('DioException')
+          ? 'Reversal failed. Please try again.'
+          : e.toString();
+      emit(TransactionReversalFailure(msg));
     }
   }
 }

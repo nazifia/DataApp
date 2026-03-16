@@ -19,6 +19,7 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final _tabs = const ['All', 'Airtime', 'Data', 'Wallet'];
+  List<Map<String, dynamic>>? _lastTransactions;
 
   @override
   void initState() {
@@ -94,34 +95,48 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage>
                     borderRadius: BorderRadius.circular(10)),
               ),
             );
+          } else if (state is TransactionReversalSuccess) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                behavior: SnackBarBehavior.floating,
+                backgroundColor: AppColors.success,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+              ),
+            );
           }
         },
         builder: (context, state) {
+          if (state is TransactionHistorySuccess) {
+            _lastTransactions = state.transactions;
+          }
           if (state is TransactionHistoryLoading) {
             return _buildShimmerHistory();
           } else if (state is TransactionHistorySuccess) {
-            return TabBarView(
-              controller: _tabController,
-              physics: const NeverScrollableScrollPhysics(),
-              children: List.generate(
-                _tabs.length,
-                (i) {
-                  final filtered =
-                      _filterTransactions(state.transactions, i);
-                  if (filtered.isEmpty) {
-                    return _buildEmptyHistory(i);
-                  }
-                  return _buildTransactionList(filtered);
-                },
-              ),
-            );
+            return _buildTabView(state.transactions);
           } else if (state is TransactionHistoryFailure) {
             return _buildErrorHistory(state.message);
+          } else if (_lastTransactions != null) {
+            // During reversal loading/failure keep showing the last list
+            return _buildTabView(_lastTransactions!);
           } else {
             return _buildShimmerHistory();
           }
         },
       ),
+    );
+  }
+
+  Widget _buildTabView(List<Map<String, dynamic>> transactions) {
+    return TabBarView(
+      controller: _tabController,
+      physics: const NeverScrollableScrollPhysics(),
+      children: List.generate(_tabs.length, (i) {
+        final filtered = _filterTransactions(transactions, i);
+        if (filtered.isEmpty) return _buildEmptyHistory(i);
+        return _buildTransactionList(filtered);
+      }),
     );
   }
 
@@ -295,13 +310,17 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage>
 
   void _showTransactionDetails(
       BuildContext context, Map<String, dynamic> transaction) {
+    final bloc = context.read<TransactionHistoryBloc>();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (_) => _TransactionDetailSheet(transaction: transaction),
+      builder: (_) => BlocProvider.value(
+        value: bloc,
+        child: _TransactionDetailSheet(transaction: transaction),
+      ),
     );
   }
 
@@ -458,10 +477,18 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage>
 
 // ─── Transaction Detail Sheet ──────────────────────────────────────────────
 
-class _TransactionDetailSheet extends StatelessWidget {
+class _TransactionDetailSheet extends StatefulWidget {
   final Map<String, dynamic> transaction;
 
   const _TransactionDetailSheet({required this.transaction});
+
+  @override
+  State<_TransactionDetailSheet> createState() =>
+      _TransactionDetailSheetState();
+}
+
+class _TransactionDetailSheetState extends State<_TransactionDetailSheet> {
+  bool _reversing = false;
 
   Color _typeColor(dynamic type) {
     switch ((type?.toString() ?? '').toLowerCase()) {
@@ -502,8 +529,55 @@ class _TransactionDetailSheet extends StatelessWidget {
     }
   }
 
+  bool get _canReverse {
+    final type = (widget.transaction['type']?.toString() ?? '').toLowerCase();
+    final status = (widget.transaction['status']?.toString() ?? '').toLowerCase();
+    final isReversed = widget.transaction['is_reversed'] == true;
+    return status == 'failed' &&
+        (type == 'airtime' || type == 'data') &&
+        !isReversed;
+  }
+
+  bool get _isReversed => widget.transaction['is_reversed'] == true;
+
+  Future<void> _requestRefund(BuildContext context) async {
+    final txnId = widget.transaction['id']?.toString() ?? '';
+    final type = _typeTitle(widget.transaction['type']);
+    final amount =
+        double.tryParse(widget.transaction['amount']?.toString() ?? '0') ?? 0;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Request Refund'),
+        content: Text(
+          'Reverse this $type transaction?\n\n'
+          'Amount: ${CurrencyFormatter.formatNaira(amount)}\n\n'
+          'The amount will be refunded to your wallet.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
+            child: const Text('Confirm Refund'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+    setState(() => _reversing = true);
+    context.read<TransactionHistoryBloc>().add(ReverseTransactionEvent(txnId));
+  }
+
   @override
   Widget build(BuildContext context) {
+    final transaction = widget.transaction;
     final type = transaction['type'];
     final status = transaction['status'];
     final amount =
@@ -521,166 +595,248 @@ class _TransactionDetailSheet extends StatelessWidget {
     final isWalletFund =
         (type?.toString() ?? '').toLowerCase() == 'wallet_fund';
 
-    return SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Drag handle
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
+    return BlocListener<TransactionHistoryBloc, TransactionHistoryState>(
+      listener: (context, state) {
+        if (state is TransactionReversalSuccess ||
+            state is TransactionHistorySuccess) {
+          if (_reversing) {
+            setState(() => _reversing = false);
+            Navigator.of(context).pop();
+          }
+        } else if (state is TransactionReversalFailure) {
+          setState(() => _reversing = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: AppColors.error,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+          );
+        }
+      },
+      child: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Drag handle
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
+              const SizedBox(height: 20),
 
-            // Icon + Amount
-            Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                color: _typeColor(type).withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(20),
+              // Icon + Amount
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  color: _typeColor(type).withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Icon(_typeIcon(type), color: _typeColor(type), size: 34),
               ),
-              child: Icon(_typeIcon(type), color: _typeColor(type), size: 34),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              CurrencyFormatter.formatNaira(amount),
-              style: TextStyle(
-                fontSize: 30,
-                fontWeight: FontWeight.w800,
-                color: _statusColor(status),
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              _typeTitle(type),
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-              decoration: BoxDecoration(
-                color: _statusColor(status).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                    color: _statusColor(status).withValues(alpha: 0.3)),
-              ),
-              child: Text(
-                status?.toString().toUpperCase() ?? 'UNKNOWN',
+              const SizedBox(height: 12),
+              Text(
+                CurrencyFormatter.formatNaira(amount),
                 style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 30,
+                  fontWeight: FontWeight.w800,
                   color: _statusColor(status),
                 ),
               ),
-            ),
-            const SizedBox(height: 24),
-
-            // Source → Destination
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.background,
-                borderRadius: BorderRadius.circular(14),
+              const SizedBox(height: 6),
+              Text(
+                _typeTitle(type),
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
               ),
-              child: Column(
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _endpointRow(
-                    icon: Icons.account_balance_wallet_rounded,
-                    iconColor: AppColors.primary,
-                    label: 'Source',
-                    value: isWalletFund
-                        ? (gateway?.isNotEmpty == true
-                            ? gateway!
-                            : 'Payment Gateway')
-                        : 'Your Wallet',
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 6),
-                    child: Row(
-                      children: [
-                        const SizedBox(width: 18),
-                        Container(width: 1, height: 20, color: AppColors.divider),
-                        const SizedBox(width: 10),
-                        Icon(Icons.arrow_downward_rounded,
-                            size: 14, color: Colors.grey[400]),
-                      ],
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: _statusColor(status).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                          color: _statusColor(status).withValues(alpha: 0.3)),
+                    ),
+                    child: Text(
+                      status?.toString().toUpperCase() ?? 'UNKNOWN',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: _statusColor(status),
+                      ),
                     ),
                   ),
-                  _endpointRow(
-                    icon: isWalletFund
-                        ? Icons.account_balance_wallet_outlined
-                        : (isData ? Icons.wifi_rounded : Icons.call_rounded),
-                    iconColor: _typeColor(type),
-                    label: 'Destination',
-                    value: isWalletFund
-                        ? 'Your Wallet'
-                        : (network?.isNotEmpty == true
-                            ? '$network${phoneNumber?.isNotEmpty == true ? ' • $phoneNumber' : ''}'
-                            : phoneNumber ?? 'N/A'),
-                  ),
+                  if (_isReversed) ...[
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: Colors.purple.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                            color: Colors.purple.withValues(alpha: 0.3)),
+                      ),
+                      child: const Text(
+                        'REVERSED',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.purple,
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
-            ),
-            const SizedBox(height: 16),
+              const SizedBox(height: 24),
 
-            // Details
-            _detailRow('Reference', reference),
-            if (createdAt != null)
-              Builder(builder: (_) {
-                try {
-                  return _detailRow(
-                    'Date & Time',
-                    DateFormatter.formatDateTime(DateTime.parse(createdAt)),
-                  );
-                } catch (_) {
-                  return _detailRow('Date', createdAt);
-                }
-              }),
-            if (network != null && network.isNotEmpty)
-              _detailRow('Network', network),
-            if (phoneNumber != null && phoneNumber.isNotEmpty)
-              _detailRow('Phone Number', phoneNumber),
-            if (isData && planName != null && planName.isNotEmpty)
-              _detailRow('Plan', planName),
-            if (isData && data != null && data.isNotEmpty)
-              _detailRow('Data Volume', data),
-            if (isData && validity != null && validity.isNotEmpty)
-              _detailRow('Validity', validity),
-
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => Navigator.of(context).pop(),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+              // Source → Destination
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.background,
+                  borderRadius: BorderRadius.circular(14),
                 ),
-                child: const Text(
-                  'Close',
-                  style: TextStyle(
-                      fontSize: 15, fontWeight: FontWeight.w700),
+                child: Column(
+                  children: [
+                    _endpointRow(
+                      icon: Icons.account_balance_wallet_rounded,
+                      iconColor: AppColors.primary,
+                      label: 'Source',
+                      value: isWalletFund
+                          ? (gateway?.isNotEmpty == true
+                              ? gateway!
+                              : 'Payment Gateway')
+                          : 'Your Wallet',
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 6),
+                      child: Row(
+                        children: [
+                          const SizedBox(width: 18),
+                          Container(width: 1, height: 20, color: AppColors.divider),
+                          const SizedBox(width: 10),
+                          Icon(Icons.arrow_downward_rounded,
+                              size: 14, color: Colors.grey[400]),
+                        ],
+                      ),
+                    ),
+                    _endpointRow(
+                      icon: isWalletFund
+                          ? Icons.account_balance_wallet_outlined
+                          : (isData ? Icons.wifi_rounded : Icons.call_rounded),
+                      iconColor: _typeColor(type),
+                      label: 'Destination',
+                      value: isWalletFund
+                          ? 'Your Wallet'
+                          : (network?.isNotEmpty == true
+                              ? '$network${phoneNumber?.isNotEmpty == true ? ' • $phoneNumber' : ''}'
+                              : phoneNumber ?? 'N/A'),
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 16),
+
+              // Details
+              _detailRow('Reference', reference),
+              if (createdAt != null)
+                Builder(builder: (_) {
+                  try {
+                    return _detailRow(
+                      'Date & Time',
+                      DateFormatter.formatDateTime(DateTime.parse(createdAt)),
+                    );
+                  } catch (_) {
+                    return _detailRow('Date', createdAt);
+                  }
+                }),
+              if (network != null && network.isNotEmpty)
+                _detailRow('Network', network),
+              if (phoneNumber != null && phoneNumber.isNotEmpty)
+                _detailRow('Phone Number', phoneNumber),
+              if (isData && planName != null && planName.isNotEmpty)
+                _detailRow('Plan', planName),
+              if (isData && data != null && data.isNotEmpty)
+                _detailRow('Data Volume', data),
+              if (isData && validity != null && validity.isNotEmpty)
+                _detailRow('Validity', validity),
+
+              const SizedBox(height: 20),
+
+              // Request Refund button (only for reversible failed transactions)
+              if (_canReverse) ...[
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: _reversing ? null : () => _requestRefund(context),
+                    icon: _reversing
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Icon(Icons.replay_rounded, size: 18),
+                    label: Text(
+                      _reversing ? 'Processing...' : 'Request Refund',
+                      style: const TextStyle(
+                          fontSize: 15, fontWeight: FontWeight.w700),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.error,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+              ],
+
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Close',
+                    style: TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

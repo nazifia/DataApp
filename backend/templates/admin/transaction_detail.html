@@ -6,67 +6,146 @@
 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
     <div class="flex items-center justify-between mb-6">
         <h3 class="text-lg font-semibold text-gray-900">Transaction Details</h3>
-        <a href="/admin/transactions" class="text-sm text-blue-600 hover:text-blue-800">Back to Transactions</a>
+        <div class="flex items-center gap-3">
+            <button id="reverse-btn" onclick="reverseTransaction()"
+                class="hidden px-4 py-2 bg-amber-500 text-white text-sm rounded-lg hover:bg-amber-600 flex items-center gap-1.5">
+                <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Reverse Transaction
+            </button>
+            <a href="/admin/transactions" class="text-sm text-blue-600 hover:text-blue-800">Back to Transactions</a>
+        </div>
     </div>
     <div id="txn-details" class="grid grid-cols-1 md:grid-cols-2 gap-6">Loading...</div>
+</div>
+
+<!-- Reversal Result Banner -->
+<div id="reversal-banner" class="hidden mt-4 bg-green-50 border border-green-200 rounded-xl p-4 flex items-start gap-3">
+    <i data-lucide="check-circle" class="w-5 h-5 text-green-600 mt-0.5 shrink-0"></i>
+    <div>
+        <p class="font-semibold text-green-800">Reversal Successful</p>
+        <p id="reversal-details" class="text-sm text-green-700 mt-0.5"></p>
+    </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
 const txnId = window.location.pathname.split('/').pop();
+let currentTxn = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
+    await loadTxnDetail();
+});
+
+async function loadTxnDetail() {
     try {
         const txn = await fetchJSON(`/api/v1/admin/transactions/${txnId}`);
-        document.getElementById('txn-details').innerHTML = `
-            <div>
-                <p class="text-sm text-gray-500">Reference</p>
-                <p class="text-lg font-mono font-medium text-gray-900">${txn.reference}</p>
-            </div>
-            <div>
-                <p class="text-sm text-gray-500">Status</p>
-                <p>${statusBadge(txn.status)}</p>
-            </div>
-            <div>
-                <p class="text-sm text-gray-500">Type</p>
-                <p class="text-lg font-medium text-gray-900 capitalize">${txn.type}</p>
-            </div>
-            <div>
-                <p class="text-sm text-gray-500">Amount</p>
-                <p class="text-lg font-bold text-gray-900">${formatCurrency(txn.amount)}</p>
-            </div>
-            <div>
-                <p class="text-sm text-gray-500">User</p>
-                <p class="text-lg font-medium">
-                    <a href="/admin/users/${txn.user_id}" class="text-blue-600 hover:text-blue-800">${txn.user_phone || txn.user_id}</a>
-                </p>
-            </div>
-            <div>
-                <p class="text-sm text-gray-500">User Name</p>
-                <p class="text-lg font-medium text-gray-900">${txn.user_name || '-'}</p>
-            </div>
-            <div>
-                <p class="text-sm text-gray-500">Network</p>
-                <p class="text-lg font-medium text-gray-900 uppercase">${txn.network || '-'}</p>
-            </div>
-            <div>
-                <p class="text-sm text-gray-500">Phone Number</p>
-                <p class="text-lg font-medium text-gray-900">${txn.phone_number || '-'}</p>
-            </div>
-            <div>
-                <p class="text-sm text-gray-500">Plan ID</p>
-                <p class="text-lg font-mono text-gray-900">${txn.plan_id || '-'}</p>
-            </div>
-            <div>
-                <p class="text-sm text-gray-500">Created At</p>
-                <p class="text-lg font-medium text-gray-900">${formatDateTime(txn.created_at)}</p>
-            </div>
-        `;
+        currentTxn = txn;
+        renderDetail(txn);
+        updateReverseButton(txn);
     } catch (error) {
         showToast('Failed to load transaction details', 'error');
-        document.getElementById('txn-details').innerHTML = '<p class="text-red-500">Failed to load transaction</p>';
+        document.getElementById('txn-details').innerHTML =
+            '<p class="text-red-500">Failed to load transaction</p>';
     }
-});
+}
+
+function renderDetail(txn) {
+    const reversedBadge = txn.is_reversed
+        ? `<span class="ml-2 px-2 py-0.5 text-xs font-semibold bg-purple-100 text-purple-700 rounded-full">Reversed</span>`
+        : '';
+
+    document.getElementById('txn-details').innerHTML = `
+        <div>
+            <p class="text-sm text-gray-500">Reference</p>
+            <p class="text-lg font-mono font-medium text-gray-900">${txn.reference}</p>
+        </div>
+        <div>
+            <p class="text-sm text-gray-500">Status</p>
+            <p class="flex items-center gap-1">${statusBadge(txn.status)}${reversedBadge}</p>
+        </div>
+        <div>
+            <p class="text-sm text-gray-500">Type</p>
+            <p class="text-lg font-medium text-gray-900 capitalize">${txn.type}</p>
+        </div>
+        <div>
+            <p class="text-sm text-gray-500">Amount</p>
+            <p class="text-lg font-bold text-gray-900">${formatCurrency(txn.amount)}</p>
+        </div>
+        <div>
+            <p class="text-sm text-gray-500">User</p>
+            <p class="text-lg font-medium">
+                <a href="/admin/users/${txn.user_id}" class="text-blue-600 hover:text-blue-800">
+                    ${txn.user_phone || txn.user_id}
+                </a>
+            </p>
+        </div>
+        <div>
+            <p class="text-sm text-gray-500">User Name</p>
+            <p class="text-lg font-medium text-gray-900">${txn.user_name || '-'}</p>
+        </div>
+        <div>
+            <p class="text-sm text-gray-500">Network</p>
+            <p class="text-lg font-medium text-gray-900 uppercase">${txn.network || '-'}</p>
+        </div>
+        <div>
+            <p class="text-sm text-gray-500">Phone Number</p>
+            <p class="text-lg font-medium text-gray-900">${txn.phone_number || '-'}</p>
+        </div>
+        <div>
+            <p class="text-sm text-gray-500">Plan ID</p>
+            <p class="text-lg font-mono text-gray-900">${txn.plan_id || '-'}</p>
+        </div>
+        <div>
+            <p class="text-sm text-gray-500">Created At</p>
+            <p class="text-lg font-medium text-gray-900">${formatDateTime(txn.created_at)}</p>
+        </div>
+    `;
+}
+
+function updateReverseButton(txn) {
+    const btn = document.getElementById('reverse-btn');
+    const reversible = txn.status === 'failed'
+        && (txn.type === 'airtime' || txn.type === 'data')
+        && !txn.is_reversed;
+    btn.classList.toggle('hidden', !reversible);
+}
+
+async function reverseTransaction() {
+    if (!currentTxn) return;
+
+    const confirmed = confirm(
+        `Reverse this ${currentTxn.type} transaction?\n\n` +
+        `Reference: ${currentTxn.reference}\n` +
+        `Amount: ${formatCurrency(currentTxn.amount)}\n\n` +
+        `This will refund the amount to the user's wallet.`
+    );
+    if (!confirmed) return;
+
+    const btn = document.getElementById('reverse-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 inline animate-spin"></i> Reversing...';
+    lucide.createIcons();
+
+    try {
+        const result = await fetchJSON(`/api/v1/admin/transactions/${txnId}/reverse`, {
+            method: 'POST',
+        });
+
+        showToast(result.message, 'success');
+
+        // Show persistent banner
+        document.getElementById('reversal-details').textContent =
+            `Refund reference: ${result.refund_reference}  |  New wallet balance: ${formatCurrency(result.new_wallet_balance)}`;
+        document.getElementById('reversal-banner').classList.remove('hidden');
+
+        // Reload detail to reflect is_reversed = true
+        await loadTxnDetail();
+    } catch (error) {
+        showToast(`Reversal failed: ${error.message}`, 'error');
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="rotate-ccw" class="w-4 h-4 inline"></i> Reverse Transaction';
+        lucide.createIcons();
+    }
+}
 </script>
 {% endblock %}

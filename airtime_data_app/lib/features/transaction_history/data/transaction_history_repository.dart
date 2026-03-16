@@ -11,6 +11,12 @@ class TransactionHistoryRepository {
       : _apiClient = apiClient,
         _config = config;
 
+  // Reverse a failed transaction
+  Future<Map<String, dynamic>> reverseTransaction(String txnId) async {
+    final response = await _apiClient.dio.post('/transactions/$txnId/reverse');
+    return Map<String, dynamic>.from(response.data as Map);
+  }
+
   // Get Transaction History
   Future<Map<String, dynamic>> getTransactionHistory() async {
     if (_config.useMockAuth) {

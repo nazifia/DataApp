@@ -118,7 +118,19 @@ async function loadTransactions(page) {
 
     try {
         const data = await fetchJSON(`/api/v1/admin/transactions?${params}`);
-        renderTable('txns-body', data.items, (txn) => `
+        renderTable('txns-body', data.items, (txn) => {
+            const canReverse = txn.status === 'failed'
+                && (txn.type === 'airtime' || txn.type === 'data')
+                && !txn.is_reversed;
+            const reverseBtn = canReverse
+                ? `<button onclick="reverseTransaction('${txn.id}', '${txn.reference}', ${txn.amount}, '${txn.type}')"
+                       class="ml-2 px-2 py-1 text-xs font-semibold bg-amber-100 text-amber-700 rounded hover:bg-amber-200">
+                       Reverse
+                   </button>`
+                : txn.is_reversed
+                    ? `<span class="ml-2 px-2 py-0.5 text-xs font-semibold bg-purple-100 text-purple-600 rounded">Reversed</span>`
+                    : '';
+            return `
             <tr>
                 <td class="px-6 py-3 text-sm font-mono text-gray-900">${txn.reference}</td>
                 <td class="px-6 py-3 text-sm">
@@ -127,16 +139,38 @@ async function loadTransactions(page) {
                 <td class="px-6 py-3 text-sm text-gray-600 capitalize">${txn.type}</td>
                 <td class="px-6 py-3 text-sm text-gray-600 uppercase">${txn.network || '-'}</td>
                 <td class="px-6 py-3 text-sm font-medium text-gray-900">${formatCurrency(txn.amount)}</td>
-                <td class="px-6 py-3">${statusBadge(txn.status)}</td>
+                <td class="px-6 py-3">${statusBadge(txn.status)}${txn.status === 'failed' && txn.is_reversed ? '<span class="ml-1 text-xs text-purple-600">(reversed)</span>' : ''}</td>
                 <td class="px-6 py-3 text-sm text-gray-500">${formatDateTime(txn.created_at)}</td>
-                <td class="px-6 py-3">
+                <td class="px-6 py-3 flex items-center gap-1 flex-wrap">
                     <a href="/admin/transactions/${txn.id}" class="text-blue-600 hover:text-blue-800 text-sm">View</a>
+                    ${reverseBtn}
                 </td>
             </tr>
-        `);
+            `;
+        });
         renderPagination('pagination', data.page, data.total_pages, 'loadTransactions');
     } catch (error) {
         showToast('Failed to load transactions', 'error');
+    }
+}
+
+async function reverseTransaction(txnId, reference, amount, type) {
+    const confirmed = confirm(
+        `Reverse this ${type} transaction?\n\n` +
+        `Reference: ${reference}\n` +
+        `Amount: ${formatCurrency(amount)}\n\n` +
+        `This will refund the amount to the user's wallet.`
+    );
+    if (!confirmed) return;
+
+    try {
+        const result = await fetchJSON(`/api/v1/admin/transactions/${txnId}/reverse`, {
+            method: 'POST',
+        });
+        showToast(result.message, 'success');
+        loadTransactions(currentPage);
+    } catch (error) {
+        showToast(`Reversal failed: ${error.message}`, 'error');
     }
 }
 

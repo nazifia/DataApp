@@ -97,8 +97,15 @@ class TransactionItem(BaseModel):
     network: Optional[str]
     phone_number: Optional[str]
     created_at: datetime
+    is_reversed: bool = False
 
     model_config = {"from_attributes": True}
+
+
+class TransactionReverseResponse(BaseModel):
+    message: str
+    refund_reference: str
+    new_wallet_balance: float
 
 
 class TransactionListResponse(BaseModel):

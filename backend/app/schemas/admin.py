@@ -66,6 +66,7 @@ class AdminTransactionItem(BaseModel):
     phone_number: Optional[str]
     plan_id: Optional[str]
     created_at: datetime
+    is_reversed: bool = False
 
     class Config:
         from_attributes = True

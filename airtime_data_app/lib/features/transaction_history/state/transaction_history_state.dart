@@ -33,3 +33,31 @@ class TransactionHistoryFailure extends TransactionHistoryState {
   @override
   List<Object> get props => [message];
 }
+
+class TransactionReversalLoading extends TransactionHistoryState {
+  const TransactionReversalLoading();
+}
+
+class TransactionReversalSuccess extends TransactionHistoryState {
+  final String message;
+  final String refundReference;
+  final double newWalletBalance;
+
+  const TransactionReversalSuccess({
+    required this.message,
+    required this.refundReference,
+    required this.newWalletBalance,
+  });
+
+  @override
+  List<Object> get props => [message, refundReference, newWalletBalance];
+}
+
+class TransactionReversalFailure extends TransactionHistoryState {
+  final String message;
+
+  const TransactionReversalFailure(this.message);
+
+  @override
+  List<Object> get props => [message];
+}
