@@ -1,9 +1,9 @@
 import logging
 import traceback
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -29,13 +29,21 @@ transaction.Base.metadata.create_all(bind=engine)
 audit_log.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title="ADP Nigeria API",
+    title="TopUpNaija API",
     version="1.0.0",
-    description="Backend API for ADP — a Nigerian airtime and data purchase application.",
+    description="Backend API for TopUpNaija — a Nigerian airtime and data purchase application.",
     docs_url="/docs",
     redoc_url="/redoc",
     debug=settings.dev_mode,
 )
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    # Redirect browser admin pages to login on 401/403 instead of returning JSON
+    if exc.status_code in (401, 403) and request.url.path.startswith("/admin/"):
+        return RedirectResponse(url="/admin/login", status_code=302)
+    return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
+
 
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception):
@@ -72,7 +80,7 @@ app.include_router(admin_router.router, prefix="/api/v1")
 def root():
     """Health check / API info."""
     return {
-        "message": "ADP Nigeria API",
+        "message": "TopUpNaija API",
         "version": "1.0.0",
         "docs": "/docs",
         "dev_mode": settings.dev_mode,

@@ -3,28 +3,29 @@ import 'package:intl/intl.dart';
 
 class Validators {
   // Nigerian Phone Number Validation
+  // Accepts: 0XXXXXXXXXX, +234XXXXXXXXX, 234XXXXXXXXX, or 10-digit [789]XXXXXXXXX
   static bool isValidNigerianPhone(String phone) {
-    // Remove spaces, dashes, and plus signs
     final cleaned = phone.replaceAll(RegExp(r'[\s\-+]'), '');
-
-    // Nigerian phone numbers start with 0, 234, or +234
-    final pattern = r'^(0|234|\+234)[789]\d{9}$';
-    return RegExp(pattern).hasMatch(cleaned);
+    return RegExp(r'^(0[789]\d{9}|234[789]\d{9}|[789]\d{9})$').hasMatch(cleaned);
   }
 
-  // Format Nigerian Phone Number
+  // Normalize a Nigerian phone number to local format (0XXXXXXXXXX).
+  // Accepts: 0XXXXXXXXXX, +234XXXXXXXXX, 234XXXXXXXXX, or 10-digit [789]XXXXXXXXX.
   static String formatNigerianPhone(String phone) {
     final cleaned = phone.replaceAll(RegExp(r'[\s\-+]'), '');
 
-    if (cleaned.startsWith('0')) {
-      return cleaned;
-    } else if (cleaned.startsWith('234')) {
+    if (cleaned.startsWith('234') && cleaned.length == 13) {
+      // 2348031234567 → 08031234567
       return '0${cleaned.substring(3)}';
-    } else if (cleaned.startsWith('+234')) {
-      return '0${cleaned.substring(4)}';
+    } else if (cleaned.startsWith('0')) {
+      // Already local format
+      return cleaned;
+    } else if (RegExp(r'^[789]\d{9}$').hasMatch(cleaned)) {
+      // 10-digit subscriber format: 8031234567 → 08031234567
+      return '0$cleaned';
     }
 
-    return phone; // Return original if no match
+    return phone; // Return original if unrecognised
   }
 
   // Validate Amount

@@ -215,7 +215,7 @@ class _PhoneInputPageState extends State<PhoneInputPage> {
             ),
             const SizedBox(height: 8),
             const Text(
-              'Sign in to your ADP Nigeria account',
+              'Sign in to your TopUpNaija account',
               style: TextStyle(
                 fontSize: 15,
                 color: AppColors.textSecondary,
@@ -266,9 +266,11 @@ class _PhoneInputPageState extends State<PhoneInputPage> {
             TextFormField(
               controller: _phoneController,
               keyboardType: TextInputType.phone,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[0-9+]')),
+              ],
               decoration: InputDecoration(
-                hintText: '080XXXXXXXX',
+                hintText: '0XXXXXXXXXX or +234XXXXXXXXX',
                 prefixIcon: Container(
                   padding: const EdgeInsets.symmetric(
                       horizontal: 12, vertical: 14),
@@ -305,10 +307,9 @@ class _PhoneInputPageState extends State<PhoneInputPage> {
                 if (value == null || value.isEmpty) {
                   return 'Please enter your phone number';
                 }
-                final cleaned = value.replaceAll(RegExp(r'[\s\-]'), '');
-                if (!Validators.isValidNigerianPhone(cleaned) &&
-                    !RegExp(r'^[789]\d{9}$').hasMatch(cleaned)) {
-                  return 'Enter a valid Nigerian number (e.g. 08031234567)';
+                final cleaned = value.replaceAll(RegExp(r'[\s\-+]'), '');
+                if (!Validators.isValidNigerianPhone(cleaned)) {
+                  return 'Enter a valid Nigerian number (e.g. 08031234567 or +2348031234567)';
                 }
                 return null;
               },
@@ -442,7 +443,7 @@ class _PhoneInputPageState extends State<PhoneInputPage> {
           children: [
             const SizedBox(height: 16),
             const Text(
-              'Join ADP Nigeria',
+              'Join TopUpNaija',
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.w800,
@@ -472,9 +473,11 @@ class _PhoneInputPageState extends State<PhoneInputPage> {
             TextFormField(
               controller: _phoneController,
               keyboardType: TextInputType.phone,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[0-9+]')),
+              ],
               decoration: InputDecoration(
-                hintText: '080XXXXXXXX',
+                hintText: '0XXXXXXXXXX or +234XXXXXXXXX',
                 prefixIcon: Container(
                   padding: const EdgeInsets.symmetric(
                       horizontal: 12, vertical: 14),
@@ -511,10 +514,9 @@ class _PhoneInputPageState extends State<PhoneInputPage> {
                 if (value == null || value.isEmpty) {
                   return 'Please enter your phone number';
                 }
-                final cleaned = value.replaceAll(RegExp(r'[\s\-]'), '');
-                if (!Validators.isValidNigerianPhone(cleaned) &&
-                    !RegExp(r'^[789]\d{9}$').hasMatch(cleaned)) {
-                  return 'Enter a valid Nigerian number (e.g. 08031234567)';
+                final cleaned = value.replaceAll(RegExp(r'[\s\-+]'), '');
+                if (!Validators.isValidNigerianPhone(cleaned)) {
+                  return 'Enter a valid Nigerian number (e.g. 08031234567 or +2348031234567)';
                 }
                 return null;
               },

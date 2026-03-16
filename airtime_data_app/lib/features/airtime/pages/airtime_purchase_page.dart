@@ -385,7 +385,9 @@ class _AirtimePurchasePageState extends State<AirtimePurchasePage> {
     return TextFormField(
       controller: _phoneController,
       keyboardType: TextInputType.phone,
-      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+      inputFormatters: [
+        FilteringTextInputFormatter.allow(RegExp(r'[0-9+]')),
+      ],
       readOnly: _isSelf,
       style: _isSelf
           ? TextStyle(
@@ -398,7 +400,7 @@ class _AirtimePurchasePageState extends State<AirtimePurchasePage> {
       decoration: InputDecoration(
         hintText: _isSelf
             ? (_selfPhone.isEmpty ? 'Loading...' : _selfPhone)
-            : '080XXXXXXXX',
+            : '0XXXXXXXXXX or +234XXXXXXXXX',
         prefixIcon: Icon(
           _isSelf ? Icons.person_outline_rounded : Icons.phone_outlined,
         ),

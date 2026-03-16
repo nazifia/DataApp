@@ -1,4 +1,4 @@
-import bcrypt as bcrypt_lib
+from passlib.context import CryptContext
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -8,9 +8,11 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.user import User, UserRole
 from app.utils.admin_auth import create_admin_session_token, get_current_admin, is_admin_role, has_minimum_role
+from app.utils.validators import normalize_phone_number
 
 router = APIRouter(tags=["Admin Pages"])
 templates = Jinja2Templates(directory="templates")
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
 
 def _admin_context(admin: User, active_page: str) -> dict:
@@ -46,7 +48,15 @@ async def login_submit(
     db: Session = Depends(get_db),
 ):
     """Process admin login form."""
-    user = db.query(User).filter(User.phone_number == phone).first()
+    normalized_phone = normalize_phone_number(phone)
+    if not normalized_phone:
+        return templates.TemplateResponse(
+            "admin/login.html",
+            {"request": request, "error": "Invalid phone number format"},
+            status_code=401,
+        )
+
+    user = db.query(User).filter(User.phone_number == normalized_phone).first()
 
     if not user or not user.password_hash:
         return templates.TemplateResponse(
@@ -55,7 +65,7 @@ async def login_submit(
             status_code=401,
         )
 
-    if not bcrypt_lib.checkpw(password.encode('utf-8'), user.password_hash.encode('utf-8')):
+    if not pwd_context.verify(password, user.password_hash):
         return templates.TemplateResponse(
             "admin/login.html",
             {"request": request, "error": "Invalid credentials"},
