@@ -2,8 +2,33 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/theme.dart';
 
-class WelcomePage extends StatelessWidget {
+class WelcomePage extends StatefulWidget {
   const WelcomePage({super.key});
+
+  @override
+  State<WelcomePage> createState() => _WelcomePageState();
+}
+
+class _WelcomePageState extends State<WelcomePage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final args = ModalRoute.of(context)?.settings.arguments;
+      if (args is Map && args['reason'] == 'inactivity') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('You were logged out due to inactivity.'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.black87,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10)),
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

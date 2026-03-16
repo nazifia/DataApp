@@ -27,12 +27,15 @@ import 'features/transaction_history/pages/transaction_history_page.dart';
 import 'features/profile/pages/profile_page.dart';
 import 'core/constants/app_constants.dart';
 import 'core/constants/theme.dart';
+import 'core/widgets/inactivity_detector.dart';
 
 // Switch to AppConfig.prod before releasing to production
 const _config = AppConfig.dev;
 
 final RouteObserver<ModalRoute<void>> routeObserver =
     RouteObserver<ModalRoute<void>>();
+
+final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
 
 /// Global notifier for theme mode — updated from Profile page
 final ValueNotifier<ThemeMode> themeModeNotifier =
@@ -83,45 +86,49 @@ class AirtimeDataApp extends StatelessWidget {
               transactionHistoryRepository: transactionHistoryRepository),
         ),
       ],
-      child: ListenableBuilder(
-        listenable: themeModeNotifier,
-        builder: (context, _) {
-          return MaterialApp(
-            title: AppConstants.appName,
-            debugShowCheckedModeBanner: false,
-            theme: AppTheme.lightTheme,
-            darkTheme: AppTheme.darkTheme,
-            themeMode: themeModeNotifier.value,
-            navigatorObservers: [routeObserver],
-            initialRoute: '/',
-            routes: {
-              '/': (context) => const SplashPage(),
-              '/welcome': (context) => const WelcomePage(),
-              '/phone-input': (context) => PhoneInputPage(
-                    isLogin:
-                        ModalRoute.of(context)!.settings.arguments as bool,
-                  ),
-              '/otp-verification': (context) {
-                final args = ModalRoute.of(context)!.settings.arguments
-                    as Map<String, dynamic>;
-                return OtpVerificationPage(
-                  phoneNumber: args['phoneNumber'] as String,
-                  isLogin: args['isLogin'] as bool,
-                );
+      child: InactivityDetector(
+        navigatorKey: _navigatorKey,
+        child: ListenableBuilder(
+          listenable: themeModeNotifier,
+          builder: (context, _) {
+            return MaterialApp(
+              title: AppConstants.appName,
+              debugShowCheckedModeBanner: false,
+              theme: AppTheme.lightTheme,
+              darkTheme: AppTheme.darkTheme,
+              themeMode: themeModeNotifier.value,
+              navigatorKey: _navigatorKey,
+              navigatorObservers: [routeObserver],
+              initialRoute: '/',
+              routes: {
+                '/': (context) => const SplashPage(),
+                '/welcome': (context) => const WelcomePage(),
+                '/phone-input': (context) => PhoneInputPage(
+                      isLogin:
+                          ModalRoute.of(context)!.settings.arguments as bool,
+                    ),
+                '/otp-verification': (context) {
+                  final args = ModalRoute.of(context)!.settings.arguments
+                      as Map<String, dynamic>;
+                  return OtpVerificationPage(
+                    phoneNumber: args['phoneNumber'] as String,
+                    isLogin: args['isLogin'] as bool,
+                  );
+                },
+                '/profile-setup': (context) => ProfileSetupPage(
+                    phoneNumber:
+                        ModalRoute.of(context)!.settings.arguments as String),
+                '/dashboard': (context) => const DashboardPage(),
+                '/airtime-purchase': (context) => const AirtimePurchasePage(),
+                '/data-purchase': (context) => const DataPurchasePage(),
+                '/wallet-fund': (context) => const WalletFundPage(),
+                '/transaction-history': (context) =>
+                    const TransactionHistoryPage(),
+                '/profile': (context) => const ProfilePage(),
               },
-              '/profile-setup': (context) => ProfileSetupPage(
-                  phoneNumber:
-                      ModalRoute.of(context)!.settings.arguments as String),
-              '/dashboard': (context) => const DashboardPage(),
-              '/airtime-purchase': (context) => const AirtimePurchasePage(),
-              '/data-purchase': (context) => const DataPurchasePage(),
-              '/wallet-fund': (context) => const WalletFundPage(),
-              '/transaction-history': (context) =>
-                  const TransactionHistoryPage(),
-              '/profile': (context) => const ProfilePage(),
-            },
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
