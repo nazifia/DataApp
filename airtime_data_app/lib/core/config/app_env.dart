@@ -18,10 +18,10 @@ class AppConfig {
 
   bool get isDev => environment == AppEnvironment.dev;
 
-  // Android emulator uses 10.0.2.2 to reach host machine's localhost
+  // Public tunnel URL — works on any device without needing same WiFi
   static const AppConfig dev = AppConfig(
     environment: AppEnvironment.dev,
-    baseUrl: 'http://10.0.2.2:8000/api/v1',
+    baseUrl: 'https://topupnaija-adp.loca.lt/api/v1',
     enableLogging: true,
     useMockAuth: false,
     testOtp: '123456',

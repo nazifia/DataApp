@@ -12,6 +12,10 @@ class ApiClient {
           baseUrl: config.baseUrl,
           connectTimeout: const Duration(seconds: 30),
           receiveTimeout: const Duration(seconds: 30),
+          headers: {
+            // Required to bypass localtunnel's browser-redirect page for API calls
+            'bypass-tunnel-reminder': 'true',
+          },
         )) {
     if (config.enableLogging) {
       _dio.interceptors.add(LogInterceptor(
