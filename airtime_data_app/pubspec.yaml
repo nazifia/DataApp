@@ -79,6 +79,9 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
+  # App icon generator
+  flutter_launcher_icons: ^0.14.3
+
   # Build Runner for code generation
   build_runner: ^2.4.6
 
@@ -93,6 +96,16 @@ dev_dependencies:
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter packages.
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icons/app_icon.png"
+  min_sdk_android: 21
+  web:
+    generate: false
+  windows:
+    generate: false
+
 flutter:
 
   # The following line ensures that the Material Icons font is
