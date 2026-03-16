@@ -85,10 +85,7 @@ class _SplashPageState extends State<SplashPage>
                   ScaleTransition(
                     scale: _scaleAnim,
                     child: Container(
-                      width: 110,
-                      height: 110,
                       decoration: BoxDecoration(
-                        color: Colors.white,
                         borderRadius: BorderRadius.circular(30),
                         boxShadow: [
                           BoxShadow(
@@ -98,10 +95,13 @@ class _SplashPageState extends State<SplashPage>
                           ),
                         ],
                       ),
-                      child: const Icon(
-                        Icons.phone_android_rounded,
-                        size: 64,
-                        color: AppColors.primary,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(30),
+                        child: Image.asset(
+                          'assets/icons/app_icon.png',
+                          width: 110,
+                          height: 110,
+                        ),
                       ),
                     ),
                   ),
