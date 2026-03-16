@@ -47,10 +47,7 @@ class _WelcomePageState extends State<WelcomePage> {
               const Spacer(flex: 2),
               // Logo & Brand
               Container(
-                width: 100,
-                height: 100,
                 decoration: BoxDecoration(
-                  color: Colors.white,
                   borderRadius: BorderRadius.circular(28),
                   boxShadow: [
                     BoxShadow(
@@ -60,10 +57,13 @@ class _WelcomePageState extends State<WelcomePage> {
                     ),
                   ],
                 ),
-                child: const Icon(
-                  Icons.phone_android_rounded,
-                  size: 58,
-                  color: AppColors.primary,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(28),
+                  child: Image.asset(
+                    'assets/icons/app_icon.png',
+                    width: 100,
+                    height: 100,
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
