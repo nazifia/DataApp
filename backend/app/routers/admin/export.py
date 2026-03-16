@@ -42,7 +42,7 @@ def _doc(buffer, title: str, landscape_mode: bool = False) -> SimpleDocTemplate:
 def _header(title: str, subtitle: str):
     styles = getSampleStyleSheet()
     return [
-        Paragraph(f"<b>ADP Nigeria &mdash; {title}</b>", styles["Title"]),
+        Paragraph(f"<b>TopUpNaija &mdash; {title}</b>", styles["Title"]),
         Paragraph(subtitle, styles["Normal"]),
         Paragraph(
             f"<font size='8' color='grey'>Generated: "
@@ -117,7 +117,7 @@ async def export_users_pdf(
         "Users Report",
         f"{len(users)} user(s) exported",
     ) + [table]
-    _doc(buffer, "ADP Nigeria — Users Report").build(story)
+    _doc(buffer, "TopUpNaija — Users Report").build(story)
 
     filename = f"users_{datetime.utcnow().strftime('%Y%m%d_%H%M')}.pdf"
     return _pdf_response(buffer, filename)
@@ -187,7 +187,7 @@ async def export_transactions_pdf(
 
     buffer = io.BytesIO()
     story = _header("Transactions Report", subtitle) + [table]
-    _doc(buffer, "ADP Nigeria — Transactions Report", landscape_mode=True).build(story)
+    _doc(buffer, "TopUpNaija — Transactions Report", landscape_mode=True).build(story)
 
     filename = f"transactions_{datetime.utcnow().strftime('%Y%m%d_%H%M')}.pdf"
     return _pdf_response(buffer, filename)
@@ -307,7 +307,7 @@ async def export_user_detail_pdf(
     )
 
     buffer = io.BytesIO()
-    _doc(buffer, f"ADP Nigeria — User Report: {display_name}", landscape_mode=True).build(story)
+    _doc(buffer, f"TopUpNaija — User Report: {display_name}", landscape_mode=True).build(story)
 
     safe_name = (user.phone_number or user_id).replace("+", "").replace(" ", "")
     filename = f"user_{safe_name}_{datetime.utcnow().strftime('%Y%m%d_%H%M')}.pdf"

@@ -51,10 +51,10 @@ MOCK_DATA_PLANS: Dict[str, List[Dict[str, Any]]] = {
 
 
 def _generate_reference() -> str:
-    """Generate a unique transaction reference in ADP-{timestamp}-{random4} format."""
+    """Generate a unique transaction reference in TUN-{timestamp}-{random4} format."""
     timestamp = int(time.time() * 1000)
     suffix = random.randint(1000, 9999)
-    return f"ADP-{timestamp}-{suffix}"
+    return f"TUN-{timestamp}-{suffix}"
 
 
 async def get_data_plans(network: str) -> List[Dict[str, Any]]:

@@ -127,7 +127,7 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
                   color: Colors.white, size: 18),
             ),
             const SizedBox(width: 8),
-            const Text('ADP Nigeria'),
+            const Text('TopUpNaija'),
           ],
         ),
         actions: [

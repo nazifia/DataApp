@@ -107,7 +107,7 @@ class _SplashPageState extends State<SplashPage>
                   ),
                   const SizedBox(height: 28),
                   const Text(
-                    'ADP Nigeria',
+                    'TopUpNaija',
                     style: TextStyle(
                       fontSize: 36,
                       fontWeight: FontWeight.w800,

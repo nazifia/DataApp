@@ -22,7 +22,7 @@ async def send_otp_sms(phone: str, otp: str) -> bool:
     Returns:
         True on success, False on failure.
     """
-    message = f"Your ADP verification code is {otp}. It expires in 10 minutes. Do not share it with anyone."
+    message = f"Your TopUpNaija verification code is {otp}. It expires in 10 minutes. Do not share it with anyone."
 
     if settings.dev_mode:
         logger.info(

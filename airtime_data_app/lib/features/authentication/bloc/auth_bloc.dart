@@ -50,7 +50,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         return;
       }
       final authenticated = await _localAuth.authenticate(
-        localizedReason: 'Authenticate to sign in to ADP Nigeria',
+        localizedReason: 'Authenticate to sign in to TopUpNaija',
       );
       if (authenticated) {
         emit(const LoginSuccess());

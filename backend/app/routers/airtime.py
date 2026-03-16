@@ -31,7 +31,7 @@ def _get_wallet(user_id, db: Session) -> Wallet:
 def _generate_reference() -> str:
     timestamp = int(time.time() * 1000)
     suffix = random.randint(1000, 9999)
-    return f"ADP-{timestamp}-{suffix}"
+    return f"TUN-{timestamp}-{suffix}"
 
 
 @router.post("/purchase", response_model=AirtimePurchaseResponse, status_code=status.HTTP_200_OK)

@@ -105,7 +105,7 @@ def create_admin(phone: str, password: str, name: str = "Admin", role: str = "ad
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Create or promote an admin user for ADP Admin Panel.")
+    parser = argparse.ArgumentParser(description="Create or promote an admin user for TopUpNaija Admin Panel.")
     parser.add_argument("--phone", required=True, help="Phone number for the admin user (e.g., 08012345678)")
     parser.add_argument("--password", required=True, help="Password for the admin user")
     parser.add_argument("--name", default="Admin", help="Full name for the admin user (default: Admin)")

@@ -1,6 +1,6 @@
-# airtime_data_app
+# TopUpNaija
 
-A new Flutter project.
+TopUpNaija - Buy airtime & data for any Nigerian network.
 
 ## Getting Started
 

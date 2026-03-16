@@ -22,13 +22,13 @@ class Settings(BaseSettings):
     pg_port: int = 5432
     pg_user: str = "postgres"
     pg_password: str = "password"
-    pg_db: str = "adp_db"
+    pg_db: str = "topupnaija_db"
 
     @model_validator(mode="after")
     def set_database_url(self) -> "Settings":
         if not self.database_url:
             if self.dev_mode:
-                self.database_url = "sqlite:///./adp.db"
+                self.database_url = "sqlite:///./topupnaija.db"
             else:
                 self.database_url = (
                     f"postgresql://{self.pg_user}:{self.pg_password}"

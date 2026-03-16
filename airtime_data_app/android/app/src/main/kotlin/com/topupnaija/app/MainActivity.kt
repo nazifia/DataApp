@@ -1,4 +1,4 @@
-package com.adp.nigeria.airtime_data_app
+package com.topupnaija.app
 
 import io.flutter.embedding.android.FlutterFragmentActivity
 

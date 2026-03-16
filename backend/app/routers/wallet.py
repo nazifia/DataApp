@@ -31,7 +31,7 @@ def _get_wallet(user_id, db: Session) -> Wallet:
 def _generate_reference() -> str:
     timestamp = int(time.time() * 1000)
     suffix = random.randint(1000, 9999)
-    return f"ADP-{timestamp}-{suffix}"
+    return f"TUN-{timestamp}-{suffix}"
 
 
 @router.get("/bank-details", response_model=BankTransferDetailsResponse, status_code=status.HTTP_200_OK)
@@ -47,8 +47,8 @@ def get_bank_transfer_details(
     uid_digits = ''.join(filter(str.isdigit, str(current_user.id).replace('-', '')))
     account_number = uid_digits[:10].ljust(10, '0')
 
-    full_name = current_user.full_name or "ADP User"
-    account_name = f"ADP/{full_name.split()[0].upper()}"
+    full_name = current_user.full_name or "TopUpNaija User"
+    account_name = f"TUN/{full_name.split()[0].upper()}"
 
     return BankTransferDetailsResponse(
         bank_name="Providus Bank",

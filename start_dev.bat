@@ -1,20 +1,20 @@
 @echo off
 echo ========================================
-echo  ADP Nigeria — Dev Launcher
+echo  TopUpNaija — Dev Launcher
 echo ========================================
 
 :: ── Paths ──
 set ROOT=%~dp0
 set VENV=%ROOT%venv\Scripts
 set BACKEND=%ROOT%backend
-set FLUTTER_APP=%ROOT%airtime_data_app
+set FLUTTER_APP=%ROOT%topup_naija
 set PORT=8000
 
 :: ── Step 1: Ensure firewall allows emulator traffic on dev port ──
 echo [1/4] Ensuring Windows Firewall allows port %PORT%...
-netsh advfirewall firewall show rule name="ADP Dev Port %PORT%" >nul 2>&1
+netsh advfirewall firewall show rule name="TopUpNaija Dev Port %PORT%" >nul 2>&1
 if errorlevel 1 (
-    netsh advfirewall firewall add rule name="ADP Dev Port %PORT%" dir=in action=allow protocol=TCP localport=%PORT% >nul 2>&1
+    netsh advfirewall firewall add rule name="TopUpNaija Dev Port %PORT%" dir=in action=allow protocol=TCP localport=%PORT% >nul 2>&1
     if errorlevel 1 (
         echo       [WARN] Could not add firewall rule (run as Administrator to fix).
         echo       If the emulator cannot connect, open Windows Defender Firewall
@@ -35,7 +35,7 @@ for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":%PORT% " ^| findstr "LISTEN
 
 :: ── Step 3: Start backend server ──
 echo [3/4] Starting backend server on port %PORT%...
-start "ADP Backend" /min cmd /c "cd /d %BACKEND% && %VENV%\uvicorn main:app --host 0.0.0.0 --port %PORT% --reload"
+start "TopUpNaija Backend" /min cmd /c "cd /d %BACKEND% && %VENV%\uvicorn main:app --host 0.0.0.0 --port %PORT% --reload"
 
 :: Wait for backend to be ready
 echo       Waiting for backend to start...
@@ -53,6 +53,6 @@ flutter run
 echo.
 echo ========================================
 echo  Flutter app closed. Backend still running.
-echo  Close the "ADP Backend" window to stop it.
+echo  Close the "TopUpNaija Backend" window to stop it.
 echo ========================================
 pause

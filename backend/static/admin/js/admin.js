@@ -1,5 +1,5 @@
 /**
- * ADP Admin Panel - Shared JavaScript Utilities
+ * TopUpNaija Admin Panel - Shared JavaScript Utilities
  */
 
 /**

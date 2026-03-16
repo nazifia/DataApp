@@ -25,7 +25,7 @@ class WalletRepository {
       return {
         'bank_name': 'Providus Bank',
         'account_number': '0123456789',
-        'account_name': 'ADP/DEMO',
+        'account_name': 'TUN/DEMO',
         'note': 'Transfer the exact amount shown. Your wallet will be credited automatically.',
       };
     }

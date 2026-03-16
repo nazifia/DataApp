@@ -2,7 +2,7 @@
 
 class AppConstants {
   // App Info
-  static const String appName = 'Airtime & Data NG';
+  static const String appName = 'TopUpNaija';
   static const String appVersion = '1.0.0';
 
   // API Base URL

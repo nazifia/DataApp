@@ -68,7 +68,7 @@ class _WelcomePageState extends State<WelcomePage> {
               ),
               const SizedBox(height: 24),
               const Text(
-                'ADP Nigeria',
+                'TopUpNaija',
                 style: TextStyle(
                   fontSize: 34,
                   fontWeight: FontWeight.w800,
