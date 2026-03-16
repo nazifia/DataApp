@@ -205,6 +205,14 @@ class _PhoneInputPageState extends State<PhoneInputPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: 16),
+            Center(
+              child: Image.asset(
+                'assets/icons/app_icon.png',
+                width: 80,
+                height: 80,
+              ),
+            ),
+            const SizedBox(height: 20),
             const Text(
               'Welcome back!',
               style: TextStyle(
@@ -442,6 +450,14 @@ class _PhoneInputPageState extends State<PhoneInputPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: 16),
+            Center(
+              child: Image.asset(
+                'assets/icons/app_icon.png',
+                width: 80,
+                height: 80,
+              ),
+            ),
+            const SizedBox(height: 20),
             const Text(
               'Join TopUpNaija',
               style: TextStyle(
