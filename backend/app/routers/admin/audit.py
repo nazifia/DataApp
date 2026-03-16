@@ -4,7 +4,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import or_
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models.user import User, UserRole
@@ -27,7 +27,7 @@ async def list_audit_logs(
     admin: User = Depends(require_role(UserRole.admin)),
 ):
     """List admin audit logs with pagination and filters."""
-    query = db.query(AdminAuditLog).options(joinedload(AdminAuditLog.admin_id))
+    query = db.query(AdminAuditLog)
 
     if action:
         query = query.filter(AdminAuditLog.action.ilike(f"%{action}%"))

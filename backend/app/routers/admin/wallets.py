@@ -18,7 +18,7 @@ from app.utils.admin_auth import get_current_admin, log_admin_action, require_ro
 router = APIRouter(tags=["Admin Wallets"])
 
 
-@router.get("/wallets", response_model=PaginatedResponse[AdminWalletItem])
+@router.get("", response_model=PaginatedResponse[AdminWalletItem])
 async def list_wallets(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
@@ -74,7 +74,7 @@ async def list_wallets(
     )
 
 
-@router.post("/wallets/{user_id}/credit")
+@router.post("/{user_id}/credit")
 async def credit_wallet(
     user_id: str,
     body: AdminWalletCreditRequest,
@@ -119,7 +119,7 @@ async def credit_wallet(
     return {"message": f"Wallet credited with ₦{body.amount}", "new_balance": float(wallet.balance)}
 
 
-@router.post("/wallets/{user_id}/debit")
+@router.post("/{user_id}/debit")
 async def debit_wallet(
     user_id: str,
     body: AdminWalletDebitRequest,

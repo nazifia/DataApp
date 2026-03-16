@@ -5,6 +5,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/airtime_bloc.dart';
 import '../event/airtime_event.dart';
 import '../state/airtime_state.dart';
+import '../../authentication/bloc/auth_bloc.dart';
+import '../../authentication/event/auth_event.dart';
+import '../../authentication/state/auth_state.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/confirmation_dialog.dart';
 import '../../../core/widgets/pin_input_dialog.dart';
@@ -26,6 +29,8 @@ class _AirtimePurchasePageState extends State<AirtimePurchasePage> {
   final _amountController = TextEditingController();
   String _selectedNetwork = 'MTN';
   final _formKey = GlobalKey<FormState>();
+  bool _isSelf = true;
+  String _selfPhone = '';
 
   static const _quickAmounts = [100.0, 200.0, 500.0, 1000.0, 2000.0, 5000.0];
 
@@ -44,10 +49,42 @@ class _AirtimePurchasePageState extends State<AirtimePurchasePage> {
   };
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authState = context.read<AuthBloc>().state;
+      if (authState is ProfileSuccess) {
+        _onProfileLoaded(authState.profileData);
+      } else {
+        context.read<AuthBloc>().add(LoadProfileEvent());
+      }
+    });
+  }
+
+  void _onProfileLoaded(Map<String, dynamic> profileData) {
+    final raw = profileData['phone_number'] as String? ?? '';
+    if (raw.isNotEmpty) {
+      final phone = Validators.formatNigerianPhone(raw);
+      setState(() {
+        _selfPhone = phone;
+        if (_isSelf) _phoneController.text = phone;
+      });
+    }
+  }
+
+  @override
   void dispose() {
     _phoneController.dispose();
     _amountController.dispose();
     super.dispose();
+  }
+
+  void _onToggleRecipient(bool isSelf) {
+    if (_isSelf == isSelf) return;
+    setState(() {
+      _isSelf = isSelf;
+      _phoneController.text = isSelf ? _selfPhone : '';
+    });
   }
 
   Future<void> _purchaseAirtime() async {
@@ -73,7 +110,6 @@ class _AirtimePurchasePageState extends State<AirtimePurchasePage> {
 
       if (confirmed != true || !mounted) return;
 
-      // PIN verification
       final pinVerified = await _verifyPin();
       if (!pinVerified || !mounted) return;
 
@@ -87,7 +123,7 @@ class _AirtimePurchasePageState extends State<AirtimePurchasePage> {
 
   Future<bool> _verifyPin() async {
     final hasPin = await PinService.hasPin();
-    if (!hasPin) return true; // No PIN set, skip verification
+    if (!hasPin) return true;
     if (!mounted) return false;
     final enteredPin = await PinInputDialog.show(
       context,
@@ -124,175 +160,274 @@ class _AirtimePurchasePageState extends State<AirtimePurchasePage> {
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: BlocConsumer<AirtimeBloc, AirtimeState>(
-        listenWhen: (previous, current) =>
-            (current is AirtimeSuccess && previous is! AirtimeSuccess) ||
-            (current is AirtimeFailure && previous is! AirtimeFailure),
+      body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
-          if (state is AirtimeSuccess) {
-            _showSuccessSheet(context, state);
-          } else if (state is AirtimeFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: AppColors.error,
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
+          if (state is ProfileSuccess) _onProfileLoaded(state.profileData);
+        },
+        child: BlocConsumer<AirtimeBloc, AirtimeState>(
+          listenWhen: (previous, current) =>
+              (current is AirtimeSuccess && previous is! AirtimeSuccess) ||
+              (current is AirtimeFailure && previous is! AirtimeFailure),
+          listener: (context, state) {
+            if (state is AirtimeSuccess) {
+              _showSuccessSheet(context, state);
+            } else if (state is AirtimeFailure) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: AppColors.error,
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                ),
+              );
+            }
+          },
+          builder: (context, state) {
+            final isLoading = state is AirtimeLoading;
+
+            return Form(
+              key: _formKey,
+              child: ListView(
+                padding: const EdgeInsets.all(20),
+                children: [
+                  // Network Selection
+                  _sectionLabel('Select Network'),
+                  const SizedBox(height: 12),
+                  _buildNetworkCards(),
+                  const SizedBox(height: 24),
+
+                  // Recipient
+                  _sectionLabel('Recipient'),
+                  const SizedBox(height: 10),
+                  _buildRecipientToggle(),
+                  const SizedBox(height: 12),
+                  _buildPhoneField(),
+                  const SizedBox(height: 24),
+
+                  // Amount
+                  _sectionLabel('Amount'),
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    controller: _amountController,
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(
+                          RegExp(r'^\d+\.?\d{0,2}')),
+                    ],
+                    decoration: InputDecoration(
+                      hintText: 'Enter amount',
+                      prefixIcon: Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: Text(
+                          '₦',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                      ),
+                      filled: true,
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter amount';
+                      }
+                      if (!Validators.isValidAmount(value)) {
+                        return 'Enter a valid amount';
+                      }
+                      final amount = double.tryParse(value) ?? 0;
+                      if (amount < 100) return 'Minimum amount is ₦100';
+                      if (amount > AppConstants.maxSingleTransaction) {
+                        return 'Maximum is ${CurrencyFormatter.formatNaira(AppConstants.maxSingleTransaction)}';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Quick amount chips
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: _quickAmounts.map((amount) {
+                      return GestureDetector(
+                        onTap: () => setState(() {
+                          _amountController.text = amount.toInt().toString();
+                        }),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: _amountController.text ==
+                                    amount.toInt().toString()
+                                ? AppColors.primary.withValues(alpha: 0.12)
+                                : Theme.of(context).colorScheme.surface,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: _amountController.text ==
+                                      amount.toInt().toString()
+                                  ? AppColors.primary
+                                  : Theme.of(context)
+                                      .colorScheme
+                                      .outlineVariant,
+                            ),
+                          ),
+                          child: Text(
+                            CurrencyFormatter.formatNaira(amount),
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: _amountController.text ==
+                                      amount.toInt().toString()
+                                  ? AppColors.primary
+                                  : Theme.of(context).colorScheme.onSurface,
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  if (_amountController.text.isNotEmpty &&
+                      _phoneController.text.isNotEmpty)
+                    _buildSummaryCard(),
+
+                  const SizedBox(height: 16),
+
+                  CustomButton(
+                    text: isLoading
+                        ? 'Processing...'
+                        : 'Buy $_selectedNetwork Airtime',
+                    onPressed: isLoading ? null : _purchaseAirtime,
+                    isLoading: isLoading,
+                  ),
+                  const SizedBox(height: 24),
+                ],
               ),
             );
-          }
-        },
-        builder: (context, state) {
-          final isLoading = state is AirtimeLoading;
-
-          return Form(
-            key: _formKey,
-            child: ListView(
-              padding: const EdgeInsets.all(20),
-              children: [
-                // Network Selection
-                _sectionLabel('Select Network'),
-                const SizedBox(height: 12),
-                _buildNetworkCards(),
-                const SizedBox(height: 24),
-
-                // Phone Number
-                _sectionLabel('Recipient Phone Number'),
-                const SizedBox(height: 10),
-                TextFormField(
-                  controller: _phoneController,
-                  keyboardType: TextInputType.phone,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  decoration: InputDecoration(
-                    hintText: '080XXXXXXXX',
-                    prefixIcon: const Icon(Icons.phone_outlined),
-                    suffixIcon: IconButton(
-                      icon: const Icon(Icons.contacts_rounded,
-                          color: AppColors.primary),
-                      tooltip: 'Pick from contacts',
-                      onPressed: _pickContact,
-                    ),
-                    filled: true,
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter phone number';
-                    }
-                    if (!Validators.isValidNigerianPhone(value)) {
-                      return 'Enter a valid Nigerian phone number';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 24),
-
-                // Amount
-                _sectionLabel('Amount'),
-                const SizedBox(height: 10),
-                TextFormField(
-                  controller: _amountController,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(
-                        RegExp(r'^\d+\.?\d{0,2}')),
-                  ],
-                  decoration: InputDecoration(
-                    hintText: 'Enter amount',
-                    prefixIcon: Padding(
-                      padding: const EdgeInsets.all(14),
-                      child: Text(
-                        '₦',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.grey[700],
-                        ),
-                      ),
-                    ),
-                    filled: true,
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter amount';
-                    }
-                    if (!Validators.isValidAmount(value)) {
-                      return 'Enter a valid amount';
-                    }
-                    final amount = double.tryParse(value) ?? 0;
-                    if (amount < 100) return 'Minimum amount is ₦100';
-                    if (amount > AppConstants.maxSingleTransaction) {
-                      return 'Maximum is ${CurrencyFormatter.formatNaira(AppConstants.maxSingleTransaction)}';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 12),
-
-                // Quick amount chips
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: _quickAmounts.map((amount) {
-                    return GestureDetector(
-                      onTap: () => setState(() {
-                        _amountController.text = amount.toInt().toString();
-                      }),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: _amountController.text ==
-                                  amount.toInt().toString()
-                              ? AppColors.primary.withValues(alpha: 0.12)
-                              : Theme.of(context).colorScheme.surface,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: _amountController.text ==
-                                    amount.toInt().toString()
-                                ? AppColors.primary
-                                : Theme.of(context).colorScheme.outlineVariant,
-                          ),
-                        ),
-                        child: Text(
-                          CurrencyFormatter.formatNaira(amount),
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: _amountController.text ==
-                                    amount.toInt().toString()
-                                ? AppColors.primary
-                                : Theme.of(context).colorScheme.onSurface,
-                          ),
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-
-                const SizedBox(height: 32),
-
-                // Purchase summary
-                if (_amountController.text.isNotEmpty &&
-                    _phoneController.text.isNotEmpty)
-                  _buildSummaryCard(),
-
-                const SizedBox(height: 16),
-
-                CustomButton(
-                  text: isLoading
-                      ? 'Processing...'
-                      : 'Buy $_selectedNetwork Airtime',
-                  onPressed: isLoading ? null : _purchaseAirtime,
-                  isLoading: isLoading,
-                ),
-                const SizedBox(height: 24),
-              ],
-            ),
-          );
-        },
+          },
+        ),
       ),
+    );
+  }
+
+  Widget _buildRecipientToggle() {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: cs.outlineVariant),
+      ),
+      child: Row(
+        children: [
+          _toggleOption('Myself', Icons.person_rounded, true),
+          _toggleOption('Others', Icons.people_alt_rounded, false),
+        ],
+      ),
+    );
+  }
+
+  Widget _toggleOption(String label, IconData icon, bool isSelf) {
+    final isSelected = _isSelf == isSelf;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => _onToggleRecipient(isSelf),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.primary : Colors.transparent,
+            borderRadius: BorderRadius.circular(9),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 16,
+                color: isSelected
+                    ? Colors.white
+                    : Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.5),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight:
+                      isSelected ? FontWeight.w700 : FontWeight.w500,
+                  color: isSelected
+                      ? Colors.white
+                      : Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.5),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPhoneField() {
+    return TextFormField(
+      controller: _phoneController,
+      keyboardType: TextInputType.phone,
+      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+      readOnly: _isSelf,
+      style: _isSelf
+          ? TextStyle(
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.6),
+            )
+          : null,
+      decoration: InputDecoration(
+        hintText: _isSelf
+            ? (_selfPhone.isEmpty ? 'Loading...' : _selfPhone)
+            : '080XXXXXXXX',
+        prefixIcon: Icon(
+          _isSelf ? Icons.person_outline_rounded : Icons.phone_outlined,
+        ),
+        suffixIcon: _isSelf
+            ? const Icon(Icons.lock_outline_rounded,
+                size: 18, color: AppColors.textSecondary)
+            : IconButton(
+                icon: const Icon(Icons.contacts_rounded,
+                    color: AppColors.primary),
+                tooltip: 'Pick from contacts',
+                onPressed: _pickContact,
+              ),
+        filled: true,
+        fillColor: _isSelf
+            ? Theme.of(context)
+                .colorScheme
+                .surfaceContainerHighest
+                .withValues(alpha: 0.5)
+            : null,
+      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter phone number';
+        }
+        if (!Validators.isValidNigerianPhone(value)) {
+          return 'Enter a valid Nigerian phone number';
+        }
+        return null;
+      },
     );
   }
 
@@ -323,7 +458,9 @@ class _AirtimePurchasePageState extends State<AirtimePurchasePage> {
                     : Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                  color: isSelected ? color : Theme.of(context).colorScheme.outlineVariant,
+                  color: isSelected
+                      ? color
+                      : Theme.of(context).colorScheme.outlineVariant,
                   width: isSelected ? 2 : 1,
                 ),
               ),
@@ -337,8 +474,7 @@ class _AirtimePurchasePageState extends State<AirtimePurchasePage> {
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      _networkIcons[network] ??
-                          Icons.signal_cellular_alt,
+                      _networkIcons[network] ?? Icons.signal_cellular_alt,
                       color: displayColor,
                       size: 18,
                     ),
@@ -348,12 +484,14 @@ class _AirtimePurchasePageState extends State<AirtimePurchasePage> {
                     network,
                     style: TextStyle(
                       fontSize: 11,
-                      fontWeight: isSelected
-                          ? FontWeight.w700
-                          : FontWeight.w500,
+                      fontWeight:
+                          isSelected ? FontWeight.w700 : FontWeight.w500,
                       color: isSelected
                           ? displayColor
-                          : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                          : Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.5),
                     ),
                   ),
                 ],
@@ -372,21 +510,20 @@ class _AirtimePurchasePageState extends State<AirtimePurchasePage> {
       decoration: BoxDecoration(
         color: AppColors.primary.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-            color: AppColors.primary.withValues(alpha: 0.2)),
+        border:
+            Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
             'Summary',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-            ),
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 10),
           _summaryRow('Network', _selectedNetwork),
+          _summaryRow(
+              'Recipient', _isSelf ? 'Myself' : _phoneController.text),
           _summaryRow('Phone', _phoneController.text),
           _summaryRow('Amount', CurrencyFormatter.formatNaira(amount)),
         ],
@@ -403,7 +540,8 @@ class _AirtimePurchasePageState extends State<AirtimePurchasePage> {
         children: [
           Text(label,
               style: TextStyle(
-                  fontSize: 13, color: cs.onSurface.withValues(alpha: 0.6))),
+                  fontSize: 13,
+                  color: cs.onSurface.withValues(alpha: 0.6))),
           Text(value,
               style: TextStyle(
                   fontSize: 13,
@@ -438,6 +576,7 @@ class _AirtimePurchasePageState extends State<AirtimePurchasePage> {
         phone: state.phoneNumber,
         amount: state.amount,
         reference: state.reference,
+        isSelf: _isSelf,
       ),
     );
   }
@@ -449,6 +588,7 @@ class _SuccessSheet extends StatelessWidget {
   final String phone;
   final double amount;
   final String reference;
+  final bool isSelf;
 
   const _SuccessSheet({
     required this.title,
@@ -456,6 +596,7 @@ class _SuccessSheet extends StatelessWidget {
     required this.phone,
     required this.amount,
     required this.reference,
+    required this.isSelf,
   });
 
   @override
@@ -480,9 +621,7 @@ class _SuccessSheet extends StatelessWidget {
             Text(
               title,
               style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-              ),
+                  fontSize: 22, fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 6),
             Text(
@@ -495,7 +634,8 @@ class _SuccessSheet extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             _row(context, 'Network', network),
-            _row(context, 'Recipient', phone),
+            _row(context, 'Recipient', isSelf ? 'Myself' : phone),
+            _row(context, 'Phone', phone),
             _row(context, 'Reference', reference),
             const SizedBox(height: 24),
             SizedBox(
@@ -523,7 +663,8 @@ class _SuccessSheet extends StatelessWidget {
         children: [
           Text(label,
               style: TextStyle(
-                  fontSize: 13, color: cs.onSurface.withValues(alpha: 0.6))),
+                  fontSize: 13,
+                  color: cs.onSurface.withValues(alpha: 0.6))),
           Text(value,
               style: TextStyle(
                   fontSize: 13,

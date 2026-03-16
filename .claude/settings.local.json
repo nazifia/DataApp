@@ -84,7 +84,10 @@
       "Bash(cmd /c \"netsh advfirewall firewall show rule name=all dir=in > C:\\\\Temp\\\\fw_rules.txt\")",
       "Read(//c/Temp/**)",
       "Bash(powershell -Command \"Start-Process cmd -ArgumentList '/c netsh advfirewall firewall add rule name=\\\\\"ADP Dev Port 8001\\\\\" dir=in action=allow protocol=TCP localport=8001 && echo Done' -Verb RunAs -Wait\" 2>&1)",
-      "Bash(powershell -Command \"netsh advfirewall firewall show rule name='ADP Dev Port 8001'\" 2>&1)"
+      "Bash(powershell -Command \"netsh advfirewall firewall show rule name='ADP Dev Port 8001'\" 2>&1)",
+      "Bash(cmd.exe /c \"taskkill /PID 24688 /F\")",
+      "Bash(cmd.exe /c \"netstat -ano | findstr :8005\")",
+      "Bash(pip install:*)"
     ]
   }
 }

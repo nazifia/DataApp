@@ -8,36 +8,50 @@ import os
 # Add parent directory to path so we can import app modules
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-import bcrypt as bcrypt_lib
+from alembic.config import Config
+from alembic import command
+from passlib.context import CryptContext
 
-from app.database import SessionLocal, engine
+from app.database import SessionLocal
 from app.models.user import User, UserRole
-from app.models import user as user_module, wallet as wallet_module, transaction as transaction_module, audit_log as audit_module
+from app.models.wallet import Wallet
+from app.utils.validators import normalize_phone_number
 
-# Ensure all tables exist
-user_module.Base.metadata.create_all(bind=engine)
-wallet_module.Base.metadata.create_all(bind=engine)
-transaction_module.Base.metadata.create_all(bind=engine)
-audit_module.Base.metadata.create_all(bind=engine)
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
+
+# Run any pending Alembic migrations before proceeding
+def _run_migrations():
+    alembic_cfg = Config(os.path.join(os.path.dirname(__file__), "..", "alembic.ini"))
+    alembic_cfg.set_main_option("script_location", os.path.join(os.path.dirname(__file__), "..", "alembic"))
+    command.upgrade(alembic_cfg, "head")
+
+_run_migrations()
 
 
 def hash_password(password: str) -> str:
-    """Hash a password using bcrypt."""
-    return bcrypt_lib.hashpw(password.encode('utf-8'), bcrypt_lib.gensalt()).decode('utf-8')
+    return pwd_context.hash(password)
 
 
 def create_admin(phone: str, password: str, name: str = "Admin", role: str = "admin"):
     """Create an admin user or promote an existing user to the specified role."""
+    normalized_phone = normalize_phone_number(phone)
+    if normalized_phone is None:
+        print(f"ERROR: Invalid phone number '{phone}'. Use format: 08XXXXXXXXX or +2348XXXXXXXXX")
+        sys.exit(1)
+
     db = SessionLocal()
     try:
         # Validate role
         target_role = UserRole(role)
 
-        # Check if user already exists
-        user = db.query(User).filter(User.phone_number == phone).first()
+        # Check if user already exists (search both normalized and raw to handle legacy data)
+        user = db.query(User).filter(User.phone_number == normalized_phone).first()
+        if user is None:
+            user = db.query(User).filter(User.phone_number == phone).first()
 
         if user:
-            # Promote existing user to specified role
+            # Promote existing user to specified role; also fix phone format & rehash password
+            user.phone_number = normalized_phone
             user.role = target_role
             if password:
                 user.password_hash = hash_password(password)
@@ -45,7 +59,12 @@ def create_admin(phone: str, password: str, name: str = "Admin", role: str = "ad
                 user.full_name = name
             db.commit()
             db.refresh(user)
-            print(f"SUCCESS: User {phone} promoted to {target_role.value} role.")
+            # Ensure wallet exists
+            if not db.query(Wallet).filter(Wallet.user_id == user.id).first():
+                db.add(Wallet(user_id=user.id, balance=0))
+                db.commit()
+                print(f"  Wallet created.")
+            print(f"SUCCESS: User {normalized_phone} promoted to {target_role.value} role.")
             print(f"  User ID: {user.id}")
             print(f"  Name: {user.full_name}")
             print(f"  Role: {user.role}")
@@ -54,7 +73,7 @@ def create_admin(phone: str, password: str, name: str = "Admin", role: str = "ad
         # Create new admin user
         hashed_password = hash_password(password)
         new_admin = User(
-            phone_number=phone,
+            phone_number=normalized_phone,
             full_name=name,
             password_hash=hashed_password,
             is_active=True,
@@ -63,9 +82,11 @@ def create_admin(phone: str, password: str, name: str = "Admin", role: str = "ad
         db.add(new_admin)
         db.commit()
         db.refresh(new_admin)
+        db.add(Wallet(user_id=new_admin.id, balance=0))
+        db.commit()
 
         print(f"SUCCESS: Admin user created.")
-        print(f"  Phone: {phone}")
+        print(f"  Phone: {normalized_phone}")
         print(f"  Name: {name}")
         print(f"  User ID: {new_admin.id}")
         print(f"  Role: {new_admin.role}")

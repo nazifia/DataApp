@@ -23,8 +23,8 @@
         <button onclick="loadUsers(1)" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
             <i data-lucide="search" class="w-4 h-4 inline"></i> Search
         </button>
-        <a href="/api/v1/admin/export/users.csv" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-            <i data-lucide="download" class="w-4 h-4 inline"></i> Export CSV
+        <a href="/api/v1/admin/export/users.pdf" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+            <i data-lucide="file-text" class="w-4 h-4 inline"></i> Export PDF
         </a>
         {% if can_create_users %}
         <button onclick="openCreateUserModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
@@ -136,7 +136,7 @@ async function loadUsers(page) {
     const search = document.getElementById('search-input').value;
     const isActive = document.getElementById('status-filter').value;
 
-    let url = `/api/v1/admin/users/users?page=${page}&page_size=20`;
+    let url = `/api/v1/admin/users?page=${page}&page_size=20`;
     if (search) url += `&search=${encodeURIComponent(search)}`;
     if (isActive) url += `&is_active=${isActive}`;
 
@@ -173,7 +173,7 @@ async function toggleUserStatus(userId, newStatus) {
     if (!confirm(`Are you sure you want to ${action} this user?`)) return;
 
     try {
-        await fetchJSON(`/api/v1/admin/users/users/${userId}/toggle-active`, { method: 'PUT' });
+        await fetchJSON(`/api/v1/admin/users/${userId}/toggle-active`, { method: 'PUT' });
         showToast(`User ${action}d successfully`, 'success');
         loadUsers(currentPage);
     } catch (error) {
@@ -206,7 +206,7 @@ async function submitCreateUser(e) {
     const isActive = document.getElementById('create-user-active').checked;
 
     try {
-        const result = await fetchJSON('/api/v1/admin/users/users', {
+        const result = await fetchJSON('/api/v1/admin/users', {
             method: 'POST',
             body: JSON.stringify({
                 phone_number: phone,

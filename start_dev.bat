@@ -8,7 +8,7 @@ set ROOT=%~dp0
 set VENV=%ROOT%venv\Scripts
 set BACKEND=%ROOT%backend
 set FLUTTER_APP=%ROOT%airtime_data_app
-set PORT=8001
+set PORT=8000
 
 :: ── Step 1: Ensure firewall allows emulator traffic on dev port ──
 echo [1/4] Ensuring Windows Firewall allows port %PORT%...

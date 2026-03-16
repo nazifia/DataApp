@@ -10,7 +10,7 @@ from app.utils.admin_auth import get_current_admin, require_role
 router = APIRouter(tags=["Admin Settings"])
 
 
-@router.get("/settings", response_model=AdminSettingsResponse)
+@router.get("", response_model=AdminSettingsResponse)
 async def get_settings(
     db: Session = Depends(get_db),
     admin: User = Depends(require_role(UserRole.admin)),
@@ -27,7 +27,7 @@ async def get_settings(
     )
 
 
-@router.put("/settings/dev-mode")
+@router.put("/dev-mode")
 async def toggle_dev_mode(
     db: Session = Depends(get_db),
     admin: User = Depends(require_role(UserRole.super_admin)),

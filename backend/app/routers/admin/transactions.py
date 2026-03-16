@@ -15,7 +15,7 @@ from app.utils.admin_auth import get_current_admin
 router = APIRouter(tags=["Admin Transactions"])
 
 
-@router.get("/transactions", response_model=PaginatedResponse[AdminTransactionItem])
+@router.get("", response_model=PaginatedResponse[AdminTransactionItem])
 async def list_transactions(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
@@ -98,7 +98,7 @@ async def list_transactions(
     )
 
 
-@router.get("/transactions/{txn_id}", response_model=AdminTransactionItem)
+@router.get("/{txn_id}", response_model=AdminTransactionItem)
 async def get_transaction(
     txn_id: str,
     db: Session = Depends(get_db),

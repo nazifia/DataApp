@@ -51,8 +51,8 @@
         <button onclick="loadTransactions(1)" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
             <i data-lucide="search" class="w-4 h-4 inline"></i> Filter
         </button>
-        <button onclick="exportCSV()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-            <i data-lucide="download" class="w-4 h-4 inline"></i> Export CSV
+        <button onclick="exportPDF()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+            <i data-lucide="file-text" class="w-4 h-4 inline"></i> Export PDF
         </button>
     </div>
 </div>
@@ -117,7 +117,7 @@ async function loadTransactions(page) {
     if (dateTo) params.append('date_to', dateTo);
 
     try {
-        const data = await fetchJSON(`/api/v1/admin/transactions/transactions?${params}`);
+        const data = await fetchJSON(`/api/v1/admin/transactions?${params}`);
         renderTable('txns-body', data.items, (txn) => `
             <tr>
                 <td class="px-6 py-3 text-sm font-mono text-gray-900">${txn.reference}</td>
@@ -140,7 +140,7 @@ async function loadTransactions(page) {
     }
 }
 
-function exportCSV() {
+function exportPDF() {
     const params = new URLSearchParams();
     const type = document.getElementById('type-filter').value;
     const status = document.getElementById('status-filter').value;
@@ -152,7 +152,7 @@ function exportCSV() {
     if (dateFrom) params.append('date_from', dateFrom);
     if (dateTo) params.append('date_to', dateTo);
 
-    window.location.href = `/api/v1/admin/export/transactions.csv?${params}`;
+    window.location.href = `/api/v1/admin/export/transactions.pdf?${params}`;
 }
 </script>
 {% endblock %}

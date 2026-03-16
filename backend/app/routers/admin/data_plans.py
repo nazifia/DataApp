@@ -31,7 +31,7 @@ def _init_plans():
             ]
 
 
-@router.get("/data-plans")
+@router.get("")
 async def list_data_plans(
     db: Session = Depends(get_db),
     admin: User = Depends(require_role(UserRole.moderator)),
@@ -41,7 +41,7 @@ async def list_data_plans(
     return _data_plans_store
 
 
-@router.post("/data-plans")
+@router.post("")
 async def create_or_update_plan(
     body: AdminDataPlanCreateRequest,
     db: Session = Depends(get_db),
@@ -79,7 +79,7 @@ async def create_or_update_plan(
         return {"message": "Data plan created", "plan": plan_data}
 
 
-@router.delete("/data-plans/{plan_id}")
+@router.delete("/{plan_id}")
 async def delete_plan(
     plan_id: str,
     db: Session = Depends(get_db),

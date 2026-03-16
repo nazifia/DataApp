@@ -5,6 +5,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/data_bloc.dart';
 import '../event/data_event.dart';
 import '../state/data_state.dart';
+import '../../authentication/bloc/auth_bloc.dart';
+import '../../authentication/event/auth_event.dart';
+import '../../authentication/state/auth_state.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/confirmation_dialog.dart';
 import '../../../core/widgets/pin_input_dialog.dart';
@@ -28,6 +31,8 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
   String _selectedPlanName = '';
   double _selectedPlanPrice = 0;
   final _formKey = GlobalKey<FormState>();
+  bool _isSelf = true;
+  String _selfPhone = '';
 
   static const _networkColors = {
     'MTN': AppColors.mtn,
@@ -40,12 +45,39 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
   void initState() {
     super.initState();
     _loadDataPlans();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authState = context.read<AuthBloc>().state;
+      if (authState is ProfileSuccess) {
+        _onProfileLoaded(authState.profileData);
+      } else {
+        context.read<AuthBloc>().add(LoadProfileEvent());
+      }
+    });
   }
 
   @override
   void dispose() {
     _phoneController.dispose();
     super.dispose();
+  }
+
+  void _onProfileLoaded(Map<String, dynamic> profileData) {
+    final raw = profileData['phone_number'] as String? ?? '';
+    if (raw.isNotEmpty) {
+      final phone = Validators.formatNigerianPhone(raw);
+      setState(() {
+        _selfPhone = phone;
+        if (_isSelf) _phoneController.text = phone;
+      });
+    }
+  }
+
+  void _onToggleRecipient(bool isSelf) {
+    if (_isSelf == isSelf) return;
+    setState(() {
+      _isSelf = isSelf;
+      _phoneController.text = isSelf ? _selfPhone : '';
+    });
   }
 
   void _loadDataPlans() {
@@ -75,7 +107,6 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
 
       if (confirmed != true || !mounted) return;
 
-      // PIN verification
       final pinVerified = await _verifyPin();
       if (!pinVerified || !mounted) return;
 
@@ -89,7 +120,7 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
 
   Future<bool> _verifyPin() async {
     final hasPin = await PinService.hasPin();
-    if (!hasPin) return true; // No PIN set, skip verification
+    if (!hasPin) return true;
     if (!mounted) return false;
     final enteredPin = await PinInputDialog.show(
       context,
@@ -126,101 +157,199 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: BlocConsumer<DataBloc, DataState>(
-        listenWhen: (previous, current) =>
-            (current is DataSuccess && previous is! DataSuccess) ||
-            (current is DataFailure && previous is! DataFailure),
+      body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
-          if (state is DataSuccess) {
-            _showSuccessSheet(context, state);
-          } else if (state is DataFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: AppColors.error,
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
-              ),
-            );
-          } else if (state is DataPlansFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
-          }
+          if (state is ProfileSuccess) _onProfileLoaded(state.profileData);
         },
-        builder: (context, state) {
-          final isLoading =
-              state is DataLoading || state is DataPlansLoading;
-
-          return Form(
-            key: _formKey,
-            child: ListView(
-              padding: const EdgeInsets.all(20),
-              children: [
-                // Network Selection
-                _sectionLabel('Select Network'),
-                const SizedBox(height: 12),
-                _buildNetworkCards(),
-                const SizedBox(height: 24),
-
-                // Data Plans
-                _sectionLabel('Available Data Plans'),
-                const SizedBox(height: 12),
-                _buildDataPlansSection(state),
-                const SizedBox(height: 24),
-
-                // Phone Number
-                _sectionLabel('Recipient Phone Number'),
-                const SizedBox(height: 10),
-                TextFormField(
-                  controller: _phoneController,
-                  keyboardType: TextInputType.phone,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  decoration: InputDecoration(
-                    hintText: '080XXXXXXXX',
-                    prefixIcon: const Icon(Icons.phone_outlined),
-                    suffixIcon: IconButton(
-                      icon: const Icon(Icons.contacts_rounded,
-                          color: AppColors.primary),
-                      tooltip: 'Pick from contacts',
-                      onPressed: _pickContact,
-                    ),
-                    filled: true,
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter phone number';
-                    }
-                    if (!Validators.isValidNigerianPhone(value)) {
-                      return 'Enter a valid Nigerian phone number';
-                    }
-                    return null;
-                  },
+        child: BlocConsumer<DataBloc, DataState>(
+          listenWhen: (previous, current) =>
+              (current is DataSuccess && previous is! DataSuccess) ||
+              (current is DataFailure && previous is! DataFailure),
+          listener: (context, state) {
+            if (state is DataSuccess) {
+              _showSuccessSheet(context, state);
+            } else if (state is DataFailure) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: AppColors.error,
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
                 ),
+              );
+            } else if (state is DataPlansFailure) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            }
+          },
+          builder: (context, state) {
+            final isLoading =
+                state is DataLoading || state is DataPlansLoading;
 
-                // Summary
-                if (_selectedPlanId.isNotEmpty &&
-                    _phoneController.text.isNotEmpty) ...[
+            return Form(
+              key: _formKey,
+              child: ListView(
+                padding: const EdgeInsets.all(20),
+                children: [
+                  // Network Selection
+                  _sectionLabel('Select Network'),
+                  const SizedBox(height: 12),
+                  _buildNetworkCards(),
                   const SizedBox(height: 24),
-                  _buildSummaryCard(),
-                ],
 
-                const SizedBox(height: 32),
-                CustomButton(
-                  text: isLoading ? 'Processing...' : 'Buy Data Plan',
-                  onPressed: isLoading ? null : _purchaseData,
-                  isLoading: isLoading,
-                ),
-                const SizedBox(height: 24),
-              ],
-            ),
-          );
-        },
+                  // Data Plans
+                  _sectionLabel('Available Data Plans'),
+                  const SizedBox(height: 12),
+                  _buildDataPlansSection(state),
+                  const SizedBox(height: 24),
+
+                  // Recipient
+                  _sectionLabel('Recipient'),
+                  const SizedBox(height: 10),
+                  _buildRecipientToggle(),
+                  const SizedBox(height: 12),
+                  _buildPhoneField(),
+
+                  // Summary
+                  if (_selectedPlanId.isNotEmpty &&
+                      _phoneController.text.isNotEmpty) ...[
+                    const SizedBox(height: 24),
+                    _buildSummaryCard(),
+                  ],
+
+                  const SizedBox(height: 32),
+                  CustomButton(
+                    text: isLoading ? 'Processing...' : 'Buy Data Plan',
+                    onPressed: isLoading ? null : _purchaseData,
+                    isLoading: isLoading,
+                  ),
+                  const SizedBox(height: 24),
+                ],
+              ),
+            );
+          },
+        ),
       ),
+    );
+  }
+
+  Widget _buildRecipientToggle() {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: cs.outlineVariant),
+      ),
+      child: Row(
+        children: [
+          _toggleOption('Myself', Icons.person_rounded, true),
+          _toggleOption('Others', Icons.people_alt_rounded, false),
+        ],
+      ),
+    );
+  }
+
+  Widget _toggleOption(String label, IconData icon, bool isSelf) {
+    final isSelected = _isSelf == isSelf;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => _onToggleRecipient(isSelf),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.primary : Colors.transparent,
+            borderRadius: BorderRadius.circular(9),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 16,
+                color: isSelected
+                    ? Colors.white
+                    : Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.5),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight:
+                      isSelected ? FontWeight.w700 : FontWeight.w500,
+                  color: isSelected
+                      ? Colors.white
+                      : Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.5),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPhoneField() {
+    return TextFormField(
+      controller: _phoneController,
+      keyboardType: TextInputType.phone,
+      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+      readOnly: _isSelf,
+      style: _isSelf
+          ? TextStyle(
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.6),
+            )
+          : null,
+      decoration: InputDecoration(
+        hintText: _isSelf
+            ? (_selfPhone.isEmpty ? 'Loading...' : _selfPhone)
+            : '080XXXXXXXX',
+        prefixIcon: Icon(
+          _isSelf ? Icons.person_outline_rounded : Icons.phone_outlined,
+        ),
+        suffixIcon: _isSelf
+            ? const Icon(Icons.lock_outline_rounded,
+                size: 18, color: AppColors.textSecondary)
+            : IconButton(
+                icon: const Icon(Icons.contacts_rounded,
+                    color: AppColors.primary),
+                tooltip: 'Pick from contacts',
+                onPressed: _pickContact,
+              ),
+        filled: true,
+        fillColor: _isSelf
+            ? Theme.of(context)
+                .colorScheme
+                .surfaceContainerHighest
+                .withValues(alpha: 0.5)
+            : null,
+      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter phone number';
+        }
+        if (!Validators.isValidNigerianPhone(value)) {
+          return 'Enter a valid Nigerian phone number';
+        }
+        return null;
+      },
     );
   }
 
@@ -259,7 +388,9 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
                     : Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                  color: isSelected ? color : Theme.of(context).colorScheme.outlineVariant,
+                  color: isSelected
+                      ? color
+                      : Theme.of(context).colorScheme.outlineVariant,
                   width: isSelected ? 2 : 1,
                 ),
               ),
@@ -280,12 +411,14 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
                     network,
                     style: TextStyle(
                       fontSize: 10,
-                      fontWeight: isSelected
-                          ? FontWeight.w700
-                          : FontWeight.w500,
+                      fontWeight:
+                          isSelected ? FontWeight.w700 : FontWeight.w500,
                       color: isSelected
                           ? displayColor
-                          : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                          : Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.5),
                     ),
                   ),
                 ],
@@ -322,7 +455,8 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+          border: Border.all(
+              color: Theme.of(context).colorScheme.outlineVariant),
         ),
       ),
     );
@@ -381,8 +515,7 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
         final plan = plans[index];
         final isSelected = plan['id'] == _selectedPlanId &&
             plan['network'] == _selectedNetwork;
-        final color =
-            _networkColors[_selectedNetwork] ?? AppColors.primary;
+        final color = _networkColors[_selectedNetwork] ?? AppColors.primary;
         final displayColor =
             color == AppColors.mtn ? Colors.amber[800]! : color;
 
@@ -405,20 +538,23 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
                   : Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color: isSelected ? color : Theme.of(context).colorScheme.outlineVariant,
+                color: isSelected
+                    ? color
+                    : Theme.of(context).colorScheme.outlineVariant,
                 width: isSelected ? 2 : 1,
               ),
             ),
             child: Row(
               children: [
-                // Plan icon
                 Container(
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
                     color: isSelected
                         ? displayColor.withValues(alpha: 0.12)
-                        : Theme.of(context).colorScheme.surfaceContainerHighest,
+                        : Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
@@ -451,13 +587,10 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
                           ),
                           if (plan['validity'] != null) ...[
                             const Text(' • ',
-                                style: TextStyle(
-                                    fontSize: 12)),
+                                style: TextStyle(fontSize: 12)),
                             Text(
                               plan['validity'] as String,
-                              style: const TextStyle(
-                                fontSize: 12,
-                              ),
+                              style: const TextStyle(fontSize: 12),
                             ),
                           ],
                         ],
@@ -470,9 +603,7 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
                   children: [
                     Text(
                       CurrencyFormatter.formatNaira(
-                          double.tryParse(
-                                  plan['price'].toString()) ??
-                              0),
+                          double.tryParse(plan['price'].toString()) ?? 0),
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w800,
@@ -500,22 +631,23 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
       decoration: BoxDecoration(
         color: AppColors.primary.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-            color: AppColors.primary.withValues(alpha: 0.2)),
+        border:
+            Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text('Summary',
-              style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700)),
+              style:
+                  TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
           const SizedBox(height: 10),
           _summaryRow('Network', _selectedNetwork),
           _summaryRow('Plan', _selectedPlanName),
+          _summaryRow(
+              'Recipient', _isSelf ? 'Myself' : _phoneController.text),
           _summaryRow('Phone', _phoneController.text),
-          _summaryRow('Amount',
-              CurrencyFormatter.formatNaira(_selectedPlanPrice)),
+          _summaryRow(
+              'Amount', CurrencyFormatter.formatNaira(_selectedPlanPrice)),
         ],
       ),
     );
@@ -530,7 +662,8 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
         children: [
           Text(label,
               style: TextStyle(
-                  fontSize: 13, color: cs.onSurface.withValues(alpha: 0.6))),
+                  fontSize: 13,
+                  color: cs.onSurface.withValues(alpha: 0.6))),
           Text(value,
               style: TextStyle(
                   fontSize: 13,
@@ -588,12 +721,14 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
                     color: AppColors.primary),
               ),
               const SizedBox(height: 20),
-              _detailRow('Network', state.network),
-              _detailRow('Plan', state.planName),
-              _detailRow('Volume', state.data),
-              _detailRow('Validity', state.validity),
-              _detailRow('Recipient', state.phoneNumber),
-              _detailRow('Reference', state.reference),
+              _detailRow(context, 'Network', state.network),
+              _detailRow(context, 'Plan', state.planName),
+              _detailRow(context, 'Volume', state.data),
+              _detailRow(context, 'Validity', state.validity),
+              _detailRow(context, 'Recipient',
+                  _isSelf ? 'Myself' : state.phoneNumber),
+              _detailRow(context, 'Phone', state.phoneNumber),
+              _detailRow(context, 'Reference', state.reference),
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
@@ -612,7 +747,7 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
     );
   }
 
-  Widget _detailRow(String label, String value) {
+  Widget _detailRow(BuildContext context, String label, String value) {
     final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
@@ -621,7 +756,8 @@ class _DataPurchasePageState extends State<DataPurchasePage> {
         children: [
           Text(label,
               style: TextStyle(
-                  fontSize: 13, color: cs.onSurface.withValues(alpha: 0.6))),
+                  fontSize: 13,
+                  color: cs.onSurface.withValues(alpha: 0.6))),
           Text(value,
               style: TextStyle(
                   fontSize: 13,

@@ -13,7 +13,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        const settings = await fetchJSON('/api/v1/admin/settings/settings');
+        const settings = await fetchJSON('/api/v1/admin/settings');
         document.getElementById('settings-content').innerHTML = `
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="p-4 bg-gray-50 rounded-lg">
@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function toggleDevMode() {
     try {
-        await fetchJSON('/api/v1/admin/settings/settings/dev-mode', { method: 'PUT' });
+        await fetchJSON('/api/v1/admin/settings/dev-mode', { method: 'PUT' });
         showToast('Dev mode toggled', 'success');
         location.reload();
     } catch (error) {

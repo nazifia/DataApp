@@ -23,7 +23,7 @@ from app.utils.admin_auth import get_current_admin, log_admin_action, require_ro
 router = APIRouter(tags=["Admin Users"])
 
 
-@router.get("/users", response_model=PaginatedResponse[AdminUserListItem])
+@router.get("", response_model=PaginatedResponse[AdminUserListItem])
 async def list_users(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
@@ -81,7 +81,7 @@ async def list_users(
     )
 
 
-@router.post("/users", response_model=AdminCreateUserResponse)
+@router.post("", response_model=AdminCreateUserResponse)
 async def create_user(
     body: AdminCreateUserRequest,
     request: Request,
@@ -149,7 +149,7 @@ async def create_user(
     )
 
 
-@router.get("/users/{user_id}", response_model=AdminUserDetail)
+@router.get("/{user_id}", response_model=AdminUserDetail)
 async def get_user(
     user_id: str,
     db: Session = Depends(get_db),
@@ -189,10 +189,48 @@ async def get_user(
     )
 
 
-@router.put("/users/{user_id}/toggle-active")
+@router.put("/{user_id}/role")
+async def update_user_role(
+    user_id: str,
+    body: dict,
+    request: Request,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_role(UserRole.super_admin)),
+):
+    """Update a user's role. Requires super_admin."""
+    new_role_str = body.get("role")
+    if not new_role_str:
+        raise HTTPException(status_code=422, detail="'role' field is required")
+    try:
+        new_role = UserRole(new_role_str)
+    except ValueError:
+        raise HTTPException(status_code=422, detail=f"Invalid role '{new_role_str}'")
+
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    old_role = user.role
+    user.role = new_role
+    db.commit()
+
+    client_ip = request.client.host if request.client else None
+    log_admin_action(
+        db,
+        admin_id=admin.id,
+        action="update_user_role",
+        target_type="user",
+        target_id=str(user.id),
+        details=f"Changed role of {user.phone_number} from {old_role.value} to {new_role.value}",
+        ip=client_ip,
+    )
+
+    return {"message": f"Role updated to {new_role.value}", "role": new_role.value}
+
+
+@router.put("/{user_id}/toggle-active")
 async def toggle_user_active(
     user_id: str,
-    request: dict,
     db: Session = Depends(get_db),
     admin: User = Depends(get_current_admin),
 ):
@@ -216,7 +254,7 @@ async def toggle_user_active(
     return {"message": f"User {'activated' if user.is_active else 'deactivated'}", "is_active": user.is_active}
 
 
-@router.get("/users/{user_id}/transactions", response_model=PaginatedResponse[AdminTransactionItem])
+@router.get("/{user_id}/transactions", response_model=PaginatedResponse[AdminTransactionItem])
 async def get_user_transactions(
     user_id: str,
     page: int = Query(1, ge=1),

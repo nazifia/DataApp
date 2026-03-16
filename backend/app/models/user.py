@@ -52,7 +52,7 @@ class User(Base):
     device_id = Column(String, nullable=True)
     profile_picture_url = Column(String, nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
-    role = Column(Enum(UserRole), default=UserRole.user, nullable=False)
+    role = Column(Enum(UserRole, create_constraint=False), default=UserRole.user, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 

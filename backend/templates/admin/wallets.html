@@ -125,7 +125,7 @@ async function loadWallets(page) {
     if (maxBalance) params.append('max_balance', maxBalance);
 
     try {
-        const data = await fetchJSON(`/api/v1/admin/wallets/wallets?${params}`);
+        const data = await fetchJSON(`/api/v1/admin/wallets?${params}`);
         renderTable('wallets-body', data.items, (wallet) => `
             <tr>
                 <td class="px-6 py-3 text-sm text-gray-900">${wallet.user_name || '-'}</td>
@@ -181,7 +181,7 @@ async function submitCredit(e) {
     const reason = document.getElementById('credit-reason').value;
 
     try {
-        await fetchJSON(`/api/v1/admin/wallets/wallets/${userId}/credit`, {
+        await fetchJSON(`/api/v1/admin/wallets/${userId}/credit`, {
             method: 'POST',
             body: JSON.stringify({ amount: parseFloat(amount), reason }),
         });
@@ -200,7 +200,7 @@ async function submitDebit(e) {
     const reason = document.getElementById('debit-reason').value;
 
     try {
-        await fetchJSON(`/api/v1/admin/wallets/wallets/${userId}/debit`, {
+        await fetchJSON(`/api/v1/admin/wallets/${userId}/debit`, {
             method: 'POST',
             body: JSON.stringify({ amount: parseFloat(amount), reason }),
         });

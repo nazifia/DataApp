@@ -18,7 +18,7 @@ const txnId = window.location.pathname.split('/').pop();
 
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        const txn = await fetchJSON(`/api/v1/admin/transactions/transactions/${txnId}`);
+        const txn = await fetchJSON(`/api/v1/admin/transactions/${txnId}`);
         document.getElementById('txn-details').innerHTML = `
             <div>
                 <p class="text-sm text-gray-500">Reference</p>

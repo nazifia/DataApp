@@ -61,14 +61,18 @@ async def recent_users(
     """Get the 10 most recently registered users."""
     users = db.query(User).order_by(User.created_at.desc()).limit(10).all()
 
-    return [
-        AdminUserListItem(
+    items = []
+    for user in users:
+        try:
+            role_str = user.role.value if hasattr(user.role, "value") else str(user.role)
+        except Exception:
+            role_str = "user"
+        items.append(AdminUserListItem(
             id=str(user.id),
             phone_number=user.phone_number,
             full_name=user.full_name,
             is_active=user.is_active,
-            role=user.role.value if hasattr(user.role, "value") else str(user.role),
+            role=role_str,
             created_at=user.created_at,
-        )
-        for user in users
-    ]
+        ))
+    return items

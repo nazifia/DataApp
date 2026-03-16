@@ -113,15 +113,30 @@ async def login(request: LoginRequest, db: Session = Depends(get_db)):
     Returns access and refresh tokens on success.
     """
     phone = request.phone_number
+    logger.debug("Login attempt for normalized phone: %s", phone)
 
     user = db.query(User).filter(User.phone_number == phone).first()
-    if user is None or not user.is_active:
+    if user is None:
+        logger.warning("Login failed: no user found for phone %s", phone)
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid phone number or password.",
+        )
+    if not user.is_active:
+        logger.warning("Login failed: user %s is inactive", phone)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid phone number or password.",
         )
 
-    if user.password_hash is None or not pwd_context.verify(request.password, user.password_hash):
+    if user.password_hash is None:
+        logger.warning("Login failed: user %s has no password set (profile incomplete?)", phone)
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid phone number or password.",
+        )
+    if not pwd_context.verify(request.password, user.password_hash):
+        logger.warning("Login failed: wrong password for user %s", phone)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid phone number or password.",
