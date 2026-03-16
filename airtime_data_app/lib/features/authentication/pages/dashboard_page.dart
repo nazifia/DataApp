@@ -116,15 +116,13 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
       appBar: AppBar(
         title: Row(
           children: [
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset(
+                'assets/icons/app_icon.png',
+                width: 32,
+                height: 32,
               ),
-              child: const Icon(Icons.phone_android_rounded,
-                  color: Colors.white, size: 18),
             ),
             const SizedBox(width: 8),
             const Text('TopUpNaija'),
