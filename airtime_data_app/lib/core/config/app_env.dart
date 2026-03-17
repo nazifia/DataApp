@@ -18,12 +18,12 @@ class AppConfig {
 
   bool get isDev => environment == AppEnvironment.dev;
 
-  // Dev/mock mode — no backend needed, free testing on any device
+  // Use 10.0.2.2 for Android emulator, or the host PC's LAN IP for physical devices
   static const AppConfig dev = AppConfig(
     environment: AppEnvironment.dev,
-    baseUrl: 'https://topupnaija-adp.loca.lt/api/v1',
+    baseUrl: 'http://10.90.202.117:8000/api/v1',
     enableLogging: true,
-    useMockAuth: true,
+    useMockAuth: false,
     testOtp: '123456',
   );
 
