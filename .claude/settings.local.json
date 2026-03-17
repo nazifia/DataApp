@@ -88,7 +88,12 @@
       "Bash(cmd.exe /c \"taskkill /PID 24688 /F\")",
       "Bash(cmd.exe /c \"netstat -ano | findstr :8005\")",
       "Bash(pip install:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(ipconfig:*)",
+      "Bash(where ngrok:*)",
+      "Bash(where npm:*)",
+      "Bash(npm install:*)",
+      "Bash(lt:*)"
     ]
   }
 }
