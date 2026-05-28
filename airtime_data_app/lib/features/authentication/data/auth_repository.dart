@@ -66,6 +66,20 @@ class AuthRepository {
     return await _storage.read(key: 'biometric_phone');
   }
 
+  // Validate that a tenant slug exists and, if so, apply it to all future requests
+  Future<Map<String, dynamic>> validateAndSetTenant(String slug) async {
+    if (_config.useMockAuth) {
+      _apiClient.updateTenantSlug(slug);
+      return {'name': 'Dev Org ($slug)', 'slug': slug};
+    }
+    final response = await _apiClient.dio.get(
+      '/tenants/info/',
+      options: Options(headers: {'X-Tenant-Slug': slug}),
+    );
+    _apiClient.updateTenantSlug(slug);
+    return Map<String, dynamic>.from(response.data as Map);
+  }
+
   // Send OTP
   Future<Map<String, dynamic>> sendOtp(String phoneNumber) async {
     if (_config.useMockAuth) {

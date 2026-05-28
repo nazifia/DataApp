@@ -66,6 +66,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       SendOtpEvent event, Emitter<AuthState> emit) async {
     emit(const AuthLoading());
     try {
+      if (event.tenantSlug != null && event.tenantSlug!.isNotEmpty) {
+        await _authRepository.validateAndSetTenant(event.tenantSlug!);
+      }
       await _authRepository.sendOtp(event.phoneNumber);
       emit(const OtpSuccess('OTP sent successfully'));
     } catch (e) {

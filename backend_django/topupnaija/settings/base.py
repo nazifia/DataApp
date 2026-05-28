@@ -109,6 +109,12 @@ SIMPLE_JWT = {
 
 CORS_ALLOW_ALL_ORIGINS = True
 
+from corsheaders.defaults import default_headers
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    'bypass-tunnel-reminder',
+    'x-tenant-slug',
+]
+
 # External services
 TERMII_API_KEY = env('TERMII_API_KEY', default='')
 TERMII_SENDER_ID = env('TERMII_SENDER_ID', default='TopUpNaija')

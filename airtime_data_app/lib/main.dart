@@ -30,7 +30,7 @@ import 'core/constants/theme.dart';
 import 'core/widgets/inactivity_detector.dart';
 
 // Switch to AppConfig.prod before releasing to production
-const _config = AppConfig.dev;
+final _config = AppConfig.dev;
 
 final RouteObserver<ModalRoute<void>> routeObserver =
     RouteObserver<ModalRoute<void>>();
@@ -104,8 +104,9 @@ class AirtimeDataApp extends StatelessWidget {
                 '/': (context) => const SplashPage(),
                 '/welcome': (context) => const WelcomePage(),
                 '/phone-input': (context) => PhoneInputPage(
-                      isLogin:
-                          ModalRoute.of(context)!.settings.arguments as bool,
+                      isLogin: (ModalRoute.of(context)!.settings.arguments
+                              as bool?) ??
+                          true,
                     ),
                 '/otp-verification': (context) {
                   final args = ModalRoute.of(context)!.settings.arguments

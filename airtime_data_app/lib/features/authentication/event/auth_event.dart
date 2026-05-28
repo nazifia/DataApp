@@ -24,11 +24,12 @@ class BiometricLoginEvent extends AuthEvent {
 
 class SendOtpEvent extends AuthEvent {
   final String phoneNumber;
+  final String? tenantSlug;
 
-  const SendOtpEvent(this.phoneNumber);
+  const SendOtpEvent(this.phoneNumber, {this.tenantSlug});
 
   @override
-  List<Object> get props => [phoneNumber];
+  List<Object> get props => [phoneNumber, tenantSlug ?? ''];
 }
 
 class VerifyOtpEvent extends AuthEvent {

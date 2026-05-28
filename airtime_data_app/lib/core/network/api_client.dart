@@ -15,6 +15,7 @@ class ApiClient {
           headers: {
             // Required to bypass localtunnel's browser-redirect page for API calls
             'bypass-tunnel-reminder': 'true',
+            'X-Tenant-Slug': config.tenantSlug,
           },
         )) {
     if (config.enableLogging) {
@@ -74,6 +75,10 @@ class ApiClient {
   }
 
   Dio get dio => _dio;
+
+  void updateTenantSlug(String slug) {
+    _dio.options.headers['X-Tenant-Slug'] = slug;
+  }
 
   Future<void> refreshToken() async {
     // Implement token refresh logic

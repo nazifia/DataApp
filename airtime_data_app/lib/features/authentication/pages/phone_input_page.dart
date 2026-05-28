@@ -25,6 +25,7 @@ class PhoneInputPage extends StatefulWidget {
 class _PhoneInputPageState extends State<PhoneInputPage> {
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _orgSlugController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final _localAuth = LocalAuthentication();
   final _storage = const FlutterSecureStorage();
@@ -45,6 +46,7 @@ class _PhoneInputPageState extends State<PhoneInputPage> {
   void dispose() {
     _phoneController.dispose();
     _passwordController.dispose();
+    _orgSlugController.dispose();
     super.dispose();
   }
 
@@ -80,7 +82,10 @@ class _PhoneInputPageState extends State<PhoneInputPage> {
     if (_formKey.currentState?.validate() ?? false) {
       final raw = _phoneController.text.trim();
       final phoneNumber = Validators.formatNigerianPhone(raw);
-      context.read<AuthBloc>().add(SendOtpEvent(phoneNumber));
+      final slug = _orgSlugController.text.trim().toLowerCase();
+      context.read<AuthBloc>().add(
+            SendOtpEvent(phoneNumber, tenantSlug: slug.isEmpty ? null : slug),
+          );
     }
   }
 
@@ -477,6 +482,45 @@ class _PhoneInputPageState extends State<PhoneInputPage> {
             ),
             const SizedBox(height: 40),
 
+            // Organisation slug
+            const Text(
+              'Organisation Name *',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: _orgSlugController,
+              keyboardType: TextInputType.text,
+              textCapitalization: TextCapitalization.none,
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9\-_]')),
+              ],
+              decoration: const InputDecoration(
+                hintText: 'e.g. acme-corp',
+                prefixIcon: Icon(Icons.business_rounded),
+              ),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Please enter your organisation name';
+                }
+                if (value.trim().length < 2) {
+                  return 'Organisation name must be at least 2 characters';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Enter your organisation\'s slug to join the right workspace',
+              style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+            ),
+            const SizedBox(height: 20),
+
+            // Phone number
             const Text(
               'Phone Number',
               style: TextStyle(

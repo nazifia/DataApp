@@ -1448,62 +1448,71 @@ class _UssdSheetState extends State<_UssdSheet> {
             ),
             const SizedBox(height: 8),
             // Bank list
-            if (filtered.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 24),
-                child: Text(
-                  'No bank found for "$_query"',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.5),
-                  ),
-                ),
-              )
-            else
-              ...filtered.map((bank) {
-                final code = _ussdCode(bank.name, widget.amount.toInt());
-                return ListTile(
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                  leading: Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: bank.color.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(10),
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.45,
+              ),
+              child: filtered.isEmpty
+                  ? Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24),
+                      child: Text(
+                        'No bank found for "$_query"',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.5),
+                        ),
+                      ),
+                    )
+                  : ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: filtered.length,
+                      itemBuilder: (context, index) {
+                        final bank = filtered[index];
+                        final code = _ussdCode(bank.name, widget.amount.toInt());
+                        return ListTile(
+                          contentPadding:
+                              const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                          leading: Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: bank.color.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(bank.logo, color: bank.color, size: 22),
+                          ),
+                          title: Text(
+                            bank.name,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                          ),
+                          subtitle: Text(
+                            code,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withValues(alpha: 0.6),
+                              fontFamily: 'monospace',
+                            ),
+                          ),
+                          trailing: Icon(Icons.chevron_right_rounded,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withValues(alpha: 0.6)),
+                          onTap: () => _showUssdCode(context, bank.name),
+                        );
+                      },
                     ),
-                    child: Icon(bank.logo, color: bank.color, size: 22),
-                  ),
-                  title: Text(
-                    bank.name,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                  ),
-                  subtitle: Text(
-                    code,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.6),
-                      fontFamily: 'monospace',
-                    ),
-                  ),
-                  trailing: Icon(Icons.chevron_right_rounded,
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.6)),
-                  onTap: () => _showUssdCode(context, bank.name),
-                );
-              }),
+            ),
           ],
         ),
       ),

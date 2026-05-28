@@ -99,7 +99,13 @@
       "Bash(git *)",
       "PowerShell(git *)",
       "PowerShell(cmd /c \"rd /s /q `\"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\airtime_data_app\\\\build`\"\")",
-      "PowerShell(cmd /c \"dir /b `\"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\airtime_data_app\\\\CUsersDellDesktopMY_PRODUCTSADPairtime_data_backend`\"\")"
+      "PowerShell(cmd /c \"dir /b `\"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\airtime_data_app\\\\CUsersDellDesktopMY_PRODUCTSADPairtime_data_backend`\"\")",
+      "Bash(Get-ChildItem -Recurse -Filter \"*.dart\" -Name)",
+      "Bash(Select-Object -First 50)",
+      "PowerShell(New-Item *)",
+      "PowerShell(curl *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\airtime_data_app\\\\lib\\\\features\\\\authentication\" -Filter \"*.dart\" -Recurse)",
+      "Bash(Select-Object FullName)"
     ]
   }
 }
