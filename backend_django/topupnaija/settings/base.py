@@ -9,6 +9,9 @@ environ.Env.read_env(BASE_DIR / '.env')
 SECRET_KEY = env('SECRET_KEY', default='django-insecure-change-me-in-production')
 
 INSTALLED_APPS = [
+    # Local apps first so their management commands override django.contrib.auth's
+    'apps.authentication',
+    'apps.tenants',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -21,8 +24,6 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
     # Local
-    'apps.tenants',
-    'apps.authentication',
     'apps.wallet',
     'apps.airtime',
     'apps.data_plans',
