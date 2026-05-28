@@ -45,11 +45,11 @@ class ApiClient {
           if (refreshToken != null) {
             try {
               final refreshResponse = await Dio().post(
-                '${config.baseUrl}/auth/refresh-token',
-                data: {'refresh_token': refreshToken},
+                '${config.baseUrl}/auth/refresh-token/',
+                data: {'refresh': refreshToken},
               );
               final newAccessToken =
-                  refreshResponse.data['access_token'] as String?;
+                  refreshResponse.data['access'] as String?;
               if (newAccessToken != null) {
                 await _storage.write(
                     key: 'access_token', value: newAccessToken);

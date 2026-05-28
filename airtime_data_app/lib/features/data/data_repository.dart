@@ -28,7 +28,7 @@ class DataRepository {
       };
     }
     final response = await _apiClient.dio.post(
-      '/data/purchase',
+      '/data/purchase/',
       data: {
         'network': network,
         'plan_id': planId,
@@ -52,7 +52,7 @@ class DataRepository {
       };
     }
     final response = await _apiClient.dio.get(
-      '/data/plans',
+      '/data/plans/',
       queryParameters: {'network': network},
     );
     return Map<String, dynamic>.from(response.data as Map);

@@ -325,7 +325,7 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
                     .split(' ')
                     .first;
                 profilePicture =
-                    state.profileData['profile_picture']?.toString();
+                    state.profileData['profile_picture_url']?.toString();
               }
 
               return Row(
@@ -833,7 +833,7 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
                   phone =
                       state.profileData['phone_number']?.toString() ?? '';
                   profilePicture =
-                      state.profileData['profile_picture']?.toString();
+                      state.profileData['profile_picture_url']?.toString();
                 }
                 return Row(
                   children: [

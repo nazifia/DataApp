@@ -33,7 +33,7 @@ class AuthRepository {
       }
     }
     final response = await _apiClient.dio.post(
-      '/auth/login',
+      '/auth/login/',
       data: {
         'phone_number': Validators.formatNigerianPhone(phoneNumber),
         'password': password,
@@ -73,7 +73,7 @@ class AuthRepository {
       return {'message': 'OTP sent (dev mode)', 'phone_number': phoneNumber};
     }
     final response = await _apiClient.dio.post(
-      '/auth/send-otp',
+      '/auth/send-otp/',
       data: {
         'phone_number': Validators.formatNigerianPhone(phoneNumber),
       },
@@ -99,7 +99,7 @@ class AuthRepository {
       }
     }
     final response = await _apiClient.dio.post(
-      '/auth/verify-otp',
+      '/auth/verify-otp/',
       data: {
         'phone_number': Validators.formatNigerianPhone(phoneNumber),
         'otp': otp,
@@ -130,7 +130,7 @@ class AuthRepository {
       };
     }
     final response = await _apiClient.dio.post(
-      '/user/profile',
+      '/user/profile/setup/',
       data: {
         'phone_number': Validators.formatNigerianPhone(phoneNumber),
         'full_name': fullName,
@@ -152,7 +152,7 @@ class AuthRepository {
         }
       };
     }
-    final response = await _apiClient.dio.get('/user/profile');
+    final response = await _apiClient.dio.get('/user/profile/');
     return Map<String, dynamic>.from(response.data as Map);
   }
 
@@ -162,7 +162,7 @@ class AuthRepository {
       return {'message': 'Profile updated (dev mode)'};
     }
     final response = await _apiClient.dio.put(
-      '/user/profile',
+      '/user/profile/',
       data: {'full_name': fullName},
     );
     return Map<String, dynamic>.from(response.data as Map);
@@ -179,7 +179,7 @@ class AuthRepository {
       return {'message': 'Password changed successfully (dev mode)'};
     }
     final response = await _apiClient.dio.put(
-      '/user/password',
+      '/user/password/',
       data: {
         'current_password': currentPassword,
         'new_password': newPassword,
@@ -193,7 +193,7 @@ class AuthRepository {
     if (_config.useMockAuth) {
       return {'balance': 5000.0};
     }
-    final response = await _apiClient.dio.get('/wallet/balance');
+    final response = await _apiClient.dio.get('/wallet/balance/');
     return Map<String, dynamic>.from(response.data as Map);
   }
 
@@ -206,7 +206,7 @@ class AuthRepository {
       };
     }
     final response = await _apiClient.dio.post(
-      '/wallet/fund',
+      '/wallet/fund/',
       data: {'amount': amount},
     );
     return Map<String, dynamic>.from(response.data as Map);
@@ -242,13 +242,13 @@ class AuthRepository {
       };
     }
     final formData = FormData.fromMap({
-      'profile_picture': await MultipartFile.fromFile(
+      'picture': await MultipartFile.fromFile(
         imageFile.path,
         filename: imageFile.path.split('/').last,
       ),
     });
     final response = await _apiClient.dio.put(
-      '/user/profile/picture',
+      '/user/profile/picture/',
       data: formData,
       options: Options(contentType: 'multipart/form-data'),
     );

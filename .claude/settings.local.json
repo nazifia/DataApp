@@ -93,7 +93,13 @@
       "Bash(where ngrok:*)",
       "Bash(where npm:*)",
       "Bash(npm install:*)",
-      "Bash(lt:*)"
+      "Bash(lt:*)",
+      "Bash(flutter run *)",
+      "Bash(flutter build *)",
+      "Bash(git *)",
+      "PowerShell(git *)",
+      "PowerShell(cmd /c \"rd /s /q `\"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\airtime_data_app\\\\build`\"\")",
+      "PowerShell(cmd /c \"dir /b `\"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\airtime_data_app\\\\CUsersDellDesktopMY_PRODUCTSADPairtime_data_backend`\"\")"
     ]
   }
 }

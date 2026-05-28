@@ -23,7 +23,7 @@ class AirtimeRepository {
       };
     }
     final response = await _apiClient.dio.post(
-      '/airtime/purchase',
+      '/airtime/purchase/',
       data: {
         'network': network,
         'phone_number': phoneNumber,

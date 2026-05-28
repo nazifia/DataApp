@@ -15,7 +15,7 @@ class WalletRepository {
     if (_config.useMockAuth) {
       return {'balance': 5000.0};
     }
-    final response = await _apiClient.dio.get('/wallet/balance');
+    final response = await _apiClient.dio.get('/wallet/balance/');
     return Map<String, dynamic>.from(response.data as Map);
   }
 
@@ -29,7 +29,7 @@ class WalletRepository {
         'note': 'Transfer the exact amount shown. Your wallet will be credited automatically.',
       };
     }
-    final response = await _apiClient.dio.get('/wallet/bank-details');
+    final response = await _apiClient.dio.get('/wallet/bank-details/');
     return Map<String, dynamic>.from(response.data as Map);
   }
 
@@ -43,7 +43,7 @@ class WalletRepository {
       };
     }
     final response = await _apiClient.dio.post(
-      '/wallet/fund',
+      '/wallet/fund/',
       data: {'amount': amount},
     );
     return Map<String, dynamic>.from(response.data as Map);

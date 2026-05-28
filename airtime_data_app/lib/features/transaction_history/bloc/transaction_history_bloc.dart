@@ -19,7 +19,7 @@ class TransactionHistoryBloc extends Bloc<TransactionHistoryEvent, TransactionHi
     emit(const TransactionHistoryLoading());
     try {
       final response = await _transactionHistoryRepository.getTransactionHistory();
-      emit(TransactionHistorySuccess(List<Map<String, dynamic>>.from(response['transactions'] as List)));
+      emit(TransactionHistorySuccess(List<Map<String, dynamic>>.from(response['items'] as List)));
     } catch (e) {
       emit(TransactionHistoryFailure('Failed to load transaction history: $e'));
     }
@@ -30,7 +30,7 @@ class TransactionHistoryBloc extends Bloc<TransactionHistoryEvent, TransactionHi
     emit(const TransactionHistoryLoading());
     try {
       final response = await _transactionHistoryRepository.getTransactionHistory();
-      emit(TransactionHistorySuccess(List<Map<String, dynamic>>.from(response['transactions'] as List)));
+      emit(TransactionHistorySuccess(List<Map<String, dynamic>>.from(response['items'] as List)));
     } catch (e) {
       emit(TransactionHistoryFailure('Failed to refresh transaction history: $e'));
     }

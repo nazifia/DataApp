@@ -15,7 +15,7 @@ class TransactionHistoryRepository {
   Future<Map<String, dynamic>> getTransactionHistory() async {
     if (_config.useMockAuth) {
       return {
-        'transactions': [
+        'items': [
           {
             'id': 'txn_001',
             'type': 'airtime',
@@ -43,7 +43,7 @@ class TransactionHistoryRepository {
         ]
       };
     }
-    final response = await _apiClient.dio.get('/transactions');
+    final response = await _apiClient.dio.get('/transactions/');
     return Map<String, dynamic>.from(response.data as Map);
   }
 }

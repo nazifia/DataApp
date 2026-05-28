@@ -575,7 +575,7 @@ class _ProfilePageState extends State<ProfilePage>
             _fullNameController.text =
                 data['full_name']?.toString() ?? '';
             _emailController.text = data['email']?.toString() ?? '';
-            _profilePictureUrl = data['profile_picture']?.toString();
+            _profilePictureUrl = data['profile_picture_url']?.toString();
           } else if (state is ProfileFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
