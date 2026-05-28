@@ -1,10 +1,12 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .models import User, OTPRecord
+from .forms import AdminUserCreationForm
 
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
+    add_form = AdminUserCreationForm
     list_display = ('phone_number', 'full_name', 'email', 'tenant', 'role', 'is_active', 'is_staff', 'created_at')
     list_filter = ('role', 'is_active', 'is_staff', 'tenant')
     search_fields = ('phone_number', 'full_name', 'email')
