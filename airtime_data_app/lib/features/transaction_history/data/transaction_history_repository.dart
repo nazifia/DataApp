@@ -44,6 +44,11 @@ class TransactionHistoryRepository {
       };
     }
     final response = await _apiClient.dio.get('/transactions/');
-    return Map<String, dynamic>.from(response.data as Map);
+    final data = Map<String, dynamic>.from(response.data as Map);
+    // Backend returns DRF paginated format: {count, next, previous, results}
+    return {
+      'items': data['results'] ?? [],
+      'count': data['count'] ?? 0,
+    };
   }
 }

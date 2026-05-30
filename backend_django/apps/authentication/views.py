@@ -6,12 +6,21 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
+from rest_framework.throttling import AnonRateThrottle
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import User
 from .serializers import (
     SendOTPSerializer, VerifyOTPSerializer, LoginSerializer,
 )
 from .otp_service import save_otp, verify_otp, send_otp_sms
+
+
+class OTPThrottle(AnonRateThrottle):
+    scope = 'otp'
+
+
+class LoginThrottle(AnonRateThrottle):
+    scope = 'login'
 
 
 def _tokens_for_user(user):
@@ -26,6 +35,7 @@ def _tokens_for_user(user):
 
 class SendOTPView(APIView):
     permission_classes = [AllowAny]
+    throttle_classes = [OTPThrottle]
 
     def post(self, request):
         if not request.tenant:
@@ -67,6 +77,7 @@ class VerifyOTPView(APIView):
 
 class LoginView(APIView):
     permission_classes = [AllowAny]
+    throttle_classes = [LoginThrottle]
 
     def post(self, request):
         if not request.tenant:

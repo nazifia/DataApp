@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../data/transaction_history_repository.dart';
 import '../event/transaction_history_event.dart';
 import '../state/transaction_history_state.dart';
+import '../../../core/utils/api_error.dart';
 
 class TransactionHistoryBloc extends Bloc<TransactionHistoryEvent, TransactionHistoryState> {
   final TransactionHistoryRepository _transactionHistoryRepository;
@@ -21,7 +22,7 @@ class TransactionHistoryBloc extends Bloc<TransactionHistoryEvent, TransactionHi
       final response = await _transactionHistoryRepository.getTransactionHistory();
       emit(TransactionHistorySuccess(List<Map<String, dynamic>>.from(response['items'] as List)));
     } catch (e) {
-      emit(TransactionHistoryFailure('Failed to load transaction history: $e'));
+      emit(TransactionHistoryFailure(extractApiError(e)));
     }
   }
 
@@ -32,7 +33,7 @@ class TransactionHistoryBloc extends Bloc<TransactionHistoryEvent, TransactionHi
       final response = await _transactionHistoryRepository.getTransactionHistory();
       emit(TransactionHistorySuccess(List<Map<String, dynamic>>.from(response['items'] as List)));
     } catch (e) {
-      emit(TransactionHistoryFailure('Failed to refresh transaction history: $e'));
+      emit(TransactionHistoryFailure(extractApiError(e)));
     }
   }
 

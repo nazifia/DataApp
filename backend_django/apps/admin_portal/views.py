@@ -1,6 +1,7 @@
 from decimal import Decimal
 from django.db import transaction as db_transaction
-from django.db.models import Sum, Count, Q
+from django.db.models import Sum, Count, Q, F
+from django.db.models.functions import TruncDate
 from django.utils import timezone
 from datetime import timedelta
 from rest_framework.views import APIView
@@ -184,15 +185,15 @@ class AdminWalletAdjustView(APIView):
 
         if action == 'credit':
             with db_transaction.atomic():
-                wallet.balance += amount
-                wallet.save()
+                Wallet.objects.filter(pk=wallet.pk).update(balance=F('balance') + amount)
+                wallet.refresh_from_db()
                 txn_type = 'wallet_fund'
         elif action == 'debit':
-            if wallet.balance < amount:
-                return Response({'detail': 'Insufficient balance.'}, status=400)
             with db_transaction.atomic():
-                wallet.balance -= amount
-                wallet.save()
+                updated = Wallet.objects.filter(pk=wallet.pk, balance__gte=amount).update(balance=F('balance') - amount)
+                if not updated:
+                    return Response({'detail': 'Insufficient balance.'}, status=400)
+                wallet.refresh_from_db()
                 txn_type = 'refund'
         else:
             return Response({'detail': 'Invalid action.'}, status=400)
@@ -257,9 +258,7 @@ class AdminReverseTransactionView(APIView):
             return Response({'detail': 'Transaction already reversed.'}, status=400)
 
         with db_transaction.atomic():
-            wallet = txn.user.wallet
-            wallet.balance += txn.amount
-            wallet.save()
+            Wallet.objects.filter(user=txn.user, tenant=request.tenant).update(balance=F('balance') + txn.amount)
             Transaction.objects.create(
                 tenant=request.tenant,
                 user=txn.user,
@@ -278,13 +277,13 @@ class AnalyticsRevenueView(APIView):
     permission_classes = [IsModeratorOrAbove]
 
     def get(self, request):
-        days = int(request.query_params.get('days', 30))
+        days = min(int(request.query_params.get('days', 30)), 365)
         since = timezone.now() - timedelta(days=days)
         txns = Transaction.objects.filter(
             tenant=request.tenant, status='success',
             type__in=['airtime', 'data'], created_at__gte=since,
         )
-        daily = txns.extra(select={'day': "date(created_at)"}).values('day').annotate(
+        daily = txns.annotate(day=TruncDate('created_at')).values('day').annotate(
             revenue=Sum('amount'), count=Count('id')
         ).order_by('day')
         return Response(list(daily))

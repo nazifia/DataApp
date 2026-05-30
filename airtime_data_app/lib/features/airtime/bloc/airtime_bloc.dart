@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../data/airtime_repository.dart';
 import '../event/airtime_event.dart';
 import '../state/airtime_state.dart';
+import '../../../core/utils/api_error.dart';
 
 class AirtimeBloc extends Bloc<AirtimeEvent, AirtimeState> {
   final AirtimeRepository _airtimeRepository;
@@ -35,7 +36,7 @@ class AirtimeBloc extends Bloc<AirtimeEvent, AirtimeState> {
         phoneNumber: event.phoneNumber,
       ));
     } catch (e) {
-      emit(AirtimeFailure('Failed to purchase airtime: $e'));
+      emit(AirtimeFailure(extractApiError(e)));
     }
   }
 }

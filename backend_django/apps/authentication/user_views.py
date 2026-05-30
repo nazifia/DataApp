@@ -79,8 +79,9 @@ class ProfilePictureView(APIView):
         upload_dir.mkdir(parents=True, exist_ok=True)
 
         if request.user.profile_picture_url:
-            old_path = settings.BASE_DIR / request.user.profile_picture_url.lstrip('/')
-            if old_path.exists():
+            old_rel = request.user.profile_picture_url.removeprefix(settings.MEDIA_URL)
+            old_path = (settings.MEDIA_ROOT / old_rel).resolve()
+            if old_path.is_relative_to(settings.MEDIA_ROOT) and old_path.exists():
                 old_path.unlink()
 
         filename = f'{request.user.id}_{uuid.uuid4().hex}{ext}'

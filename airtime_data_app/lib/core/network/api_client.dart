@@ -45,7 +45,12 @@ class ApiClient {
           final refreshToken = await _storage.read(key: 'refresh_token');
           if (refreshToken != null) {
             try {
-              final refreshResponse = await Dio().post(
+              final refreshResponse = await Dio(BaseOptions(
+                headers: {
+                  'bypass-tunnel-reminder': 'true',
+                  'X-Tenant-Slug': config.tenantSlug,
+                },
+              )).post(
                 '${config.baseUrl}/auth/refresh-token/',
                 data: {'refresh': refreshToken},
               );
@@ -54,7 +59,6 @@ class ApiClient {
               if (newAccessToken != null) {
                 await _storage.write(
                     key: 'access_token', value: newAccessToken);
-                // Retry the original request with the new token
                 final retryOptions = error.requestOptions;
                 retryOptions.headers['Authorization'] =
                     'Bearer $newAccessToken';
@@ -69,6 +73,23 @@ class ApiClient {
             await clearTokens();
           }
         }
+
+        // Extract DRF error detail for clean error messages (handles 429, 400, etc.)
+        if (error.response != null) {
+          final data = error.response!.data;
+          if (data is Map) {
+            final detail = data['detail']?.toString();
+            if (detail != null) {
+              return handler.reject(DioException(
+                requestOptions: error.requestOptions,
+                response: error.response,
+                message: detail,
+                type: error.type,
+              ));
+            }
+          }
+        }
+
         return handler.next(error);
       },
     ));

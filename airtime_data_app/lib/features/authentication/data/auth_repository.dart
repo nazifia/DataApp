@@ -133,13 +133,14 @@ class AuthRepository {
 
   // Create User Profile
   Future<Map<String, dynamic>> createProfile(
-      String phoneNumber, String fullName, String password) async {
+      String phoneNumber, String fullName, String password, {String? email}) async {
     if (_config.useMockAuth) {
       return {
         'user': {
           'id': 'dev_user_001',
           'phone_number': Validators.formatNigerianPhone(phoneNumber),
           'full_name': fullName,
+          'email': email ?? '',
         }
       };
     }
@@ -150,6 +151,7 @@ class AuthRepository {
         'full_name': fullName,
         'password': password,
         'device_id': _generateDeviceId(),
+        if (email != null && email.isNotEmpty) 'email': email,
       },
     );
     return Map<String, dynamic>.from(response.data as Map);
@@ -171,13 +173,17 @@ class AuthRepository {
   }
 
   // Update User Profile
-  Future<Map<String, dynamic>> updateProfile(String fullName) async {
+  Future<Map<String, dynamic>> updateProfile(String fullName, {String? email}) async {
     if (_config.useMockAuth) {
       return {'message': 'Profile updated (dev mode)'};
     }
     final response = await _apiClient.dio.put(
       '/user/profile/',
-      data: {'full_name': fullName},
+      data: {
+        'full_name': fullName,
+        // ignore: use_null_aware_elements
+        if (email != null) 'email': email,
+      },
     );
     return Map<String, dynamic>.from(response.data as Map);
   }

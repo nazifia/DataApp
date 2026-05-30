@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../data/wallet_repository.dart';
 import '../event/wallet_event.dart';
 import '../state/wallet_state.dart';
+import '../../../core/utils/api_error.dart';
 
 class WalletBloc extends Bloc<WalletEvent, WalletState> {
   final WalletRepository _walletRepository;
@@ -22,7 +23,7 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
       final response = await _walletRepository.getWalletBalance();
       emit(WalletSuccess((response['balance'] as num).toDouble()));
     } catch (e) {
-      emit(WalletFailure('Failed to load wallet: $e'));
+      emit(WalletFailure(extractApiError(e)));
     }
   }
 
@@ -38,7 +39,7 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
         note: data['note'] as String,
       ));
     } catch (e) {
-      emit(WalletFailure('Failed to load bank details: $e'));
+      emit(WalletFailure(extractApiError(e)));
     }
   }
 
@@ -56,7 +57,7 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
       final balance = (response['balance'] as num?)?.toDouble() ?? 0.0;
       emit(FundWalletSuccess(balance: balance, amount: event.amount));
     } catch (e) {
-      emit(WalletFailure('Failed to fund wallet: $e'));
+      emit(WalletFailure(extractApiError(e)));
     }
   }
 }

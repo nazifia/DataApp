@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:local_auth/local_auth.dart';
 import '../data/auth_repository.dart';
 import '../../../core/utils/validation.dart';
+import '../../../core/utils/api_error.dart';
 import '../event/auth_event.dart';
 import '../state/auth_state.dart';
 
@@ -35,7 +36,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       await _authRepository.login(event.phoneNumber, event.password);
       emit(const LoginSuccess());
     } catch (e) {
-      emit(AuthFailure(e.toString().replaceFirst('Exception: ', '')));
+      emit(AuthFailure(extractApiError(e)));
     }
   }
 
@@ -58,7 +59,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(const AuthFailure('Biometric authentication failed'));
       }
     } catch (e) {
-      emit(AuthFailure('Biometric error: $e'));
+      emit(AuthFailure('Biometric error: ${extractApiError(e)}'));
     }
   }
 
@@ -72,7 +73,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       await _authRepository.sendOtp(event.phoneNumber);
       emit(const OtpSuccess('OTP sent successfully'));
     } catch (e) {
-      emit(AuthFailure('Failed to send OTP: $e'));
+      emit(AuthFailure(extractApiError(e)));
     }
   }
 
@@ -84,7 +85,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final isNewUser = data['is_new_user'] as bool? ?? true;
       emit(OtpVerified(isNewUser: isNewUser));
     } catch (e) {
-      emit(OtpVerificationFailed('Invalid OTP: $e'));
+      emit(OtpVerificationFailed(extractApiError(e)));
     }
   }
 
@@ -93,15 +94,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(const AuthLoading());
     try {
       final response = await _authRepository.createProfile(
-          event.phoneNumber, event.fullName, event.password);
+          event.phoneNumber, event.fullName, event.password, email: event.email);
       emit(AuthSuccess(
         userId: response['user']['id'].toString(),
         phoneNumber: Validators.formatNigerianPhone(event.phoneNumber),
         fullName: event.fullName,
+        email: event.email,
         profilePicture: response['user']['profile_picture_url']?.toString(),
       ));
     } catch (e) {
-      emit(AuthFailure('Failed to create profile: $e'));
+      emit(AuthFailure(extractApiError(e)));
     }
   }
 
@@ -112,7 +114,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final response = await _authRepository.getProfile();
       emit(ProfileSuccess(Map<String, dynamic>.from(response['user'] as Map)));
     } catch (e) {
-      emit(ProfileFailure('Failed to load profile: $e'));
+      emit(ProfileFailure(extractApiError(e)));
     }
   }
 
@@ -120,11 +122,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       UpdateProfileEvent event, Emitter<AuthState> emit) async {
     emit(const AuthLoading());
     try {
-      await _authRepository.updateProfile(event.fullName);
-      emit(const AuthLoading()); // Reload to get updated data
+      await _authRepository.updateProfile(event.fullName, email: event.email);
       add(LoadProfileEvent());
     } catch (e) {
-      emit(AuthFailure('Failed to update profile: $e'));
+      emit(AuthFailure(extractApiError(e)));
     }
   }
 
@@ -135,7 +136,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final response = await _authRepository.getWalletBalance();
       emit(WalletSuccess((response['balance'] as num).toDouble()));
     } catch (e) {
-      emit(WalletFailure('Failed to load wallet: $e'));
+      emit(WalletFailure(extractApiError(e)));
     }
   }
 
@@ -144,10 +145,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(const AuthLoading());
     try {
       await _authRepository.fundWallet(event.amount);
-      emit(const AuthLoading()); // Reload wallet balance
       add(LoadWalletEvent());
     } catch (e) {
-      emit(AuthFailure('Failed to fund wallet: $e'));
+      emit(AuthFailure(extractApiError(e)));
     }
   }
 
@@ -168,10 +168,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       await _authRepository.uploadProfilePicture(
         File(event.imageFilePath),
       );
-      // Reload profile to get updated picture URL
       add(LoadProfileEvent());
     } catch (e) {
-      emit(AuthFailure('Failed to upload profile picture: $e'));
+      emit(AuthFailure(extractApiError(e)));
     }
   }
 
@@ -183,8 +182,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           event.currentPassword, event.newPassword);
       emit(const PasswordChangedSuccess());
     } catch (e) {
-      emit(PasswordChangedFailure(
-          e.toString().replaceFirst('Exception: ', '')));
+      emit(PasswordChangedFailure(extractApiError(e)));
     }
   }
 }

@@ -1,6 +1,7 @@
 from asgiref.sync import async_to_sync
 from decimal import Decimal
 from django.db import transaction as db_transaction
+from django.db.models import F
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import serializers
@@ -38,32 +39,30 @@ class DataPurchaseView(APIView):
         if not plan:
             return Response({'detail': 'Plan not found.'}, status=404)
 
-        try:
-            wallet = request.user.wallet
-        except Wallet.DoesNotExist:
-            return Response({'detail': 'Wallet not found.'}, status=404)
-
         markup = (request.tenant.data_markup_percent / 100) if request.tenant else Decimal('0')
         price = Decimal(str(plan['price']))
         charge = price * (1 + markup)
 
-        if wallet.balance < charge:
-            return Response({'detail': 'Insufficient wallet balance.'}, status=400)
-
-        with db_transaction.atomic():
-            wallet.balance -= charge
-            wallet.save()
-            txn = Transaction.objects.create(
-                tenant=request.tenant,
-                user=request.user,
-                type='data',
-                amount=charge,
-                status='pending',
-                reference=Transaction.generate_reference(),
-                network=d['network'],
-                phone_number=d['phone_number'],
-                plan_id=d['plan_id'],
-            )
+        try:
+            with db_transaction.atomic():
+                wallet = Wallet.objects.select_for_update().get(user=request.user)
+                if wallet.balance < charge:
+                    return Response({'detail': 'Insufficient wallet balance.'}, status=400)
+                wallet.balance -= charge
+                wallet.save()
+                txn = Transaction.objects.create(
+                    tenant=request.tenant,
+                    user=request.user,
+                    type='data',
+                    amount=charge,
+                    status='pending',
+                    reference=Transaction.generate_reference(),
+                    network=d['network'],
+                    phone_number=d['phone_number'],
+                    plan_id=d['plan_id'],
+                )
+        except Wallet.DoesNotExist:
+            return Response({'detail': 'Wallet not found.'}, status=404)
 
         result = async_to_sync(purchase_data)(d['network'], d['plan_id'], d['phone_number'])
 
@@ -84,9 +83,7 @@ class DataPurchaseView(APIView):
             })
         else:
             with db_transaction.atomic():
-                wallet.refresh_from_db()
-                wallet.balance += charge
-                wallet.save()
+                Wallet.objects.filter(pk=wallet.pk).update(balance=F('balance') + charge)
                 txn.status = 'failed'
                 txn.save()
             return Response({'detail': f"Purchase failed: {result['message']}"}, status=502)

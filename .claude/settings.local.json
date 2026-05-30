@@ -111,7 +111,15 @@
       "PowerShell(& \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\venv\\\\Scripts\\\\pip.exe\" index versions Pillow 2>&1 | Select-Object -First 5)",
       "PowerShell(cd \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\backend_django\"; $env:DJANGO_SUPERUSER_PHONE_NUMBER=\"08032194090\"; $env:DJANGO_SUPERUSER_PASSWORD=\"nazz2020\"; python manage.py createsuperuser --no-input 2>&1)",
       "PowerShell(cd \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\backend_django\"; $env:DJANGO_SETTINGS_MODULE=\"topupnaija.settings.dev\"; python -c \"import django; django.setup\\(\\); from django.core.management import get_commands; print\\(get_commands\\(\\).get\\('createsuperuser'\\)\\)\" 2>&1)",
-      "PowerShell(cd \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\backend_django\"; $env:DJANGO_SUPERUSER_PHONE_NUMBER=\"08000000099\"; $env:DJANGO_SUPERUSER_PASSWORD=\"Admin1234!\"; python manage.py createsuperuser --no-input 2>&1)"
+      "PowerShell(cd \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\backend_django\"; $env:DJANGO_SUPERUSER_PHONE_NUMBER=\"08000000099\"; $env:DJANGO_SUPERUSER_PASSWORD=\"Admin1234!\"; python manage.py createsuperuser --no-input 2>&1)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\" -Force)",
+      "Bash(Select-Object Name, Mode)",
+      "Bash(Format-Table)",
+      "Bash(..\\\\venv\\\\Scripts\\\\python.exe -c \"import django; print\\('Django:', django.__version__\\); import sys; print\\('Python:', sys.version\\)\")",
+      "PowerShell(& \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\venv\\\\Scripts\\\\python.exe\" -c \"import django; print\\('Django:', django.__version__\\); import sys; print\\('Python:', sys.version\\)\")",
+      "PowerShell(& \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\venv\\\\Scripts\\\\pip.exe\" index versions django 2>&1 | Select-Object -First 5)",
+      "PowerShell(& \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\venv\\\\Scripts\\\\pip.exe\" install \"Django==5.2.14\" 2>&1 | Select-Object -Last 10)",
+      "PowerShell(& \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\venv\\\\Scripts\\\\python.exe\" -c \"import django; print\\('Django:', django.__version__\\); from django.template.context import Context; import copy; c = Context\\({}\\); copy.copy\\(c\\); print\\('Context.__copy__ OK'\\)\" 2>&1)"
     ]
   }
 }

@@ -59,11 +59,12 @@ class LoadProfileEvent extends AuthEvent {}
 
 class UpdateProfileEvent extends AuthEvent {
   final String fullName;
+  final String? email;
 
-  const UpdateProfileEvent(this.fullName);
+  const UpdateProfileEvent(this.fullName, {this.email});
 
   @override
-  List<Object> get props => [fullName];
+  List<Object> get props => [fullName, email ?? ''];
 }
 
 class LoadWalletEvent extends AuthEvent {}

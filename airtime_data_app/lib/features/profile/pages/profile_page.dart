@@ -89,8 +89,12 @@ class _ProfilePageState extends State<ProfilePage>
 
       if (confirmed != true || !mounted) return;
 
+      final email = _emailController.text.trim();
       context.read<AuthBloc>().add(
-            UpdateProfileEvent(_fullNameController.text.trim()),
+            UpdateProfileEvent(
+              _fullNameController.text.trim(),
+              email: email.isEmpty ? null : email,
+            ),
           );
       setState(() => _isEditing = false);
       _animController.reverse();

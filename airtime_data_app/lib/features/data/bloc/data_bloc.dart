@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../data_repository.dart';
 import '../event/data_event.dart';
 import '../state/data_state.dart';
+import '../../../core/utils/api_error.dart';
 
 class DataBloc extends Bloc<DataEvent, DataState> {
   final DataRepository _dataRepository;
@@ -39,7 +40,7 @@ class DataBloc extends Bloc<DataEvent, DataState> {
         validity: response['validity']?.toString() ?? '',
       ));
     } catch (e) {
-      emit(DataState.failure('Failed to purchase data: $e'));
+      emit(DataState.failure(extractApiError(e)));
     }
   }
 
@@ -50,7 +51,7 @@ class DataBloc extends Bloc<DataEvent, DataState> {
       final response = await _dataRepository.getDataPlans(event.network);
       emit(DataState.plansSuccess(List<Map<String, dynamic>>.from(response['plans'] as List)));
     } catch (e) {
-      emit(DataState.plansFailure('Failed to load data plans: $e'));
+      emit(DataState.plansFailure(extractApiError(e)));
     }
   }
 }
