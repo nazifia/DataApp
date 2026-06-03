@@ -11,6 +11,20 @@ class TransactionHistoryRepository {
       : _apiClient = apiClient,
         _config = config;
 
+  // Submit a dispute for a transaction
+  Future<void> submitDispute({
+    required String subject,
+    required String message,
+    String transactionReference = '',
+  }) async {
+    if (_config.useMockAuth) return;
+    await _apiClient.dio.post('/disputes/', data: {
+      'subject': subject,
+      'message': message,
+      'transaction_reference': transactionReference,
+    });
+  }
+
   // Get Transaction History
   Future<Map<String, dynamic>> getTransactionHistory() async {
     if (_config.useMockAuth) {

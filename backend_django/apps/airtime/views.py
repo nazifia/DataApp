@@ -5,12 +5,18 @@ from django.db.models import F
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import serializers
+from rest_framework.throttling import UserRateThrottle
 from core.validators import NigerianPhoneField
+from core.notifications import send_push_notification
 from apps.transactions.models import Transaction
 from apps.wallet.models import Wallet
 from .services import purchase_airtime
 
 VALID_NETWORKS = ('mtn', 'airtel', 'glo', 'etisalat')
+
+
+class PurchaseThrottle(UserRateThrottle):
+    scope = 'purchase'
 
 
 class AirtimePurchaseSerializer(serializers.Serializer):
@@ -20,6 +26,8 @@ class AirtimePurchaseSerializer(serializers.Serializer):
 
 
 class AirtimePurchaseView(APIView):
+    throttle_classes = [PurchaseThrottle]
+
     def post(self, request):
         ser = AirtimePurchaseSerializer(data=request.data)
         ser.is_valid(raise_exception=True)
@@ -54,6 +62,12 @@ class AirtimePurchaseView(APIView):
             txn.status = 'success'
             txn.reference = result['reference']
             txn.save()
+            send_push_notification(
+                request.user,
+                title='Airtime Sent',
+                body=f'₦{float(charge):,.2f} {d["network"].upper()} airtime sent to {d["phone_number"]}.',
+                data={'type': 'airtime', 'reference': txn.reference},
+            )
             return Response({
                 'message': 'Airtime purchased.',
                 'reference': txn.reference,
@@ -66,4 +80,10 @@ class AirtimePurchaseView(APIView):
                 Wallet.objects.filter(pk=wallet.pk).update(balance=F('balance') + charge)
                 txn.status = 'failed'
                 txn.save()
+            send_push_notification(
+                request.user,
+                title='Airtime Purchase Failed',
+                body=f'Your ₦{float(charge):,.2f} airtime purchase failed. Your wallet has been refunded.',
+                data={'type': 'airtime_failed', 'reference': txn.reference},
+            )
             return Response({'detail': f"Purchase failed: {result['message']}"}, status=502)

@@ -29,6 +29,8 @@ INSTALLED_APPS = [
     'apps.data_plans',
     'apps.transactions',
     'apps.admin_portal',
+    'apps.beneficiaries',
+    'apps.disputes',
 ]
 
 MIDDLEWARE = [
@@ -108,6 +110,7 @@ REST_FRAMEWORK = {
         'user': '2000/day',
         'otp': '10/hour',
         'login': '20/hour',
+        'purchase': '100/hour',
     },
 }
 
@@ -138,5 +141,8 @@ AT_USERNAME = env('AT_USERNAME', default='sandbox')
 AT_SENDER_ID = env('AT_SENDER_ID', default='TopUpNaija')
 GLADTIDING_API_KEY = env('GLADTIDING_API_KEY', default='')
 GLADTIDING_BASE_URL = env('GLADTIDING_BASE_URL', default='https://gladtidingsdata.com/api')
+PAYSTACK_SECRET_KEY = env('PAYSTACK_SECRET_KEY', default='')
+# Path to Firebase service account JSON, or None to disable push notifications
+FIREBASE_CREDENTIALS = env('FIREBASE_CREDENTIALS', default=None)
 DEV_MODE = env.bool('DEV_MODE', default=True)
 TEST_OTP = env('TEST_OTP', default='123456')

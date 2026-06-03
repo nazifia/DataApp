@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/transaction_history_bloc.dart';
+import '../data/transaction_history_repository.dart';
 import '../event/transaction_history_event.dart';
 import '../state/transaction_history_state.dart';
 import '../../../core/constants/theme.dart';
@@ -306,7 +307,10 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage>
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (_) => _TransactionDetailSheet(transaction: transaction),
+      builder: (_) => _TransactionDetailSheet(
+        transaction: transaction,
+        repository: context.read<TransactionHistoryRepository>(),
+      ),
     );
   }
 
@@ -465,8 +469,104 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage>
 
 class _TransactionDetailSheet extends StatelessWidget {
   final Map<String, dynamic> transaction;
+  final TransactionHistoryRepository repository;
 
-  const _TransactionDetailSheet({required this.transaction});
+  const _TransactionDetailSheet({required this.transaction, required this.repository});
+
+  void _showDisputeSheet(BuildContext context) {
+    final ref = (transaction['reference'] ?? '').toString();
+    final subjectCtrl = TextEditingController(text: 'Issue with transaction $ref');
+    final messageCtrl = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Report an Issue', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+                const SizedBox(height: 4),
+                Text('Ref: $ref', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                const SizedBox(height: 20),
+                const Text('Subject', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: subjectCtrl,
+                  decoration: const InputDecoration(filled: true),
+                ),
+                const SizedBox(height: 14),
+                const Text('Describe the issue', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: messageCtrl,
+                  minLines: 3,
+                  maxLines: 6,
+                  decoration: const InputDecoration(
+                    hintText: 'What went wrong? Include any relevant details.',
+                    filled: true,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      final msg = messageCtrl.text.trim();
+                      if (msg.length < 10) {
+                        ScaffoldMessenger.of(ctx).showSnackBar(
+                          const SnackBar(content: Text('Please describe the issue in more detail.')),
+                        );
+                        return;
+                      }
+                      Navigator.pop(ctx);
+                      Navigator.pop(context);
+                      try {
+                        await repository.submitDispute(
+                          subject: subjectCtrl.text.trim(),
+                          message: msg,
+                          transactionReference: ref,
+                        );
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Issue reported. Our team will review it.'),
+                              backgroundColor: AppColors.success,
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        }
+                      } catch (_) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Failed to submit. Please try again.'),
+                              backgroundColor: AppColors.error,
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
+                    child: const Text('Submit Report', style: TextStyle(fontWeight: FontWeight.w700)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
   Color _typeColor(dynamic type) {
     switch ((type?.toString() ?? '').toLowerCase()) {
@@ -732,6 +832,18 @@ class _TransactionDetailSheet extends StatelessWidget {
               _detailRow('Validity', validity),
 
             const SizedBox(height: 20),
+            OutlinedButton.icon(
+              onPressed: () => _showDisputeSheet(context),
+              icon: const Icon(Icons.flag_outlined, size: 16),
+              label: const Text('Report Issue'),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size.fromHeight(46),
+                foregroundColor: AppColors.error,
+                side: const BorderSide(color: AppColors.error),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+            const SizedBox(height: 10),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(

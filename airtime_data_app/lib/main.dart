@@ -1,9 +1,11 @@
 // Main Application File
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/config/app_env.dart';
 import 'core/network/api_client.dart';
 import 'core/services/theme_service.dart';
+import 'core/services/notification_service.dart';
 import 'features/authentication/bloc/auth_bloc.dart';
 import 'features/authentication/data/auth_repository.dart';
 import 'features/wallet/bloc/wallet_bloc.dart';
@@ -14,6 +16,8 @@ import 'features/data/bloc/data_bloc.dart';
 import 'features/data/data_repository.dart';
 import 'features/transaction_history/bloc/transaction_history_bloc.dart';
 import 'features/transaction_history/data/transaction_history_repository.dart';
+import 'features/beneficiaries/bloc/beneficiary_bloc.dart';
+import 'features/beneficiaries/data/beneficiary_repository.dart';
 import 'features/authentication/pages/splash_page.dart';
 import 'features/authentication/pages/welcome_page.dart';
 import 'features/authentication/pages/phone_input_page.dart';
@@ -43,7 +47,8 @@ final ValueNotifier<ThemeMode> themeModeNotifier =
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Load persisted theme before first frame
+  await Firebase.initializeApp();
+  await NotificationService.initialize();
   themeModeNotifier.value = await ThemeService.loadThemeMode();
   runApp(AirtimeDataApp(config: _config));
 }
@@ -66,69 +71,82 @@ class AirtimeDataApp extends StatelessWidget {
         DataRepository(apiClient: apiClient, config: config);
     final transactionHistoryRepository =
         TransactionHistoryRepository(apiClient: apiClient, config: config);
+    final beneficiaryRepository =
+        BeneficiaryRepository(apiClient: apiClient, config: config);
 
-    return MultiBlocProvider(
+    return MultiRepositoryProvider(
       providers: [
-        BlocProvider(
-          create: (_) => AuthBloc(authRepository: authRepository),
-        ),
-        BlocProvider(
-          create: (_) => WalletBloc(walletRepository: walletRepository),
-        ),
-        BlocProvider(
-          create: (_) => AirtimeBloc(airtimeRepository: airtimeRepository),
-        ),
-        BlocProvider(
-          create: (_) => DataBloc(dataRepository: dataRepository),
-        ),
-        BlocProvider(
-          create: (_) => TransactionHistoryBloc(
-              transactionHistoryRepository: transactionHistoryRepository),
-        ),
+        RepositoryProvider.value(value: authRepository),
+        RepositoryProvider.value(value: transactionHistoryRepository),
+        RepositoryProvider.value(value: beneficiaryRepository),
       ],
-      child: InactivityDetector(
-        navigatorKey: _navigatorKey,
-        child: ListenableBuilder(
-          listenable: themeModeNotifier,
-          builder: (context, _) {
-            return MaterialApp(
-              title: AppConstants.appName,
-              debugShowCheckedModeBanner: false,
-              theme: AppTheme.lightTheme,
-              darkTheme: AppTheme.darkTheme,
-              themeMode: themeModeNotifier.value,
-              navigatorKey: _navigatorKey,
-              navigatorObservers: [routeObserver],
-              initialRoute: '/',
-              routes: {
-                '/': (context) => const SplashPage(),
-                '/welcome': (context) => const WelcomePage(),
-                '/phone-input': (context) => PhoneInputPage(
-                      isLogin: (ModalRoute.of(context)!.settings.arguments
-                              as bool?) ??
-                          true,
-                    ),
-                '/otp-verification': (context) {
-                  final args = ModalRoute.of(context)!.settings.arguments
-                      as Map<String, dynamic>;
-                  return OtpVerificationPage(
-                    phoneNumber: args['phoneNumber'] as String,
-                    isLogin: args['isLogin'] as bool,
-                  );
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (_) => AuthBloc(authRepository: authRepository),
+          ),
+          BlocProvider(
+            create: (_) => WalletBloc(walletRepository: walletRepository),
+          ),
+          BlocProvider(
+            create: (_) => AirtimeBloc(airtimeRepository: airtimeRepository),
+          ),
+          BlocProvider(
+            create: (_) => DataBloc(dataRepository: dataRepository),
+          ),
+          BlocProvider(
+            create: (_) => TransactionHistoryBloc(
+                transactionHistoryRepository: transactionHistoryRepository),
+          ),
+          BlocProvider(
+            create: (_) =>
+                BeneficiaryBloc(repository: beneficiaryRepository),
+          ),
+        ],
+        child: InactivityDetector(
+          navigatorKey: _navigatorKey,
+          child: ListenableBuilder(
+            listenable: themeModeNotifier,
+            builder: (context, _) {
+              return MaterialApp(
+                title: AppConstants.appName,
+                debugShowCheckedModeBanner: false,
+                theme: AppTheme.lightTheme,
+                darkTheme: AppTheme.darkTheme,
+                themeMode: themeModeNotifier.value,
+                navigatorKey: _navigatorKey,
+                navigatorObservers: [routeObserver],
+                initialRoute: '/',
+                routes: {
+                  '/': (context) => const SplashPage(),
+                  '/welcome': (context) => const WelcomePage(),
+                  '/phone-input': (context) => PhoneInputPage(
+                        isLogin: (ModalRoute.of(context)!.settings.arguments
+                                as bool?) ??
+                            true,
+                      ),
+                  '/otp-verification': (context) {
+                    final args = ModalRoute.of(context)!.settings.arguments
+                        as Map<String, dynamic>;
+                    return OtpVerificationPage(
+                      phoneNumber: args['phoneNumber'] as String,
+                      isLogin: args['isLogin'] as bool,
+                    );
+                  },
+                  '/profile-setup': (context) => ProfileSetupPage(
+                      phoneNumber:
+                          ModalRoute.of(context)!.settings.arguments as String),
+                  '/dashboard': (context) => const DashboardPage(),
+                  '/airtime-purchase': (context) => const AirtimePurchasePage(),
+                  '/data-purchase': (context) => const DataPurchasePage(),
+                  '/wallet-fund': (context) => const WalletFundPage(),
+                  '/transaction-history': (context) =>
+                      const TransactionHistoryPage(),
+                  '/profile': (context) => const ProfilePage(),
                 },
-                '/profile-setup': (context) => ProfileSetupPage(
-                    phoneNumber:
-                        ModalRoute.of(context)!.settings.arguments as String),
-                '/dashboard': (context) => const DashboardPage(),
-                '/airtime-purchase': (context) => const AirtimePurchasePage(),
-                '/data-purchase': (context) => const DataPurchasePage(),
-                '/wallet-fund': (context) => const WalletFundPage(),
-                '/transaction-history': (context) =>
-                    const TransactionHistoryPage(),
-                '/profile': (context) => const ProfilePage(),
-              },
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );

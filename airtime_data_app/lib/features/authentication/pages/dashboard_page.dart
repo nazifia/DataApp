@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/auth_bloc.dart';
+import '../data/auth_repository.dart';
 import '../event/auth_event.dart' hide LoadWalletEvent, FundWalletEvent;
 import '../state/auth_state.dart'
     hide WalletLoading, WalletSuccess, WalletFailure;
@@ -17,6 +18,7 @@ import '../../transaction_history/event/transaction_history_event.dart';
 import '../../transaction_history/state/transaction_history_state.dart';
 import '../../../core/constants/theme.dart';
 import '../../../core/utils/validation.dart';
+import '../../../core/services/notification_service.dart';
 import '../../../main.dart' show routeObserver, themeModeNotifier;
 import '../../../core/services/biometric_service.dart';
 import '../../../core/services/theme_service.dart';
@@ -44,6 +46,15 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
     super.initState();
     _refreshData();
     _loadBiometricStatus();
+    _registerFcmToken();
+  }
+
+  Future<void> _registerFcmToken() async {
+    final token = await NotificationService.getToken();
+    if (token != null && mounted) {
+      // Fire-and-forget: non-fatal if it fails
+      context.read<AuthRepository>().registerFcmToken(token);
+    }
   }
 
   @override

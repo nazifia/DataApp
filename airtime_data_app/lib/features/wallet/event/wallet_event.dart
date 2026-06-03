@@ -24,3 +24,11 @@ class FundWalletEvent extends WalletEvent {
 class LoadBankDetailsEvent extends WalletEvent {
   const LoadBankDetailsEvent();
 }
+
+class InitiatePaystackPaymentEvent extends WalletEvent {
+  final double amount;
+  const InitiatePaystackPaymentEvent(this.amount);
+
+  @override
+  List<Object> get props => [amount];
+}

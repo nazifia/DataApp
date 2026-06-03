@@ -46,6 +46,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(blank=True)
     device_id = models.CharField(max_length=255, blank=True)
     profile_picture_url = models.CharField(max_length=500, blank=True)
+    fcm_token = models.CharField(max_length=500, blank=True)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='user')
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)

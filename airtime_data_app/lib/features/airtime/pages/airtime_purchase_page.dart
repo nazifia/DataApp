@@ -8,6 +8,10 @@ import '../state/airtime_state.dart';
 import '../../authentication/bloc/auth_bloc.dart';
 import '../../authentication/event/auth_event.dart';
 import '../../authentication/state/auth_state.dart';
+import '../../beneficiaries/bloc/beneficiary_bloc.dart';
+import '../../beneficiaries/event/beneficiary_event.dart';
+import '../../beneficiaries/models/beneficiary.dart';
+import '../../beneficiaries/pages/beneficiaries_page.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/confirmation_dialog.dart';
 import '../../../core/widgets/pin_input_dialog.dart';
@@ -150,6 +154,34 @@ class _AirtimePurchasePageState extends State<AirtimePurchasePage> {
     }
   }
 
+  Future<void> _pickBeneficiary() async {
+    final b = await Navigator.of(context).push<Beneficiary>(
+      MaterialPageRoute(
+        builder: (_) => BlocProvider.value(
+          value: context.read<BeneficiaryBloc>(),
+          child: const BeneficiariesPage(filterType: 'airtime', selectMode: true),
+        ),
+      ),
+    );
+    if (b != null && mounted) {
+      setState(() {
+        _phoneController.text = b.phoneNumber;
+        _selectedNetwork = b.network.substring(0, 1).toUpperCase() + b.network.substring(1);
+        if (_selectedNetwork == 'Etisalat') _selectedNetwork = '9mobile';
+        _isSelf = false;
+      });
+    }
+  }
+
+  void _saveAsBeneficiary(String phoneNumber, String network) {
+    final rawNetwork = network.toLowerCase() == '9mobile' ? 'etisalat' : network.toLowerCase();
+    context.read<BeneficiaryBloc>().add(SaveBeneficiaryEvent(
+      phoneNumber: phoneNumber,
+      network: rawNetwork,
+      type: 'airtime',
+    ));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -170,6 +202,9 @@ class _AirtimePurchasePageState extends State<AirtimePurchasePage> {
               (current is AirtimeFailure && previous is! AirtimeFailure),
           listener: (context, state) {
             if (state is AirtimeSuccess) {
+              if (!_isSelf) {
+                _saveAsBeneficiary(state.phoneNumber, state.network);
+              }
               _showSuccessSheet(context, state);
             } else if (state is AirtimeFailure) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -198,7 +233,22 @@ class _AirtimePurchasePageState extends State<AirtimePurchasePage> {
                   const SizedBox(height: 24),
 
                   // Recipient
-                  _sectionLabel('Recipient'),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _sectionLabel('Recipient'),
+                      if (!_isSelf)
+                        TextButton.icon(
+                          onPressed: _pickBeneficiary,
+                          icon: const Icon(Icons.bookmarks_rounded, size: 16),
+                          label: const Text('Saved', style: TextStyle(fontSize: 13)),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            foregroundColor: AppColors.primary,
+                          ),
+                        ),
+                    ],
+                  ),
                   const SizedBox(height: 10),
                   _buildRecipientToggle(),
                   const SizedBox(height: 12),

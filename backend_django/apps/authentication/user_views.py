@@ -13,6 +13,16 @@ from .serializers import (
 from .models import User
 
 
+class RegisterFCMTokenView(APIView):
+    def post(self, request):
+        token = (request.data.get('fcm_token') or '').strip()
+        if not token:
+            return Response({'detail': 'fcm_token is required.'}, status=400)
+        request.user.fcm_token = token
+        request.user.save(update_fields=['fcm_token'])
+        return Response({'message': 'FCM token registered.'})
+
+
 class CreateProfileView(APIView):
     def post(self, request):
         serializer = CreateProfileSerializer(data=request.data)

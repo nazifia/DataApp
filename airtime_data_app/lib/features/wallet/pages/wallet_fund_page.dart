@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../bloc/wallet_bloc.dart';
 import '../event/wallet_event.dart';
 import '../state/wallet_state.dart';
@@ -74,8 +75,8 @@ class _WalletFundPageState extends State<WalletFundPage> {
 
     switch (_selectedMethodIndex) {
       case 0:
-        // Card / Account
-        await _showCardPaymentSheet(amount);
+        // Card / Account — initiate Paystack checkout
+        await _initiatePaystackCard(amount);
       case 1:
         // Bank Transfer
         await _showBankTransferSheet(amount);
@@ -99,21 +100,51 @@ class _WalletFundPageState extends State<WalletFundPage> {
     }
   }
 
-  Future<void> _showCardPaymentSheet(double amount) async {
-    await showModalBottomSheet(
+  Future<void> _initiatePaystackCard(double amount) async {
+    context.read<WalletBloc>().add(InitiatePaystackPaymentEvent(amount));
+  }
+
+  Future<void> _openPaystackCheckout(String url, double amount) async {
+    final uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not open payment page. Please try again.')),
+        );
+      }
+      return;
+    }
+    // Show a waiting dialog — wallet is credited via webhook when user completes payment
+    if (!mounted) return;
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      builder: (ctx) => _CardPaymentSheet(
-        amount: amount,
-        onPay: () {
-          Navigator.of(ctx).pop();
-          // Trigger wallet funding through WalletBloc
-          context.read<WalletBloc>().add(FundWalletEvent(amount));
-        },
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Complete Payment'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Complete your payment of ${CurrencyFormatter.formatNaira(amount)} in the browser.',
+              style: const TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Your wallet will be credited automatically once payment is confirmed.',
+              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              Navigator.pop(context);
+            },
+            child: const Text('Done'),
+          ),
+        ],
       ),
     );
   }
@@ -232,9 +263,11 @@ class _WalletFundPageState extends State<WalletFundPage> {
         ),
       ),
       body: BlocConsumer<WalletBloc, WalletState>(
-        listener: (context, state) {
+        listener: (context, state) async {
           if (state is FundWalletSuccess) {
             _showSuccessSheet(context, state.balance, state.amount);
+          } else if (state is PaystackPaymentInitiated) {
+            await _openPaystackCheckout(state.authorizationUrl, state.amount);
           } else if (state is WalletFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -621,277 +654,6 @@ class _WalletFundPageState extends State<WalletFundPage> {
                 ),
               ),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ─── Card Payment Sheet ────────────────────────────────────────────────────
-
-class _CardPaymentSheet extends StatefulWidget {
-  final double amount;
-  final VoidCallback onPay;
-
-  const _CardPaymentSheet({required this.amount, required this.onPay});
-
-  @override
-  State<_CardPaymentSheet> createState() => _CardPaymentSheetState();
-}
-
-class _CardPaymentSheetState extends State<_CardPaymentSheet> {
-  final _cardNumberCtrl = TextEditingController();
-  final _expiryCtrl = TextEditingController();
-  final _cvvCtrl = TextEditingController();
-  final _nameCtrl = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
-
-  @override
-  void dispose() {
-    _cardNumberCtrl.dispose();
-    _expiryCtrl.dispose();
-    _cvvCtrl.dispose();
-    _nameCtrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      child: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Handle
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.outlineVariant,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: AppColors.info.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(Icons.credit_card_rounded,
-                          color: AppColors.info, size: 22),
-                    ),
-                    const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Card Payment',
-                          style: TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w800,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
-                        ),
-                        Text(
-                          'Amount: ${CurrencyFormatter.formatNaira(widget.amount)}',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-
-                // Card Number
-                Text('Card Number',
-                    style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6))),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: _cardNumberCtrl,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                    LengthLimitingTextInputFormatter(16),
-                    _CardNumberFormatter(),
-                  ],
-                  decoration: const InputDecoration(
-                    hintText: '0000 0000 0000 0000',
-                    prefixIcon:
-                        Icon(Icons.credit_card_rounded),
-                    filled: true,
-                  ),
-                  validator: (v) {
-                    if (v == null || v.replaceAll(' ', '').length < 16) {
-                      return 'Enter a valid 16-digit card number';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-
-                // Expiry and CVV row
-                Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Expiry Date',
-                              style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6))),
-                          const SizedBox(height: 8),
-                          TextFormField(
-                            controller: _expiryCtrl,
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                              LengthLimitingTextInputFormatter(4),
-                              _ExpiryFormatter(),
-                            ],
-                            decoration: const InputDecoration(
-                              hintText: 'MM/YY',
-                              prefixIcon: Icon(Icons.calendar_month_rounded),
-                              filled: true,
-                            ),
-                            validator: (v) {
-                              if (v == null || v.length < 5) {
-                                return 'Invalid expiry';
-                              }
-                              return null;
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('CVV',
-                              style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6))),
-                          const SizedBox(height: 8),
-                          TextFormField(
-                            controller: _cvvCtrl,
-                            keyboardType: TextInputType.number,
-                            obscureText: true,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                              LengthLimitingTextInputFormatter(4),
-                            ],
-                            decoration: const InputDecoration(
-                              hintText: '•••',
-                              prefixIcon: Icon(Icons.lock_outline_rounded),
-                              filled: true,
-                            ),
-                            validator: (v) {
-                              if (v == null || v.length < 3) {
-                                return 'Invalid CVV';
-                              }
-                              return null;
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-
-                // Cardholder Name
-                Text('Cardholder Name',
-                    style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6))),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: _nameCtrl,
-                  textCapitalization: TextCapitalization.words,
-                  decoration: const InputDecoration(
-                    hintText: 'Name on card',
-                    prefixIcon: Icon(Icons.person_outline_rounded),
-                    filled: true,
-                  ),
-                  validator: (v) {
-                    if (v == null || v.trim().length < 3) {
-                      return 'Enter cardholder name';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 28),
-
-                // Security note
-                Row(
-                  children: [
-                    const Icon(Icons.lock_rounded,
-                        size: 14, color: AppColors.success),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Your card details are encrypted and secure',
-                      style: TextStyle(
-                          fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4)),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-
-                // Pay button
-                SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState?.validate() ?? false) {
-                        widget.onPay();
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
-                    child: Text(
-                      'Pay ${CurrencyFormatter.formatNaira(widget.amount)}',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
           ),
         ),
       ),
@@ -1545,38 +1307,3 @@ class _BankUssd {
       {required this.name, required this.logo, required this.color});
 }
 
-// ─── Input Formatters ──────────────────────────────────────────────────────
-
-class _CardNumberFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
-    final digits = newValue.text.replaceAll(' ', '');
-    final buffer = StringBuffer();
-    for (int i = 0; i < digits.length; i++) {
-      if (i > 0 && i % 4 == 0) buffer.write(' ');
-      buffer.write(digits[i]);
-    }
-    final string = buffer.toString();
-    return newValue.copyWith(
-      text: string,
-      selection: TextSelection.collapsed(offset: string.length),
-    );
-  }
-}
-
-class _ExpiryFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
-    final digits = newValue.text.replaceAll('/', '');
-    if (digits.length >= 2) {
-      final formatted = '${digits.substring(0, 2)}/${digits.substring(2)}';
-      return newValue.copyWith(
-        text: formatted,
-        selection: TextSelection.collapsed(offset: formatted.length),
-      );
-    }
-    return newValue;
-  }
-}

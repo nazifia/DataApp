@@ -280,4 +280,14 @@ class AuthRepository {
     final token = await _storage.read(key: 'access_token');
     return token != null && token.isNotEmpty;
   }
+
+  // Register FCM token with backend
+  Future<void> registerFcmToken(String fcmToken) async {
+    if (_config.useMockAuth || fcmToken.isEmpty) return;
+    try {
+      await _apiClient.dio.post('/user/fcm-token/', data: {'fcm_token': fcmToken});
+    } catch (_) {
+      // Non-fatal: notifications will just not be delivered
+    }
+  }
 }

@@ -7,6 +7,7 @@ from .views import (
     AnalyticsRevenueView, AnalyticsNetworkView, AnalyticsTopUsersView, AnalyticsTypeBreakdownView,
     AuditLogListView,
 )
+from apps.disputes.views import AdminDisputeListView, AdminDisputeDetailView
 
 urlpatterns = [
     # Dashboard
@@ -31,4 +32,7 @@ urlpatterns = [
     path('analytics/transaction-types/', AnalyticsTypeBreakdownView.as_view()),
     # Audit
     path('audit-logs/', AuditLogListView.as_view()),
+    # Disputes
+    path('disputes/', AdminDisputeListView.as_view()),
+    path('disputes/<uuid:pk>/', AdminDisputeDetailView.as_view()),
 ]

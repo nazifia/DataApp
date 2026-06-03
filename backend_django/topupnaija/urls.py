@@ -41,5 +41,7 @@ urlpatterns = [
     path('api/v1/transactions/', include('apps.transactions.urls')),
     path('api/v1/admin/', include('apps.admin_portal.urls')),
     path('api/v1/tenants/', include('apps.tenants.urls')),
+    path('api/v1/beneficiaries/', include('apps.beneficiaries.urls')),
+    path('api/v1/disputes/', include('apps.disputes.urls')),
     path('sw.js', sw_js),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

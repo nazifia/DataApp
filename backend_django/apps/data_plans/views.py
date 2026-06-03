@@ -5,12 +5,18 @@ from django.db.models import F
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import serializers
+from rest_framework.throttling import UserRateThrottle
 from core.validators import NigerianPhoneField
+from core.notifications import send_push_notification
 from apps.transactions.models import Transaction
 from apps.wallet.models import Wallet
 from .services import get_data_plans, purchase_data
 
 VALID_NETWORKS = ('mtn', 'airtel', 'glo', 'etisalat')
+
+
+class PurchaseThrottle(UserRateThrottle):
+    scope = 'purchase'
 
 
 class DataPurchaseSerializer(serializers.Serializer):
@@ -35,6 +41,8 @@ class DataPlansView(APIView):
 
 
 class DataPurchaseView(APIView):
+    throttle_classes = [PurchaseThrottle]
+
     def post(self, request):
         ser = DataPurchaseSerializer(data=request.data)
         ser.is_valid(raise_exception=True)
@@ -76,6 +84,12 @@ class DataPurchaseView(APIView):
             txn.status = 'success'
             txn.reference = result['reference']
             txn.save()
+            send_push_notification(
+                request.user,
+                title='Data Purchased',
+                body=f'{plan.get("name", "")} sent to {d["phone_number"]}.',
+                data={'type': 'data', 'reference': txn.reference},
+            )
             return Response({
                 'message': 'Data purchased.',
                 'reference': txn.reference,
@@ -92,4 +106,10 @@ class DataPurchaseView(APIView):
                 Wallet.objects.filter(pk=wallet.pk).update(balance=F('balance') + charge)
                 txn.status = 'failed'
                 txn.save()
+            send_push_notification(
+                request.user,
+                title='Data Purchase Failed',
+                body=f'Your {plan.get("name", "")} data purchase failed. Your wallet has been refunded.',
+                data={'type': 'data_failed', 'reference': txn.reference},
+            )
             return Response({'detail': f"Purchase failed: {result['message']}"}, status=502)

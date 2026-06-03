@@ -60,3 +60,18 @@ class BankDetailsLoaded extends WalletState {
   @override
   List<Object> get props => [bankName, accountNumber, accountName, note];
 }
+
+class PaystackPaymentInitiated extends WalletState {
+  final String authorizationUrl;
+  final String reference;
+  final double amount;
+
+  const PaystackPaymentInitiated({
+    required this.authorizationUrl,
+    required this.reference,
+    required this.amount,
+  });
+
+  @override
+  List<Object> get props => [authorizationUrl, reference, amount];
+}

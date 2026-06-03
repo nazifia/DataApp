@@ -14,6 +14,7 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
     on<LoadWalletEvent>(_onLoadWallet);
     on<FundWalletEvent>(_onFundWallet);
     on<LoadBankDetailsEvent>(_onLoadBankDetails);
+    on<InitiatePaystackPaymentEvent>(_onInitiatePaystackPayment);
   }
 
   Future<void> _onLoadWallet(
@@ -37,6 +38,21 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
         accountNumber: data['account_number'] as String,
         accountName: data['account_name'] as String,
         note: data['note'] as String,
+      ));
+    } catch (e) {
+      emit(WalletFailure(extractApiError(e)));
+    }
+  }
+
+  Future<void> _onInitiatePaystackPayment(
+      InitiatePaystackPaymentEvent event, Emitter<WalletState> emit) async {
+    emit(const WalletLoading());
+    try {
+      final data = await _walletRepository.initiatePaystackPayment(event.amount);
+      emit(PaystackPaymentInitiated(
+        authorizationUrl: data['authorization_url'] as String,
+        reference: data['reference'] as String,
+        amount: event.amount,
       ));
     } catch (e) {
       emit(WalletFailure(extractApiError(e)));
