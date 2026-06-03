@@ -133,10 +133,10 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
 ]
 
 # External services
-TERMII_API_KEY = env('TERMII_API_KEY', default='')
-TERMII_SENDER_ID = env('TERMII_SENDER_ID', default='TopUpNaija')
-VTPASS_API_KEY = env('VTPASS_API_KEY', default='')
-VTPASS_SECRET_KEY = env('VTPASS_SECRET_KEY', default='')
-VTPASS_BASE_URL = env('VTPASS_BASE_URL', default='https://sandbox.vtpass.com/api')
+AT_API_KEY = env('AT_API_KEY', default='')
+AT_USERNAME = env('AT_USERNAME', default='sandbox')
+AT_SENDER_ID = env('AT_SENDER_ID', default='TopUpNaija')
+GLADTIDING_API_KEY = env('GLADTIDING_API_KEY', default='')
+GLADTIDING_BASE_URL = env('GLADTIDING_BASE_URL', default='https://gladtidingsdata.com/api')
 DEV_MODE = env.bool('DEV_MODE', default=True)
 TEST_OTP = env('TEST_OTP', default='123456')

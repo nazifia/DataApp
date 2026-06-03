@@ -1,10 +1,19 @@
-from rest_framework import status
+from rest_framework import status, serializers as drf_serializers
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
-from core.permissions import IsSuperAdmin, IsTenantOwnerOrSuperAdmin
+from core.permissions import IsSuperAdmin, IsTenantOwnerOrSuperAdmin, IsAdminOrAbove
 from .models import Tenant
 from .serializers import TenantSerializer, TenantPublicSerializer, TenantCreateSerializer
+
+
+class MarkupSerializer(drf_serializers.Serializer):
+    airtime_markup_percent = drf_serializers.DecimalField(
+        max_digits=5, decimal_places=2, min_value=0, max_value=100, required=False,
+    )
+    data_markup_percent = drf_serializers.DecimalField(
+        max_digits=5, decimal_places=2, min_value=0, max_value=100, required=False,
+    )
 
 
 class TenantInfoView(APIView):
@@ -66,3 +75,23 @@ class TenantDetailView(APIView):
         tenant.is_active = False
         tenant.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class MarkupUpdateView(APIView):
+    """PATCH /api/v1/tenants/markup/ — tenant admin updates their own markup rates."""
+    permission_classes = [IsAdminOrAbove]
+
+    def patch(self, request):
+        if not request.tenant:
+            return Response({'detail': 'Tenant context required.'}, status=400)
+        ser = MarkupSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        if not ser.validated_data:
+            return Response({'detail': 'Provide airtime_markup_percent or data_markup_percent.'}, status=400)
+        for field, value in ser.validated_data.items():
+            setattr(request.tenant, field, value)
+        request.tenant.save(update_fields=list(ser.validated_data.keys()))
+        return Response({
+            'airtime_markup_percent': request.tenant.airtime_markup_percent,
+            'data_markup_percent': request.tenant.data_markup_percent,
+        })

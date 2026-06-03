@@ -3,31 +3,35 @@ import random
 import httpx
 from django.conf import settings
 
+NETWORK_ID_MAP = {'mtn': '1', 'glo': '2', 'airtel': '3', 'etisalat': '4'}
+
 
 async def purchase_airtime(network: str, phone: str, amount: float) -> dict:
     reference = f'TUN-{int(time.time() * 1000)}-{random.randint(1000, 9999)}'
     if settings.DEV_MODE:
         return {'success': True, 'reference': reference, 'message': 'Airtime sent (mock)'}
 
-    service_map = {'mtn': 'mtn', 'airtel': 'airtel', 'glo': 'glo', 'etisalat': 'etisalat-sme'}
+    headers = {'Authorization': f'Token {settings.GLADTIDING_API_KEY}'}
     try:
-        async with httpx.AsyncClient(auth=(settings.VTPASS_API_KEY, settings.VTPASS_SECRET_KEY)) as client:
+        async with httpx.AsyncClient() as client:
             resp = await client.post(
-                f'{settings.VTPASS_BASE_URL}/pay',
+                f'{settings.GLADTIDING_BASE_URL}/topup/',
                 json={
-                    'request_id': reference,
-                    'serviceID': service_map[network],
+                    'network': NETWORK_ID_MAP[network],
                     'amount': amount,
-                    'phone': phone,
+                    'mobile_number': phone,
+                    'Ported_number': True,
+                    'airtime_type': 'VTU',
                 },
+                headers=headers,
                 timeout=30,
             )
             data = resp.json()
-            success = data.get('code') == '000'
+            success = data.get('Status') == 'successful'
             return {
                 'success': success,
                 'reference': reference,
-                'message': data.get('response_description', 'Purchase failed'),
+                'message': data.get('api_response', 'Purchase failed'),
             }
     except Exception as e:
         return {'success': False, 'reference': reference, 'message': str(e)}

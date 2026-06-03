@@ -26,7 +26,7 @@ class AirtimePurchaseView(APIView):
         d = ser.validated_data
 
         markup = (request.tenant.airtime_markup_percent / 100) if request.tenant else Decimal('0')
-        charge = d['amount'] * (1 + markup)
+        charge = (d['amount'] * (1 + markup)).quantize(Decimal('0.01'))
 
         try:
             with db_transaction.atomic():

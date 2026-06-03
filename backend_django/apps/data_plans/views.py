@@ -25,6 +25,12 @@ class DataPlansView(APIView):
         if network not in VALID_NETWORKS:
             return Response({'detail': f'Invalid network. Choose from {VALID_NETWORKS}.'}, status=400)
         plans = async_to_sync(get_data_plans)(network)
+        if request.tenant and request.tenant.data_markup_percent:
+            markup = request.tenant.data_markup_percent / 100
+            plans = [
+                {**p, 'price': float((Decimal(str(p['price'])) * (1 + markup)).quantize(Decimal('0.01')))}
+                for p in plans
+            ]
         return Response({'plans': plans})
 
 
@@ -41,7 +47,7 @@ class DataPurchaseView(APIView):
 
         markup = (request.tenant.data_markup_percent / 100) if request.tenant else Decimal('0')
         price = Decimal(str(plan['price']))
-        charge = price * (1 + markup)
+        charge = (price * (1 + markup)).quantize(Decimal('0.01'))
 
         try:
             with db_transaction.atomic():

@@ -48,17 +48,20 @@ async def send_otp_sms(phone: str, otp: str) -> bool:
     try:
         async with httpx.AsyncClient() as client:
             resp = await client.post(
-                'https://api.ng.termii.com/api/sms/send',
-                json={
-                    'api_key': settings.TERMII_API_KEY,
+                'https://api.africastalking.com/version1/messaging',
+                headers={
+                    'apiKey': settings.AT_API_KEY,
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Accept': 'application/json',
+                },
+                data={
+                    'username': settings.AT_USERNAME,
                     'to': phone,
-                    'from': settings.TERMII_SENDER_ID,
-                    'sms': f'Your TopUpNaija OTP is {otp}. Valid for 10 minutes. Do not share.',
-                    'type': 'plain',
-                    'channel': 'dnd',
+                    'from': settings.AT_SENDER_ID,
+                    'message': f'Your TopUpNaija OTP is {otp}. Valid for 10 minutes. Do not share.',
                 },
                 timeout=10,
             )
-            return resp.status_code == 200
+            return resp.status_code == 201
     except Exception:
         return False
