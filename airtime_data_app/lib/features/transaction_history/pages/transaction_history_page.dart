@@ -356,7 +356,8 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage>
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    (transaction['phone_number'] ??
+                    (transaction['description'] ??
+                            transaction['phone_number'] ??
                             transaction['reference'] ??
                             'N/A')
                         .toString(),
@@ -627,6 +628,7 @@ class _TransactionDetailSheet extends StatelessWidget {
     final amount =
         double.tryParse(transaction['amount']?.toString() ?? '0') ?? 0;
     final reference = (transaction['reference'] ?? 'N/A').toString();
+    final description = transaction['description']?.toString();
     final createdAt = transaction['created_at']?.toString();
     final network = transaction['network']?.toString();
     final phoneNumber = transaction['phone_number']?.toString();
@@ -820,6 +822,8 @@ class _TransactionDetailSheet extends StatelessWidget {
             const SizedBox(height: 16),
 
             // Details
+            if (description != null && description.isNotEmpty)
+              _detailRow('Description', description),
             _detailRow('Reference', reference),
             if (createdAt != null)
               Builder(builder: (_) {

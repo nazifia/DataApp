@@ -117,6 +117,7 @@ class AirtimeDataApp extends StatelessWidget {
         RepositoryProvider.value(value: disputesRepository),
         RepositoryProvider.value(value: agentsRepository),
         RepositoryProvider.value(value: notificationsRepository),
+        RepositoryProvider.value(value: walletRepository),
       ],
       child: MultiBlocProvider(
         providers: [

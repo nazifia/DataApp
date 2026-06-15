@@ -858,7 +858,8 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    (transaction['phone_number'] ??
+                    (transaction['description'] ??
+                            transaction['phone_number'] ??
                             transaction['reference'] ??
                             'N/A')
                         .toString(),
@@ -1393,6 +1394,7 @@ class _TransactionDetailSheet extends StatelessWidget {
     final amount =
         double.tryParse(transaction['amount']?.toString() ?? '0') ?? 0;
     final reference = (transaction['reference'] ?? 'N/A').toString();
+    final description = transaction['description']?.toString();
     final createdAt = transaction['created_at']?.toString();
     final network = transaction['network']?.toString();
     final phoneNumber = transaction['phone_number']?.toString();
@@ -1484,6 +1486,8 @@ class _TransactionDetailSheet extends StatelessWidget {
             const SizedBox(height: 12),
 
             // Details
+            if (description != null && description.isNotEmpty)
+              _detailRow(context, 'Description', description),
             _detailRow(context, 'Reference', reference),
             if (network != null) _detailRow(context, 'Network', network),
             if (phoneNumber != null) _detailRow(context, 'Phone', phoneNumber),
