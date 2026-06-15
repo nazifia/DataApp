@@ -19,6 +19,14 @@ import 'features/transaction_history/bloc/transaction_history_bloc.dart';
 import 'features/transaction_history/data/transaction_history_repository.dart';
 import 'features/beneficiaries/bloc/beneficiary_bloc.dart';
 import 'features/beneficiaries/data/beneficiary_repository.dart';
+import 'features/bills/bloc/bills_bloc.dart';
+import 'features/bills/data/bills_repository.dart';
+import 'features/referrals/bloc/referrals_bloc.dart';
+import 'features/referrals/data/referrals_repository.dart';
+import 'features/disputes/bloc/disputes_bloc.dart';
+import 'features/disputes/data/disputes_repository.dart';
+import 'features/agents/bloc/agents_bloc.dart';
+import 'features/agents/data/agents_repository.dart';
 import 'features/authentication/pages/splash_page.dart';
 import 'features/authentication/pages/welcome_page.dart';
 import 'features/authentication/pages/phone_input_page.dart';
@@ -27,6 +35,11 @@ import 'features/authentication/pages/profile_setup_page.dart';
 import 'features/authentication/pages/dashboard_page.dart';
 import 'features/airtime/pages/airtime_purchase_page.dart';
 import 'features/data/pages/data_purchase_page.dart';
+import 'features/bills/pages/electricity_purchase_page.dart';
+import 'features/bills/pages/tv_purchase_page.dart';
+import 'features/referrals/pages/referrals_page.dart';
+import 'features/disputes/pages/disputes_page.dart';
+import 'features/agents/pages/agent_page.dart';
 import 'features/wallet/pages/wallet_fund_page.dart';
 import 'features/transaction_history/pages/transaction_history_page.dart';
 import 'features/profile/pages/profile_page.dart';
@@ -78,12 +91,26 @@ class AirtimeDataApp extends StatelessWidget {
         TransactionHistoryRepository(apiClient: apiClient, config: config);
     final beneficiaryRepository =
         BeneficiaryRepository(apiClient: apiClient, config: config);
+    final billsRepository =
+        BillsRepository(apiClient: apiClient, config: config);
+    final referralsRepository =
+        ReferralsRepository(apiClient: apiClient, config: config);
+    final disputesRepository =
+        DisputesRepository(apiClient: apiClient, config: config);
+    final agentsRepository =
+        AgentsRepository(apiClient: apiClient, config: config);
 
     return MultiRepositoryProvider(
       providers: [
         RepositoryProvider.value(value: authRepository),
         RepositoryProvider.value(value: transactionHistoryRepository),
         RepositoryProvider.value(value: beneficiaryRepository),
+        RepositoryProvider.value(value: billsRepository),
+        // Exposed for the agent sale page's product catalogs.
+        RepositoryProvider.value(value: dataRepository),
+        RepositoryProvider.value(value: referralsRepository),
+        RepositoryProvider.value(value: disputesRepository),
+        RepositoryProvider.value(value: agentsRepository),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -144,10 +171,35 @@ class AirtimeDataApp extends StatelessWidget {
                   '/dashboard': (context) => const DashboardPage(),
                   '/airtime-purchase': (context) => const AirtimePurchasePage(),
                   '/data-purchase': (context) => const DataPurchasePage(),
+                  '/electricity': (context) => BlocProvider(
+                        create: (ctx) => BillsBloc(
+                            repository: ctx.read<BillsRepository>()),
+                        child: const ElectricityPurchasePage(),
+                      ),
+                  '/tv': (context) => BlocProvider(
+                        create: (ctx) => BillsBloc(
+                            repository: ctx.read<BillsRepository>()),
+                        child: const TvPurchasePage(),
+                      ),
                   '/wallet-fund': (context) => const WalletFundPage(),
                   '/transaction-history': (context) =>
                       const TransactionHistoryPage(),
                   '/profile': (context) => const ProfilePage(),
+                  '/referrals': (context) => BlocProvider(
+                        create: (ctx) => ReferralsBloc(
+                            repository: ctx.read<ReferralsRepository>()),
+                        child: const ReferralsPage(),
+                      ),
+                  '/disputes': (context) => BlocProvider(
+                        create: (ctx) => DisputesBloc(
+                            repository: ctx.read<DisputesRepository>()),
+                        child: const DisputesPage(),
+                      ),
+                  '/agent': (context) => BlocProvider(
+                        create: (ctx) => AgentsBloc(
+                            repository: ctx.read<AgentsRepository>()),
+                        child: const AgentPage(),
+                      ),
                 },
               );
             },

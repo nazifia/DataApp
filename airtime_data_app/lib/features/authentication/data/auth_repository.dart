@@ -69,6 +69,7 @@ class AuthRepository {
   // Validate that a tenant slug exists and, if so, apply it to all future requests
   Future<Map<String, dynamic>> validateAndSetTenant(String slug) async {
     if (_config.useMockAuth) {
+      await _storage.write(key: 'tenant_slug', value: slug);
       _apiClient.updateTenantSlug(slug);
       return {'name': 'Dev Org ($slug)', 'slug': slug};
     }
@@ -76,6 +77,8 @@ class AuthRepository {
       '/tenants/info/',
       options: Options(headers: {'X-Tenant-Slug': slug}),
     );
+    // Persist so login (no slug field) and post-restart requests reuse it.
+    await _storage.write(key: 'tenant_slug', value: slug);
     _apiClient.updateTenantSlug(slug);
     return Map<String, dynamic>.from(response.data as Map);
   }
@@ -245,7 +248,12 @@ class AuthRepository {
 
   // Clear Tokens (Logout)
   Future<void> clearTokens() async {
+    // Keep tenant slug so the user can log back in without re-entering it.
+    final slug = await _storage.read(key: 'tenant_slug');
     await _storage.deleteAll();
+    if (slug != null && slug.isNotEmpty) {
+      await _storage.write(key: 'tenant_slug', value: slug);
+    }
   }
 
   // Generate Device ID

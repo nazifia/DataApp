@@ -11,6 +11,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from apps.transactions.models import Transaction
+from core.runtime import is_dev_mode
 from .models import Wallet
 from . import paystack as ps
 
@@ -42,7 +43,7 @@ class BankDetailsView(APIView):
         if not wallet:
             return Response({'detail': 'Wallet not found.'}, status=404)
 
-        if settings.DEV_MODE:
+        if is_dev_mode():
             # Use last 10 digits of phone number as the mock account number
             digits = ''.join(c for c in request.user.phone_number if c.isdigit())
             account_number = digits[-10:] if len(digits) >= 10 else digits.zfill(10)
@@ -121,7 +122,7 @@ class InitiatePaymentView(APIView):
         if amount < min_fund:
             return Response({'detail': f'Minimum funding amount is ₦{min_fund}.'}, status=400)
 
-        if settings.DEV_MODE:
+        if is_dev_mode():
             return Response({
                 'authorization_url': 'https://checkout.paystack.com/dev-demo',
                 'reference': f'DEV-{Transaction.generate_reference()}',

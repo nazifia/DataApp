@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import serializers
-from core.validators import NigerianPhoneField
+from core.validators import NigerianPhoneField, NetworkChoiceField
 from .models import Beneficiary
 
 VALID_NETWORKS = ('mtn', 'airtel', 'glo', 'etisalat')
@@ -17,7 +17,7 @@ class BeneficiarySerializer(serializers.ModelSerializer):
 class BeneficiaryCreateSerializer(serializers.Serializer):
     nickname = serializers.CharField(max_length=100, allow_blank=True, default='')
     phone_number = NigerianPhoneField()
-    network = serializers.ChoiceField(choices=VALID_NETWORKS)
+    network = NetworkChoiceField()
     type = serializers.ChoiceField(choices=VALID_TYPES, default='airtime')
 
 

@@ -3,6 +3,7 @@ import httpx
 from django.utils import timezone
 from datetime import timedelta
 from django.conf import settings
+from core.runtime import is_dev_mode, ais_dev_mode
 from .models import OTPRecord
 
 
@@ -23,7 +24,7 @@ def save_otp(tenant, phone: str) -> str:
 
 
 def verify_otp(tenant, phone: str, otp: str) -> bool:
-    if settings.DEV_MODE and otp == settings.TEST_OTP:
+    if is_dev_mode() and otp == settings.TEST_OTP:
         return True
     try:
         record = OTPRecord.objects.get(
@@ -42,7 +43,7 @@ def verify_otp(tenant, phone: str, otp: str) -> bool:
 
 
 async def send_otp_sms(phone: str, otp: str) -> bool:
-    if settings.DEV_MODE:
+    if await ais_dev_mode():
         print(f'[DEV] OTP for {phone}: {otp}')
         return True
     try:

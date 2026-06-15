@@ -257,6 +257,42 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
                           ),
                         ],
                       ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildQuickActionCard(
+                              Icons.bolt_rounded,
+                              'Electricity',
+                              const Color(0xFFFF8F00),
+                              const Color(0xFFFFF3E0),
+                              () => Navigator.of(context)
+                                  .pushNamed('/electricity'),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildQuickActionCard(
+                              Icons.tv_rounded,
+                              'Cable TV',
+                              const Color(0xFF7C4DFF),
+                              const Color(0xFFEDE7F6),
+                              () => Navigator.of(context).pushNamed('/tv'),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildQuickActionCard(
+                              Icons.receipt_long_rounded,
+                              'History',
+                              AppColors.textSecondary,
+                              const Color(0xFFF1F3F5),
+                              () => Navigator.of(context)
+                                  .pushNamed('/transaction-history'),
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -934,10 +970,33 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
                   Navigator.of(context).pop();
                   Navigator.of(context).pushNamed('/wallet-fund');
                 }, color: AppColors.warning),
+                _drawerItem(Icons.bolt_rounded, 'Electricity', () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pushNamed('/electricity');
+                }, color: const Color(0xFFFF8F00)),
+                _drawerItem(Icons.tv_rounded, 'Cable TV', () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pushNamed('/tv');
+                }, color: const Color(0xFF7C4DFF)),
                 _drawerItem(Icons.history_rounded, 'Transaction History',
                     () {
                   Navigator.of(context).pop();
                   Navigator.of(context).pushNamed('/transaction-history');
+                }),
+                const Divider(height: 1, indent: 16, endIndent: 16),
+                const SizedBox(height: 8),
+                _drawerItem(Icons.card_giftcard_rounded, 'Refer & Earn', () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pushNamed('/referrals');
+                }, color: AppColors.success),
+                _drawerItem(Icons.point_of_sale_rounded, 'POS Agent', () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pushNamed('/agent');
+                }),
+                _drawerItem(
+                    Icons.support_agent_rounded, 'Support & Disputes', () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pushNamed('/disputes');
                 }),
                 const Divider(height: 1, indent: 16, endIndent: 16),
                 const SizedBox(height: 8),

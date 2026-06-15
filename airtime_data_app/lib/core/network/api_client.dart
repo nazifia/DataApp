@@ -34,6 +34,12 @@ class ApiClient {
         if (token != null) {
           options.headers['Authorization'] = 'Bearer $token';
         }
+        // Persisted tenant survives restart and applies to login (which has
+        // no slug field). Falls back to the config default header.
+        final slug = await _storage.read(key: 'tenant_slug');
+        if (slug != null && slug.isNotEmpty) {
+          options.headers['X-Tenant-Slug'] = slug;
+        }
         return handler.next(options);
       },
       onResponse: (response, handler) {
@@ -45,10 +51,12 @@ class ApiClient {
           final refreshToken = await _storage.read(key: 'refresh_token');
           if (refreshToken != null) {
             try {
+              final slug = await _storage.read(key: 'tenant_slug');
               final refreshResponse = await Dio(BaseOptions(
                 headers: {
                   'bypass-tunnel-reminder': 'true',
-                  'X-Tenant-Slug': config.tenantSlug,
+                  'X-Tenant-Slug':
+                      (slug != null && slug.isNotEmpty) ? slug : config.tenantSlug,
                 },
               )).post(
                 '${config.baseUrl}/auth/refresh-token/',

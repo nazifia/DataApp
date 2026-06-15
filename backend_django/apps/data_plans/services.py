@@ -2,6 +2,7 @@ import time
 import random
 import httpx
 from django.conf import settings
+from core.runtime import ais_dev_mode
 
 NETWORK_ID_MAP = {'mtn': '1', 'glo': '2', 'airtel': '3', 'etisalat': '4'}
 
@@ -33,7 +34,7 @@ MOCK_PLANS = {
 
 
 async def get_data_plans(network: str) -> list:
-    if settings.DEV_MODE:
+    if await ais_dev_mode():
         return MOCK_PLANS.get(network, [])
     headers = {'Authorization': f'Token {settings.GLADTIDING_API_KEY}'}
     try:
@@ -60,7 +61,7 @@ async def get_data_plans(network: str) -> list:
 
 async def purchase_data(network: str, plan_id: str, phone: str) -> dict:
     reference = f'TUN-{int(time.time() * 1000)}-{random.randint(1000, 9999)}'
-    if settings.DEV_MODE:
+    if await ais_dev_mode():
         return {'success': True, 'reference': reference, 'message': 'Data purchased (mock)'}
     headers = {'Authorization': f'Token {settings.GLADTIDING_API_KEY}'}
     try:

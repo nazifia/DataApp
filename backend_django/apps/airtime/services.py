@@ -2,13 +2,14 @@ import time
 import random
 import httpx
 from django.conf import settings
+from core.runtime import ais_dev_mode
 
 NETWORK_ID_MAP = {'mtn': '1', 'glo': '2', 'airtel': '3', 'etisalat': '4'}
 
 
 async def purchase_airtime(network: str, phone: str, amount: float) -> dict:
     reference = f'TUN-{int(time.time() * 1000)}-{random.randint(1000, 9999)}'
-    if settings.DEV_MODE:
+    if await ais_dev_mode():
         return {'success': True, 'reference': reference, 'message': 'Airtime sent (mock)'}
 
     headers = {'Authorization': f'Token {settings.GLADTIDING_API_KEY}'}

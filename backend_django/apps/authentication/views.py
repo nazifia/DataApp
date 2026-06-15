@@ -67,11 +67,15 @@ class VerifyOTPView(APIView):
             phone_number=phone,
             defaults={'is_active': True},
         )
+        # A user who never finished profile setup has no usable password.
+        # Treat them as new so the client routes back to profile setup
+        # instead of dropping them at the dashboard with an unusable account.
+        is_new_user = created or not user.password or not user.has_usable_password()
         tokens = _tokens_for_user(user)
         return Response({
             'message': 'OTP verified.',
             **tokens,
-            'is_new_user': created,
+            'is_new_user': is_new_user,
         })
 
 

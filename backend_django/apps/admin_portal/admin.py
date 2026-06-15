@@ -1,5 +1,18 @@
 from django.contrib import admin
-from .models import AdminAuditLog
+from .models import AdminAuditLog, RuntimeConfig
+
+
+@admin.register(RuntimeConfig)
+class RuntimeConfigAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'dev_mode', 'updated_at')
+    readonly_fields = ('updated_at',)
+
+    def has_add_permission(self, request):
+        # Singleton — only one row allowed.
+        return not RuntimeConfig.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(AdminAuditLog)

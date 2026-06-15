@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework import serializers
 from rest_framework.throttling import UserRateThrottle
 from asgiref.sync import async_to_sync
-from core.validators import NigerianPhoneField
+from core.validators import NigerianPhoneField, NetworkChoiceField
 from apps.wallet.models import Wallet
 from apps.transactions.models import Transaction
 from apps.transactions.fulfillment import fulfill
@@ -79,7 +79,7 @@ class AgentSaleSerializer(serializers.Serializer):
     type = serializers.ChoiceField(choices=('airtime', 'data', 'electricity', 'tv'))
     phone_number = NigerianPhoneField()
     # airtime / data
-    network = serializers.ChoiceField(choices=VALID_NETWORKS, required=False)
+    network = NetworkChoiceField(required=False)
     plan_id = serializers.CharField(required=False)
     # airtime / bills
     amount = serializers.DecimalField(

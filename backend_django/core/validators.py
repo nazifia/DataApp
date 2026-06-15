@@ -28,3 +28,21 @@ class NigerianPhoneField(serializers.CharField):
         if normalized is None:
             raise serializers.ValidationError('Enter a valid Nigerian phone number.')
         return normalized
+
+
+VALID_NETWORKS = ('mtn', 'airtel', 'glo', 'etisalat')
+NETWORK_ALIASES = {'9mobile': 'etisalat', '9-mobile': 'etisalat'}
+
+
+class NetworkChoiceField(serializers.ChoiceField):
+    """Network field that accepts any case and the '9mobile' alias for etisalat."""
+
+    def __init__(self, **kwargs):
+        kwargs.setdefault('choices', VALID_NETWORKS)
+        super().__init__(**kwargs)
+
+    def to_internal_value(self, data):
+        if isinstance(data, str):
+            data = data.strip().lower()
+            data = NETWORK_ALIASES.get(data, data)
+        return super().to_internal_value(data)

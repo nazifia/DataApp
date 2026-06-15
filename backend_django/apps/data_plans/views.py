@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import serializers
 from rest_framework.throttling import UserRateThrottle
-from core.validators import NigerianPhoneField
+from core.validators import NigerianPhoneField, NetworkChoiceField, NETWORK_ALIASES
 from apps.transactions.models import Transaction
 from apps.transactions.fulfillment import fulfill
 from apps.wallet.models import Wallet
@@ -19,14 +19,15 @@ class PurchaseThrottle(UserRateThrottle):
 
 
 class DataPurchaseSerializer(serializers.Serializer):
-    network = serializers.ChoiceField(choices=VALID_NETWORKS)
+    network = NetworkChoiceField()
     plan_id = serializers.CharField()
     phone_number = NigerianPhoneField()
 
 
 class DataPlansView(APIView):
     def get(self, request):
-        network = request.query_params.get('network')
+        network = (request.query_params.get('network') or '').strip().lower()
+        network = NETWORK_ALIASES.get(network, network)
         if network not in VALID_NETWORKS:
             return Response({'detail': f'Invalid network. Choose from {VALID_NETWORKS}.'}, status=400)
         plans = async_to_sync(get_data_plans)(network)

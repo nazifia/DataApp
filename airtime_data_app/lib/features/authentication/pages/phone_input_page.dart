@@ -175,7 +175,8 @@ class _PhoneInputPageState extends State<PhoneInputPage> {
             Navigator.of(context).pushNamed(
               '/otp-verification',
               arguments: {
-                'phoneNumber': _phoneController.text.trim(),
+                'phoneNumber':
+                    Validators.formatNigerianPhone(_phoneController.text.trim()),
                 'isLogin': widget.isLogin,
               },
             );

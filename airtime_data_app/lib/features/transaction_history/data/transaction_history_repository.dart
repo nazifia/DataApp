@@ -59,10 +59,10 @@ class TransactionHistoryRepository {
     }
     final response = await _apiClient.dio.get('/transactions/');
     final data = Map<String, dynamic>.from(response.data as Map);
-    // Backend returns DRF paginated format: {count, next, previous, results}
+    // Backend StandardPagination returns {items, total, page, page_size, total_pages}
     return {
-      'items': data['results'] ?? [],
-      'count': data['count'] ?? 0,
+      'items': data['items'] ?? [],
+      'count': data['total'] ?? 0,
     };
   }
 }

@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import serializers
 from rest_framework.throttling import UserRateThrottle
-from core.validators import NigerianPhoneField
+from core.validators import NigerianPhoneField, NetworkChoiceField
 from apps.transactions.models import Transaction
 from apps.transactions.fulfillment import fulfill
 from apps.wallet.models import Wallet
@@ -17,7 +17,7 @@ class PurchaseThrottle(UserRateThrottle):
 
 
 class AirtimePurchaseSerializer(serializers.Serializer):
-    network = serializers.ChoiceField(choices=VALID_NETWORKS)
+    network = NetworkChoiceField()
     phone_number = NigerianPhoneField()
     amount = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=Decimal('50'), max_value=Decimal('50000'))
 

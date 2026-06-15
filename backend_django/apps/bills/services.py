@@ -9,6 +9,7 @@ import time
 import random
 import httpx
 from django.conf import settings
+from core.runtime import ais_dev_mode
 
 # Static provider catalogues (also used as DEV_MODE fallbacks).
 ELECTRICITY_PROVIDERS = [
@@ -68,7 +69,7 @@ def get_providers(category: str) -> list:
 async def get_variations(service_id: str, category: str) -> list:
     if category == 'electricity':
         return ELECTRICITY_VARIATIONS
-    if settings.DEV_MODE:
+    if await ais_dev_mode():
         return MOCK_VARIATIONS.get(service_id, [])
     try:
         async with httpx.AsyncClient() as client:
@@ -94,7 +95,7 @@ async def get_variations(service_id: str, category: str) -> list:
 
 async def verify_customer(service_id: str, customer_id: str, variation_code: str = '') -> dict:
     """Look up the account/meter holder's name before payment."""
-    if settings.DEV_MODE:
+    if await ais_dev_mode():
         return {
             'success': True,
             'customer_name': 'JOHN DOE',
@@ -129,7 +130,7 @@ async def verify_customer(service_id: str, customer_id: str, variation_code: str
 async def pay_bill(service_id: str, customer_id: str, variation_code: str,
                    amount: float, phone: str, request_id: str = '') -> dict:
     request_id = request_id or _ref()
-    if settings.DEV_MODE:
+    if await ais_dev_mode():
         token = ''.join(random.choices('0123456789', k=16))
         return {
             'success': True,
