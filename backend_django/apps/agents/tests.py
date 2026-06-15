@@ -58,3 +58,24 @@ class AgentTests(TestCase):
         # -500 sale + 2% commission (10)
         self.assertEqual(self.wallet.balance, Decimal('9510'))
         self.assertTrue(Transaction.all_objects.filter(type='commission', amount=Decimal('10.00')).exists())
+
+    @patch('apps.bills.services.pay_bill')
+    def test_active_agent_electricity_sale(self, mock_pay):
+        mock_pay.return_value = {'success': True, 'reference': 'VT-A', 'message': 'ok', 'token': '9999000011112222'}
+        Agent.objects.create(tenant=self.tenant, user=self.user, agent_code='AG333333',
+                             business_name='X', status='active', commission_percent=Decimal('1.00'))
+
+        resp = self.client.post('/api/v1/agents/sale/', {
+            'type': 'electricity', 'service_id': 'ikeja-electric', 'customer_id': '1111111111',
+            'variation_code': 'prepaid', 'amount': '3000', 'phone_number': '+2348011111111',
+        })
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.data['status'], 'success')
+        self.assertEqual(resp.data['token'], '9999000011112222')
+
+        self.wallet.refresh_from_db()
+        # -3000 sale + 1% commission (30)
+        self.assertEqual(self.wallet.balance, Decimal('7030'))
+        txn = Transaction.all_objects.get(type='electricity')
+        self.assertEqual(txn.customer_id, '1111111111')
+        self.assertEqual(txn.provider, 'ikeja-electric')

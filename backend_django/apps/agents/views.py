@@ -76,20 +76,36 @@ class AgentDashboardView(APIView):
 # ─── Agent sale on behalf of a customer ──────────────────────────────────────
 
 class AgentSaleSerializer(serializers.Serializer):
-    type = serializers.ChoiceField(choices=('airtime', 'data'))
-    network = serializers.ChoiceField(choices=VALID_NETWORKS)
+    type = serializers.ChoiceField(choices=('airtime', 'data', 'electricity', 'tv'))
     phone_number = NigerianPhoneField()
+    # airtime / data
+    network = serializers.ChoiceField(choices=VALID_NETWORKS, required=False)
+    plan_id = serializers.CharField(required=False)
+    # airtime / bills
     amount = serializers.DecimalField(
         max_digits=10, decimal_places=2, required=False,
-        min_value=Decimal('50'), max_value=Decimal('50000'),
+        min_value=Decimal('50'), max_value=Decimal('500000'),
     )
-    plan_id = serializers.CharField(required=False)
+    # bills (electricity / tv)
+    service_id = serializers.CharField(required=False)
+    customer_id = serializers.CharField(required=False)
+    variation_code = serializers.CharField(required=False, allow_blank=True, default='')
 
     def validate(self, attrs):
-        if attrs['type'] == 'airtime' and attrs.get('amount') is None:
+        t = attrs['type']
+        if t in ('airtime', 'data') and not attrs.get('network'):
+            raise serializers.ValidationError({'network': 'Required for airtime/data sales.'})
+        if t == 'airtime' and attrs.get('amount') is None:
             raise serializers.ValidationError({'amount': 'Required for airtime sales.'})
-        if attrs['type'] == 'data' and not attrs.get('plan_id'):
+        if t == 'data' and not attrs.get('plan_id'):
             raise serializers.ValidationError({'plan_id': 'Required for data sales.'})
+        if t in ('electricity', 'tv'):
+            if not attrs.get('service_id'):
+                raise serializers.ValidationError({'service_id': 'Required for bill sales.'})
+            if not attrs.get('customer_id'):
+                raise serializers.ValidationError({'customer_id': 'Required for bill sales.'})
+            if attrs.get('amount') is None:
+                raise serializers.ValidationError({'amount': 'Required for bill sales.'})
         return attrs
 
 
@@ -107,16 +123,24 @@ class AgentSaleView(APIView):
         ser.is_valid(raise_exception=True)
         d = ser.validated_data
 
+        # Resolve the value delivered to the provider per product type.
+        network = d.get('network', '')
+        plan_id = ''
+        customer_id = provider = variation_code = ''
         if d['type'] == 'airtime':
             face_value = d['amount']
-            plan_id = ''
-        else:
-            plans = async_to_sync(get_data_plans)(d['network'])
+        elif d['type'] == 'data':
+            plans = async_to_sync(get_data_plans)(network)
             plan = next((p for p in plans if p['id'] == d['plan_id']), None)
             if not plan:
                 return Response({'detail': 'Plan not found.'}, status=404)
             face_value = Decimal(str(plan['price']))
             plan_id = d['plan_id']
+        else:  # electricity / tv
+            face_value = d['amount']
+            customer_id = d['customer_id']
+            provider = d['service_id']
+            variation_code = d.get('variation_code', '')
 
         # Agent pays from their own wallet (no markup — agent earns commission instead).
         charge = Decimal(face_value).quantize(Decimal('0.01'))
@@ -131,7 +155,8 @@ class AgentSaleView(APIView):
                     tenant=request.tenant, user=agent.user, agent=agent,
                     type=d['type'], amount=charge, face_value=face_value, status='pending',
                     reference=Transaction.generate_reference(),
-                    network=d['network'], phone_number=d['phone_number'], plan_id=plan_id,
+                    network=network, phone_number=d['phone_number'], plan_id=plan_id,
+                    customer_id=customer_id, provider=provider, variation_code=variation_code,
                 )
         except Wallet.DoesNotExist:
             return Response({'detail': 'Agent wallet not found.'}, status=404)
@@ -147,4 +172,5 @@ class AgentSaleView(APIView):
             'type': d['type'],
             'amount': float(charge),
             'customer_phone': d['phone_number'],
+            'token': txn.token,
         })
