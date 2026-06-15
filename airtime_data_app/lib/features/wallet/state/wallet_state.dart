@@ -75,3 +75,69 @@ class PaystackPaymentInitiated extends WalletState {
   @override
   List<Object> get props => [authorizationUrl, reference, amount];
 }
+
+// ─── Withdrawal flow ─────────────────────────────────────────────────────────
+
+class BanksLoading extends WalletState {
+  const BanksLoading();
+}
+
+class BanksLoaded extends WalletState {
+  final List<Map<String, dynamic>> banks;
+  const BanksLoaded(this.banks);
+
+  @override
+  List<Object> get props => [banks];
+}
+
+class BanksLoadFailure extends WalletState {
+  final String message;
+  const BanksLoadFailure(this.message);
+
+  @override
+  List<Object> get props => [message];
+}
+
+class AccountResolving extends WalletState {
+  const AccountResolving();
+}
+
+class AccountResolved extends WalletState {
+  final String accountName;
+  const AccountResolved(this.accountName);
+
+  @override
+  List<Object> get props => [accountName];
+}
+
+class AccountResolveFailure extends WalletState {
+  final String message;
+  const AccountResolveFailure(this.message);
+
+  @override
+  List<Object> get props => [message];
+}
+
+class WithdrawProcessing extends WalletState {
+  const WithdrawProcessing();
+}
+
+class WithdrawSuccess extends WalletState {
+  final double balance;
+  final double amount;
+  final String message;
+
+  const WithdrawSuccess(
+      {required this.balance, required this.amount, required this.message});
+
+  @override
+  List<Object> get props => [balance, amount, message];
+}
+
+class WithdrawFailure extends WalletState {
+  final String message;
+  const WithdrawFailure(this.message);
+
+  @override
+  List<Object> get props => [message];
+}

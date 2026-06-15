@@ -12,6 +12,7 @@ class Transaction(TenantAwareModel, UUIDModel):
         ('electricity', 'Electricity'),
         ('tv', 'Cable TV'),
         ('wallet_fund', 'Wallet Fund'),
+        ('withdrawal', 'Withdrawal'),
         ('refund', 'Refund'),
         ('commission', 'Agent Commission'),
     ]

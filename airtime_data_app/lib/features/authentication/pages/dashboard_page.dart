@@ -9,6 +9,7 @@ import '../state/auth_state.dart'
 import '../../wallet/bloc/wallet_bloc.dart';
 import '../../wallet/event/wallet_event.dart';
 import '../../wallet/state/wallet_state.dart';
+import '../../wallet/pages/wallet_withdraw_page.dart';
 import '../../airtime/bloc/airtime_bloc.dart';
 import '../../airtime/state/airtime_state.dart';
 import '../../data/bloc/data_bloc.dart';
@@ -16,6 +17,9 @@ import '../../data/state/data_state.dart';
 import '../../transaction_history/bloc/transaction_history_bloc.dart';
 import '../../transaction_history/event/transaction_history_event.dart';
 import '../../transaction_history/state/transaction_history_state.dart';
+import '../../notifications/bloc/notifications_bloc.dart';
+import '../../notifications/event/notifications_event.dart';
+import '../../notifications/state/notifications_state.dart';
 import '../../../core/constants/theme.dart';
 import '../../../core/utils/validation.dart';
 import '../../../core/services/notification_service.dart';
@@ -36,6 +40,7 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
   bool _biometricCapable = false;
 
   void _refreshData() {
+    context.read<NotificationsBloc>().add(const LoadUnreadCountEvent());
     context.read<WalletBloc>().add(const LoadWalletEvent());
     context.read<TransactionHistoryBloc>().add(LoadTransactionHistoryEvent());
     context.read<AuthBloc>().add(LoadProfileEvent());
@@ -140,9 +145,52 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined, color: Colors.white),
-            onPressed: () {},
+          BlocBuilder<NotificationsBloc, NotificationsState>(
+            builder: (context, state) {
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.notifications_outlined,
+                        color: Colors.white),
+                    onPressed: () async {
+                      await Navigator.of(context).pushNamed('/notifications');
+                      if (context.mounted) {
+                        context
+                            .read<NotificationsBloc>()
+                            .add(const LoadUnreadCountEvent());
+                      }
+                    },
+                  ),
+                  if (state.unreadCount > 0)
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        constraints: const BoxConstraints(
+                            minWidth: 16, minHeight: 16),
+                        decoration: BoxDecoration(
+                          color: AppColors.error,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.white, width: 1),
+                        ),
+                        child: Text(
+                          state.unreadCount > 9
+                              ? '9+'
+                              : '${state.unreadCount}',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 9,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
           ),
           Builder(
             builder: (context) => IconButton(
@@ -541,26 +589,57 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
                   ),
                 ),
               const SizedBox(height: 16),
-              SizedBox(
-                child: ElevatedButton.icon(
-                  onPressed: () =>
-                      Navigator.of(context).pushNamed('/wallet-fund'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: AppColors.primary,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 10),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+              Row(
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () =>
+                        Navigator.of(context).pushNamed('/wallet-fund'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: AppColors.primary,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      textStyle: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                    textStyle: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    icon: const Icon(Icons.add_rounded, size: 18),
+                    label: const Text('Add Money'),
                   ),
-                  icon: const Icon(Icons.add_rounded, size: 18),
-                  label: const Text('Add Money'),
-                ),
+                  const SizedBox(width: 12),
+                  OutlinedButton.icon(
+                    onPressed: () async {
+                      final result = await Navigator.of(context).push<bool>(
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              WalletWithdrawPage(currentBalance: balance),
+                        ),
+                      );
+                      if (result == true && context.mounted) {
+                        context.read<WalletBloc>().add(LoadWalletEvent());
+                      }
+                    },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      side: const BorderSide(color: Colors.white70),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      textStyle: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    icon: const Icon(Icons.arrow_outward_rounded, size: 18),
+                    label: const Text('Withdraw'),
+                  ),
+                ],
               ),
             ],
           ),

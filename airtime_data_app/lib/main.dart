@@ -27,6 +27,8 @@ import 'features/disputes/bloc/disputes_bloc.dart';
 import 'features/disputes/data/disputes_repository.dart';
 import 'features/agents/bloc/agents_bloc.dart';
 import 'features/agents/data/agents_repository.dart';
+import 'features/notifications/bloc/notifications_bloc.dart';
+import 'features/notifications/data/notifications_repository.dart';
 import 'features/authentication/pages/splash_page.dart';
 import 'features/authentication/pages/welcome_page.dart';
 import 'features/authentication/pages/phone_input_page.dart';
@@ -40,6 +42,7 @@ import 'features/bills/pages/tv_purchase_page.dart';
 import 'features/referrals/pages/referrals_page.dart';
 import 'features/disputes/pages/disputes_page.dart';
 import 'features/agents/pages/agent_page.dart';
+import 'features/notifications/pages/notifications_page.dart';
 import 'features/wallet/pages/wallet_fund_page.dart';
 import 'features/transaction_history/pages/transaction_history_page.dart';
 import 'features/profile/pages/profile_page.dart';
@@ -99,6 +102,8 @@ class AirtimeDataApp extends StatelessWidget {
         DisputesRepository(apiClient: apiClient, config: config);
     final agentsRepository =
         AgentsRepository(apiClient: apiClient, config: config);
+    final notificationsRepository =
+        NotificationsRepository(apiClient: apiClient, config: config);
 
     return MultiRepositoryProvider(
       providers: [
@@ -111,6 +116,7 @@ class AirtimeDataApp extends StatelessWidget {
         RepositoryProvider.value(value: referralsRepository),
         RepositoryProvider.value(value: disputesRepository),
         RepositoryProvider.value(value: agentsRepository),
+        RepositoryProvider.value(value: notificationsRepository),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -133,6 +139,11 @@ class AirtimeDataApp extends StatelessWidget {
           BlocProvider(
             create: (_) =>
                 BeneficiaryBloc(repository: beneficiaryRepository),
+          ),
+          // App-level so the dashboard bell badge and the list page share state.
+          BlocProvider(
+            create: (_) => NotificationsBloc(
+                repository: notificationsRepository),
           ),
         ],
         child: InactivityDetector(
@@ -200,6 +211,8 @@ class AirtimeDataApp extends StatelessWidget {
                             repository: ctx.read<AgentsRepository>()),
                         child: const AgentPage(),
                       ),
+                  // Uses the app-level NotificationsBloc (shared with the badge).
+                  '/notifications': (context) => const NotificationsPage(),
                 },
               );
             },

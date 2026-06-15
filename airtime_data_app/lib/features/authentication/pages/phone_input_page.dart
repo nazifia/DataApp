@@ -292,15 +292,6 @@ class _PhoneInputPageState extends State<PhoneInputPage> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Text('🇳🇬', style: TextStyle(fontSize: 18)),
-                      const SizedBox(width: 6),
-                      Text(
-                        '+234',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.grey[700],
-                        ),
-                      ),
                       Container(
                         margin: const EdgeInsets.symmetric(horizontal: 8),
                         width: 1,

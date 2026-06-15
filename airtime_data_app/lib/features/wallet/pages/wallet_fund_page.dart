@@ -1009,42 +1009,51 @@ class _UssdSheetState extends State<_UssdSheet> {
     super.dispose();
   }
 
-  static final _banks = [
-    _BankUssd(name: 'GTBank', logo: Icons.account_balance_rounded,
-        color: Color(0xFFFF6900)),
-    _BankUssd(name: 'Access Bank', logo: Icons.account_balance_rounded,
-        color: Color(0xFFFF6600)),
-    _BankUssd(name: 'First Bank', logo: Icons.account_balance_rounded,
-        color: Color(0xFF003087)),
-    _BankUssd(name: 'Zenith Bank', logo: Icons.account_balance_rounded,
-        color: Color(0xFFDC1F27)),
-    _BankUssd(name: 'UBA', logo: Icons.account_balance_rounded,
-        color: Color(0xFFFF0000)),
-    _BankUssd(name: 'Fidelity Bank', logo: Icons.account_balance_rounded,
-        color: Color(0xFF007A4D)),
-    _BankUssd(name: 'FCMB', logo: Icons.account_balance_rounded,
-        color: Color(0xFF00205B)),
+  // Each bank carries its own USSD template; `{amt}` is replaced with the amount.
+  // To add a bank, append one entry here with a VERIFIED USSD transfer code.
+  static const _banks = [
+    _BankUssd(name: 'GTBank', codeTemplate: '*737*{amt}*1#',
+        logo: Icons.account_balance_rounded, color: Color(0xFFFF6900)),
+    _BankUssd(name: 'Access Bank', codeTemplate: '*901*{amt}#',
+        logo: Icons.account_balance_rounded, color: Color(0xFFFF6600)),
+    _BankUssd(name: 'First Bank', codeTemplate: '*894*{amt}#',
+        logo: Icons.account_balance_rounded, color: Color(0xFF003087)),
+    _BankUssd(name: 'Zenith Bank', codeTemplate: '*966*{amt}#',
+        logo: Icons.account_balance_rounded, color: Color(0xFFDC1F27)),
+    _BankUssd(name: 'UBA', codeTemplate: '*919*{amt}#',
+        logo: Icons.account_balance_rounded, color: Color(0xFFFF0000)),
+    _BankUssd(name: 'Fidelity Bank', codeTemplate: '*770*{amt}#',
+        logo: Icons.account_balance_rounded, color: Color(0xFF007A4D)),
+    _BankUssd(name: 'FCMB', codeTemplate: '*329*{amt}#',
+        logo: Icons.account_balance_rounded, color: Color(0xFF00205B)),
+    _BankUssd(name: 'Union Bank', codeTemplate: '*826*{amt}#',
+        logo: Icons.account_balance_rounded, color: Color(0xFF00A6A0)),
+    _BankUssd(name: 'Sterling Bank', codeTemplate: '*822*{amt}#',
+        logo: Icons.account_balance_rounded, color: Color(0xFFE30613)),
+    _BankUssd(name: 'Stanbic IBTC', codeTemplate: '*909*{amt}#',
+        logo: Icons.account_balance_rounded, color: Color(0xFF00539B)),
+    _BankUssd(name: 'Wema Bank', codeTemplate: '*945*{amt}#',
+        logo: Icons.account_balance_rounded, color: Color(0xFF73166C)),
+    _BankUssd(name: 'Ecobank', codeTemplate: '*326*{amt}#',
+        logo: Icons.account_balance_rounded, color: Color(0xFF0066B3)),
+    _BankUssd(name: 'Polaris Bank', codeTemplate: '*833*{amt}#',
+        logo: Icons.account_balance_rounded, color: Color(0xFF7B2D8B)),
+    _BankUssd(name: 'Keystone Bank', codeTemplate: '*7111*{amt}#',
+        logo: Icons.account_balance_rounded, color: Color(0xFF005BAA)),
+    _BankUssd(name: 'Unity Bank', codeTemplate: '*7799*{amt}#',
+        logo: Icons.account_balance_rounded, color: Color(0xFF8DC63F)),
+    _BankUssd(name: 'Heritage Bank', codeTemplate: '*745*{amt}#',
+        logo: Icons.account_balance_rounded, color: Color(0xFF00833E)),
   ];
 
   String _ussdCode(String bankName, int amountInt) {
-    switch (bankName) {
-      case 'GTBank':
-        return '*737*$amountInt*1#';
-      case 'Access Bank':
-        return '*901*$amountInt#';
-      case 'First Bank':
-        return '*894*$amountInt#';
-      case 'Zenith Bank':
-        return '*966*$amountInt#';
-      case 'UBA':
-        return '*919*$amountInt#';
-      case 'Fidelity Bank':
-        return '*770*$amountInt#';
-      case 'FCMB':
-        return '*329*$amountInt#';
-      default:
-        return '#';
-    }
+    final bank = _banks.firstWhere(
+      (b) => b.name == bankName,
+      orElse: () => const _BankUssd(
+          name: '', codeTemplate: '#', logo: Icons.account_balance_rounded,
+          color: Colors.grey),
+    );
+    return bank.codeTemplate.replaceAll('{amt}', '$amountInt');
   }
 
   void _showUssdCode(BuildContext context, String bankName) {
@@ -1300,10 +1309,14 @@ class _PaymentMethod {
 
 class _BankUssd {
   final String name;
+  final String codeTemplate;
   final IconData logo;
   final Color color;
 
   const _BankUssd(
-      {required this.name, required this.logo, required this.color});
+      {required this.name,
+      required this.codeTemplate,
+      required this.logo,
+      required this.color});
 }
 

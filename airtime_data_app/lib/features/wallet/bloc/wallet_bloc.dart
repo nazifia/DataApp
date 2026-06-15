@@ -15,6 +15,61 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
     on<FundWalletEvent>(_onFundWallet);
     on<LoadBankDetailsEvent>(_onLoadBankDetails);
     on<InitiatePaystackPaymentEvent>(_onInitiatePaystackPayment);
+    on<LoadBanksEvent>(_onLoadBanks);
+    on<ResolveAccountEvent>(_onResolveAccount);
+    on<WithdrawEvent>(_onWithdraw);
+  }
+
+  Future<void> _onLoadBanks(
+      LoadBanksEvent event, Emitter<WalletState> emit) async {
+    emit(const BanksLoading());
+    try {
+      final banks = await _walletRepository.getBanks();
+      emit(BanksLoaded(banks));
+    } catch (e) {
+      emit(BanksLoadFailure(extractApiError(e)));
+    }
+  }
+
+  Future<void> _onResolveAccount(
+      ResolveAccountEvent event, Emitter<WalletState> emit) async {
+    emit(const AccountResolving());
+    try {
+      final name = await _walletRepository.resolveAccount(
+        accountNumber: event.accountNumber,
+        bankCode: event.bankCode,
+      );
+      emit(AccountResolved(name));
+    } catch (e) {
+      emit(AccountResolveFailure(extractApiError(e)));
+    }
+  }
+
+  Future<void> _onWithdraw(
+      WithdrawEvent event, Emitter<WalletState> emit) async {
+    emit(const WithdrawProcessing());
+    try {
+      final response = await _walletRepository.withdraw(
+        amount: event.amount,
+        bankCode: event.bankCode,
+        bankName: event.bankName,
+        accountNumber: event.accountNumber,
+        accountName: event.accountName,
+      );
+      final status = (response['status'] as String?)?.toLowerCase();
+      if (status != null && status != 'success') {
+        emit(WithdrawFailure(
+            response['message']?.toString() ?? 'Withdrawal failed'));
+        return;
+      }
+      emit(WithdrawSuccess(
+        balance: (response['balance'] as num?)?.toDouble() ?? 0.0,
+        amount: event.amount,
+        message: response['message']?.toString() ?? 'Withdrawal is being processed.',
+      ));
+    } catch (e) {
+      emit(WithdrawFailure(extractApiError(e)));
+    }
   }
 
   Future<void> _onLoadWallet(

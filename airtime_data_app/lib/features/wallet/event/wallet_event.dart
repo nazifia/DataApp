@@ -32,3 +32,36 @@ class InitiatePaystackPaymentEvent extends WalletEvent {
   @override
   List<Object> get props => [amount];
 }
+
+class LoadBanksEvent extends WalletEvent {
+  const LoadBanksEvent();
+}
+
+class ResolveAccountEvent extends WalletEvent {
+  final String accountNumber;
+  final String bankCode;
+  const ResolveAccountEvent({required this.accountNumber, required this.bankCode});
+
+  @override
+  List<Object> get props => [accountNumber, bankCode];
+}
+
+class WithdrawEvent extends WalletEvent {
+  final double amount;
+  final String bankCode;
+  final String bankName;
+  final String accountNumber;
+  final String accountName;
+
+  const WithdrawEvent({
+    required this.amount,
+    required this.bankCode,
+    required this.bankName,
+    required this.accountNumber,
+    required this.accountName,
+  });
+
+  @override
+  List<Object> get props =>
+      [amount, bankCode, bankName, accountNumber, accountName];
+}

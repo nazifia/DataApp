@@ -20,7 +20,7 @@ from django.db import transaction as db_transaction
 from django.db.models import F
 from django.utils import timezone
 
-from core.notifications import send_push_notification
+from core.notifications import notify
 from apps.wallet.models import Wallet
 
 logger = logging.getLogger(__name__)
@@ -165,11 +165,13 @@ def _grant_referral_reward(txn):
             status='paid',
             transaction=txn,
         )
-    send_push_notification(
+    notify(
         user.referred_by,
         title='Referral Bonus Earned',
         body=f'You earned ₦{float(bonus):,.2f} because {user.full_name or user.phone_number} made their first purchase.',
-        data={'type': 'referral_bonus', 'amount': str(bonus)},
+        type='referral_bonus',
+        data={'amount': str(bonus)},
+        tenant=txn.tenant,
     )
 
 
@@ -187,16 +189,20 @@ def _notify_success(txn):
     body = f'Your {label} purchase of ₦{float(txn.amount):,.2f} for {target} was successful.'
     if txn.type == 'electricity' and txn.token:
         body += f' Token: {txn.token}'
-    send_push_notification(
+    notify(
         txn.user, title=f'{label} Successful', body=body,
-        data={'type': txn.type, 'reference': txn.reference, 'token': txn.token},
+        type=txn.type,
+        data={'reference': txn.reference, 'token': txn.token},
+        tenant=txn.tenant,
     )
 
 
 def _notify_failure(txn):
     label = _LABELS.get(txn.type, txn.type.title())
-    send_push_notification(
+    notify(
         txn.user, title=f'{label} Failed',
         body=f'Your {label} purchase of ₦{float(txn.amount):,.2f} failed. Your wallet has been refunded.',
-        data={'type': f'{txn.type}_failed', 'reference': txn.reference},
+        type=f'{txn.type}_failed',
+        data={'reference': txn.reference},
+        tenant=txn.tenant,
     )

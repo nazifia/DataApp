@@ -35,6 +35,14 @@ class Tenant(models.Model):
         help_text='Wallet bonus credited to referrer on referee first successful purchase'
     )
     min_wallet_fund = models.DecimalField(max_digits=10, decimal_places=2, default=50)
+    min_withdrawal = models.DecimalField(
+        max_digits=10, decimal_places=2, default=100,
+        help_text='Minimum withdrawal amount (NGN)'
+    )
+    withdrawal_fee = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0,
+        help_text='Flat fee charged per withdrawal (NGN)'
+    )
     max_daily_transaction = models.DecimalField(
         max_digits=12, decimal_places=2, default=500000,
         help_text='Max total daily spend per user (NGN)'

@@ -47,5 +47,6 @@ urlpatterns = [
     path('api/v1/referrals/', include('apps.referrals.urls')),
     path('api/v1/agents/', include('apps.agents.urls')),
     path('api/v1/ussd/', include('apps.ussd.urls')),
+    path('api/v1/notifications/', include('apps.notifications.urls')),
     path('sw.js', sw_js),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

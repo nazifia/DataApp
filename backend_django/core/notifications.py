@@ -36,3 +36,31 @@ def send_push_notification(user, title: str, body: str, data: dict | None = None
     except Exception as exc:
         logger.warning('FCM send failed for user %s: %s', getattr(user, 'id', '?'), exc)
         return False
+
+
+def notify(user, title: str, body: str, type: str = '', data: dict | None = None,
+           tenant=None, push: bool = True):
+    """Persist an in-app Notification and (optionally) send a push.
+
+    Returns the created Notification, or None if persistence failed.
+    Tenant defaults to the user's tenant. Never raises — notifications are
+    best-effort side effects and must not break the calling transaction.
+    """
+    notification = None
+    try:
+        from apps.notifications.models import Notification
+        notification = Notification.all_objects.create(
+            tenant=tenant or getattr(user, 'tenant', None),
+            user=user,
+            title=title,
+            body=body,
+            type=type,
+            data={str(k): str(v) for k, v in (data or {}).items()},
+        )
+    except Exception as exc:
+        logger.warning('Notification persist failed for user %s: %s', getattr(user, 'id', '?'), exc)
+
+    if push:
+        send_push_notification(user, title, body, {**(data or {}), 'type': type} if type else data)
+
+    return notification

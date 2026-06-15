@@ -430,6 +430,8 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage>
       case 'airtime': return AppColors.primary;
       case 'data': return AppColors.info;
       case 'wallet_fund': return AppColors.warning;
+      case 'electricity': return Colors.orange;
+      case 'tv': return Colors.indigo;
       case 'refund': return Colors.purple;
       default: return AppColors.textSecondary;
     }
@@ -440,6 +442,8 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage>
       case 'airtime': return Icons.call_rounded;
       case 'data': return Icons.wifi_rounded;
       case 'wallet_fund': return Icons.account_balance_wallet_rounded;
+      case 'electricity': return Icons.bolt_rounded;
+      case 'tv': return Icons.tv_rounded;
       case 'refund': return Icons.replay_rounded;
       default: return Icons.receipt_long_outlined;
     }
@@ -450,6 +454,8 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage>
       case 'airtime': return 'Airtime Purchase';
       case 'data': return 'Data Purchase';
       case 'wallet_fund': return 'Wallet Funding';
+      case 'electricity': return 'Electricity Payment';
+      case 'tv': return 'Cable TV Payment';
       case 'refund': return 'Refund';
       default: return 'Transaction';
     }
@@ -573,6 +579,8 @@ class _TransactionDetailSheet extends StatelessWidget {
       case 'airtime': return AppColors.primary;
       case 'data': return AppColors.info;
       case 'wallet_fund': return AppColors.warning;
+      case 'electricity': return Colors.orange;
+      case 'tv': return Colors.indigo;
       case 'refund': return Colors.purple;
       default: return AppColors.textSecondary;
     }
@@ -583,6 +591,8 @@ class _TransactionDetailSheet extends StatelessWidget {
       case 'airtime': return Icons.call_rounded;
       case 'data': return Icons.wifi_rounded;
       case 'wallet_fund': return Icons.account_balance_wallet_rounded;
+      case 'electricity': return Icons.bolt_rounded;
+      case 'tv': return Icons.tv_rounded;
       case 'refund': return Icons.replay_rounded;
       default: return Icons.receipt_long_outlined;
     }
@@ -593,6 +603,8 @@ class _TransactionDetailSheet extends StatelessWidget {
       case 'airtime': return 'Airtime Purchase';
       case 'data': return 'Data Purchase';
       case 'wallet_fund': return 'Wallet Funding';
+      case 'electricity': return 'Electricity Payment';
+      case 'tv': return 'Cable TV Payment';
       case 'refund': return 'Refund';
       default: return 'Transaction';
     }

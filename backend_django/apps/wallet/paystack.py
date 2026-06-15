@@ -82,3 +82,84 @@ def verify_transaction(reference: str) -> dict:
     )
     resp.raise_for_status()
     return resp.json()['data']
+
+
+# ─── Bank list / Transfers (Withdrawals) ─────────────────────────────────────
+
+def list_banks() -> list[dict]:
+    """Return all NGN banks (commercial + microfinance), paginating through results.
+
+    Each item: {'name', 'code', 'type', ...}. Paystack lists nuban banks which
+    include microfinance banks, so a single call covers both categories.
+    """
+    banks: list[dict] = []
+    next_cursor = None
+    for _ in range(20):  # safety bound; Paystack returns ~50/page
+        params = {'currency': 'NGN', 'country': 'nigeria', 'perPage': 100}
+        if next_cursor:
+            params['next'] = next_cursor
+        resp = httpx.get(f'{BASE_URL}/bank', params=params, headers=_headers(), timeout=15)
+        resp.raise_for_status()
+        body = resp.json()
+        banks.extend(body.get('data', []))
+        next_cursor = (body.get('meta') or {}).get('next')
+        if not next_cursor:
+            break
+    return banks
+
+
+def resolve_account(account_number: str, bank_code: str) -> dict:
+    """Verify an account number against a bank. Returns {'account_name', 'account_number'}."""
+    resp = httpx.get(
+        f'{BASE_URL}/bank/resolve',
+        params={'account_number': account_number, 'bank_code': bank_code},
+        headers=_headers(),
+        timeout=15,
+    )
+    resp.raise_for_status()
+    return resp.json()['data']
+
+
+def create_transfer_recipient(name: str, account_number: str, bank_code: str) -> dict:
+    resp = httpx.post(
+        f'{BASE_URL}/transferrecipient',
+        json={
+            'type': 'nuban',
+            'name': name,
+            'account_number': account_number,
+            'bank_code': bank_code,
+            'currency': 'NGN',
+        },
+        headers=_headers(),
+        timeout=15,
+    )
+    resp.raise_for_status()
+    return resp.json()['data']
+
+
+def verify_transfer(reference: str) -> dict:
+    """Fetch the current status of a transfer by reference (webhook fallback)."""
+    resp = httpx.get(
+        f'{BASE_URL}/transfer/verify/{reference}',
+        headers=_headers(),
+        timeout=15,
+    )
+    resp.raise_for_status()
+    return resp.json()['data']
+
+
+def initiate_transfer(amount_kobo: int, recipient_code: str, reason: str, reference: str) -> dict:
+    resp = httpx.post(
+        f'{BASE_URL}/transfer',
+        json={
+            'source': 'balance',
+            'amount': amount_kobo,
+            'recipient': recipient_code,
+            'reason': reason,
+            'reference': reference,
+        },
+        headers=_headers(),
+        timeout=15,
+    )
+    resp.raise_for_status()
+    return resp.json()['data']

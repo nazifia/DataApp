@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'apps.referrals',
     'apps.ussd',
     'apps.agents',
+    'apps.notifications',
 ]
 
 MIDDLEWARE = [
