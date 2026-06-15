@@ -1,5 +1,6 @@
 // Main Application File
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/config/app_env.dart';
@@ -47,7 +48,11 @@ final ValueNotifier<ThemeMode> themeModeNotifier =
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  // Firebase web needs explicit FirebaseOptions (not configured). Skip on web —
+  // push notifications are already disabled for web in NotificationService.
+  if (!kIsWeb) {
+    await Firebase.initializeApp();
+  }
   await NotificationService.initialize();
   themeModeNotifier.value = await ThemeService.loadThemeMode();
   runApp(AirtimeDataApp(config: _config));
