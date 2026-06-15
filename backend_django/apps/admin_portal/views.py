@@ -14,6 +14,7 @@ from apps.authentication.serializers import UserSerializer
 from apps.wallet.models import Wallet
 from apps.transactions.models import Transaction
 from apps.transactions.serializers import TransactionSerializer
+from apps.tenants.serializers import BusinessSettingsSerializer
 from .models import AdminAuditLog
 from .audit import log_action
 
@@ -30,15 +31,21 @@ class DashboardStatsView(APIView):
         success_txns = txns.filter(status='success')
         today_txns = txns.filter(created_at__date=today)
 
+        sale_types = ['airtime', 'data', 'electricity', 'tv']
+        # Profit = what the wallet was charged (amount) minus the value delivered
+        # to the provider (face_value). Owner's markup earnings.
+        profit_expr = Sum(F('amount') - F('face_value'))
         return Response({
             'total_users': users.count(),
             'active_users': users.filter(is_active=True).count(),
             'total_transactions': txns.count(),
             'successful_transactions': success_txns.count(),
-            'total_revenue': float(success_txns.filter(type__in=['airtime', 'data']).aggregate(s=Sum('amount'))['s'] or 0),
+            'total_revenue': float(success_txns.filter(type__in=sale_types).aggregate(s=Sum('amount'))['s'] or 0),
+            'total_profit': float(success_txns.filter(type__in=sale_types, face_value__isnull=False).aggregate(s=profit_expr)['s'] or 0),
             'total_wallet_balance': float(Wallet.objects.filter(tenant=request.tenant).aggregate(s=Sum('balance'))['s'] or 0),
             'today_transactions': today_txns.count(),
-            'today_revenue': float(today_txns.filter(status='success', type__in=['airtime', 'data']).aggregate(s=Sum('amount'))['s'] or 0),
+            'today_revenue': float(today_txns.filter(status='success', type__in=sale_types).aggregate(s=Sum('amount'))['s'] or 0),
+            'today_profit': float(today_txns.filter(status='success', type__in=sale_types, face_value__isnull=False).aggregate(s=profit_expr)['s'] or 0),
         })
 
 
@@ -348,6 +355,71 @@ class AuditLogListView(APIView):
             for l in page
         ]
         return paginator.get_paginated_response(data)
+
+
+# ─── Business Owner: Settings & Earnings ─────────────────────────────────────
+
+class BusinessSettingsView(APIView):
+    """GET/PATCH /api/v1/admin/settings/ — business owner manages their own
+    tenant config (branding, markups, fees, limits). Scoped to request.tenant;
+    no tenant id needed. Audit-logged."""
+    permission_classes = [IsAdminOrAbove]
+
+    def get(self, request):
+        if not request.tenant:
+            return Response({'detail': 'Tenant context required.'}, status=400)
+        return Response(BusinessSettingsSerializer(request.tenant).data)
+
+    def patch(self, request):
+        if not request.tenant:
+            return Response({'detail': 'Tenant context required.'}, status=400)
+        ser = BusinessSettingsSerializer(request.tenant, data=request.data, partial=True)
+        ser.is_valid(raise_exception=True)
+        if not ser.validated_data:
+            return Response({'detail': 'No editable fields provided.'}, status=400)
+        ser.save()
+        log_action(
+            request, 'update_settings', 'tenant', request.tenant.id,
+            'Updated: ' + ', '.join(ser.validated_data.keys()),
+        )
+        return Response(ser.data)
+
+
+class BusinessEarningsView(APIView):
+    """GET /api/v1/admin/analytics/earnings/ — owner's profit (markup earnings)
+    over a window, with daily breakdown and per-type split.
+
+    Profit = amount charged − face_value delivered, on successful sales."""
+    permission_classes = [IsModeratorOrAbove]
+
+    SALE_TYPES = ['airtime', 'data', 'electricity', 'tv']
+
+    def get(self, request):
+        days = min(int(request.query_params.get('days', 30)), 365)
+        since = timezone.now() - timedelta(days=days)
+        profit_expr = Sum(F('amount') - F('face_value'))
+        base = Transaction.objects.filter(
+            tenant=request.tenant, status='success',
+            type__in=self.SALE_TYPES, face_value__isnull=False,
+            created_at__gte=since,
+        )
+        totals = base.aggregate(
+            revenue=Sum('amount'), profit=profit_expr, count=Count('id'),
+        )
+        daily = base.annotate(day=TruncDate('created_at')).values('day').annotate(
+            revenue=Sum('amount'), profit=profit_expr, count=Count('id'),
+        ).order_by('day')
+        by_type = base.values('type').annotate(
+            revenue=Sum('amount'), profit=profit_expr, count=Count('id'),
+        ).order_by('-profit')
+        return Response({
+            'days': days,
+            'total_revenue': float(totals['revenue'] or 0),
+            'total_profit': float(totals['profit'] or 0),
+            'transaction_count': totals['count'] or 0,
+            'daily': list(daily),
+            'by_type': list(by_type),
+        })
 
 
 # ─── Serializers used inline ─────────────────────────────────────────────────

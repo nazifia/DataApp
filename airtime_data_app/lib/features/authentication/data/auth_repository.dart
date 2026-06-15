@@ -83,6 +83,52 @@ class AuthRepository {
     return Map<String, dynamic>.from(response.data as Map);
   }
 
+  // Register a new business / tenant (public self-service signup).
+  // On success persists the returned slug so subsequent requests target it.
+  Future<Map<String, dynamic>> registerTenant({
+    required String name,
+    required String ownerEmail,
+    required String ownerPhone,
+    required String ownerPassword,
+    String? slug,
+    String? supportEmail,
+    String? supportPhone,
+    String? primaryColor,
+  }) async {
+    if (_config.useMockAuth) {
+      final s = (slug != null && slug.isNotEmpty)
+          ? slug
+          : name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '-');
+      await _storage.write(key: 'tenant_slug', value: s);
+      _apiClient.updateTenantSlug(s);
+      return {'name': name, 'slug': s};
+    }
+    final response = await _apiClient.dio.post(
+      '/tenants/register/',
+      data: {
+        'name': name,
+        'owner_email': ownerEmail,
+        'owner_phone': Validators.formatNigerianPhone(ownerPhone),
+        'owner_password': ownerPassword,
+        if (slug != null && slug.isNotEmpty) 'slug': slug,
+        if (supportEmail != null && supportEmail.isNotEmpty)
+          'support_email': supportEmail,
+        if (supportPhone != null && supportPhone.isNotEmpty)
+          'support_phone': Validators.formatNigerianPhone(supportPhone),
+        if (primaryColor != null && primaryColor.isNotEmpty)
+          'primary_color': primaryColor,
+      },
+    );
+    final data = Map<String, dynamic>.from(response.data as Map);
+    final newSlug = data['slug']?.toString();
+    if (newSlug != null && newSlug.isNotEmpty) {
+      // Persist so the owner's account creation + login target the new workspace.
+      await _storage.write(key: 'tenant_slug', value: newSlug);
+      _apiClient.updateTenantSlug(newSlug);
+    }
+    return data;
+  }
+
   // Send OTP
   Future<Map<String, dynamic>> sendOtp(String phoneNumber) async {
     if (_config.useMockAuth) {

@@ -1080,6 +1080,18 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
                 }),
                 const Divider(height: 1, indent: 16, endIndent: 16),
                 const SizedBox(height: 8),
+                // Owner-only screens. Shown to everyone; non-owners get a 403
+                // view inside the page (role isn't tracked client-side).
+                _drawerItem(Icons.insights_rounded, 'Business Earnings', () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pushNamed('/admin/earnings');
+                }, color: AppColors.success),
+                _drawerItem(Icons.tune_rounded, 'Business Settings', () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pushNamed('/admin/settings');
+                }),
+                const Divider(height: 1, indent: 16, endIndent: 16),
+                const SizedBox(height: 8),
                 _drawerItem(
                     Icons.help_outline_rounded, 'Help & Support', () {
                   Navigator.of(context).pop();

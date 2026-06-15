@@ -20,10 +20,15 @@ logger = logging.getLogger(__name__)
 
 
 def _get_wallet(user):
-    try:
-        return user.wallet
-    except Wallet.DoesNotExist:
+    # Self-heal: provision a wallet on demand so users created via any path
+    # (OTP onboarding, tenant signup, admin) always have one. Superusers have
+    # no tenant and no wallet.
+    if not getattr(user, 'tenant_id', None):
         return None
+    wallet, _ = Wallet.objects.get_or_create(
+        tenant_id=user.tenant_id, user=user, defaults={'balance': 0},
+    )
+    return wallet
 
 
 # ─── Balance ─────────────────────────────────────────────────────────────────

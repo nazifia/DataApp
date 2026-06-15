@@ -6,6 +6,7 @@ from .views import (
     AdminTransactionListView, AdminTransactionDetailView, AdminReverseTransactionView,
     AnalyticsRevenueView, AnalyticsNetworkView, AnalyticsTopUsersView, AnalyticsTypeBreakdownView,
     AuditLogListView,
+    BusinessSettingsView, BusinessEarningsView,
 )
 from apps.disputes.views import AdminDisputeListView, AdminDisputeDetailView
 
@@ -25,8 +26,11 @@ urlpatterns = [
     path('transactions/', AdminTransactionListView.as_view()),
     path('transactions/<uuid:pk>/', AdminTransactionDetailView.as_view()),
     path('transactions/<uuid:pk>/reverse/', AdminReverseTransactionView.as_view()),
+    # Business owner settings
+    path('settings/', BusinessSettingsView.as_view()),
     # Analytics
     path('analytics/revenue/', AnalyticsRevenueView.as_view()),
+    path('analytics/earnings/', BusinessEarningsView.as_view()),
     path('analytics/network-distribution/', AnalyticsNetworkView.as_view()),
     path('analytics/top-users/', AnalyticsTopUsersView.as_view()),
     path('analytics/transaction-types/', AnalyticsTypeBreakdownView.as_view()),

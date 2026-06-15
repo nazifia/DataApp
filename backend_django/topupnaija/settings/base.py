@@ -116,6 +116,7 @@ REST_FRAMEWORK = {
         'otp': '10/hour',
         'login': '20/hour',
         'purchase': '100/hour',
+        'tenant_register': '5/hour',
     },
 }
 

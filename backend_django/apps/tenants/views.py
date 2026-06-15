@@ -2,9 +2,13 @@ from rest_framework import status, serializers as drf_serializers
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
+from rest_framework.throttling import ScopedRateThrottle
 from core.permissions import IsSuperAdmin, IsTenantOwnerOrSuperAdmin, IsAdminOrAbove
 from .models import Tenant
-from .serializers import TenantSerializer, TenantPublicSerializer, TenantCreateSerializer
+from .serializers import (
+    TenantSerializer, TenantPublicSerializer, TenantCreateSerializer,
+    TenantRegisterSerializer,
+)
 
 
 class MarkupSerializer(drf_serializers.Serializer):
@@ -24,6 +28,24 @@ class TenantInfoView(APIView):
         if not request.tenant:
             return Response({'detail': 'No tenant context.'}, status=400)
         return Response(TenantPublicSerializer(request.tenant).data)
+
+
+class TenantRegisterView(APIView):
+    """POST /api/v1/tenants/register — public self-service tenant signup.
+
+    No auth, no X-Tenant-Slug header required. Heavily throttled to curb abuse.
+    Creates an active tenant; returns its public config so the client can
+    immediately set X-Tenant-Slug and onboard the owner.
+    """
+    permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'tenant_register'
+
+    def post(self, request):
+        serializer = TenantRegisterSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        tenant = serializer.save()
+        return Response(TenantPublicSerializer(tenant).data, status=status.HTTP_201_CREATED)
 
 
 class TenantListCreateView(APIView):

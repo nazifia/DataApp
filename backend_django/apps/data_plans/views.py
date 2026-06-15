@@ -59,7 +59,10 @@ class DataPurchaseView(APIView):
 
         try:
             with db_transaction.atomic():
-                wallet = Wallet.objects.select_for_update().get(user=request.user)
+                wallet, _ = Wallet.objects.select_for_update().get_or_create(
+                    user=request.user,
+                    defaults={'tenant_id': request.user.tenant_id, 'balance': 0},
+                )
                 if wallet.balance < charge:
                     return Response({'detail': 'Insufficient wallet balance.'}, status=400)
                 wallet.balance -= charge

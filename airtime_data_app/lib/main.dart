@@ -29,9 +29,12 @@ import 'features/agents/bloc/agents_bloc.dart';
 import 'features/agents/data/agents_repository.dart';
 import 'features/notifications/bloc/notifications_bloc.dart';
 import 'features/notifications/data/notifications_repository.dart';
+import 'features/admin/bloc/admin_bloc.dart';
+import 'features/admin/data/admin_repository.dart';
 import 'features/authentication/pages/splash_page.dart';
 import 'features/authentication/pages/welcome_page.dart';
 import 'features/authentication/pages/phone_input_page.dart';
+import 'features/authentication/pages/business_registration_page.dart';
 import 'features/authentication/pages/otp_verification_page.dart';
 import 'features/authentication/pages/profile_setup_page.dart';
 import 'features/authentication/pages/dashboard_page.dart';
@@ -43,6 +46,8 @@ import 'features/referrals/pages/referrals_page.dart';
 import 'features/disputes/pages/disputes_page.dart';
 import 'features/agents/pages/agent_page.dart';
 import 'features/notifications/pages/notifications_page.dart';
+import 'features/admin/pages/admin_earnings_page.dart';
+import 'features/admin/pages/business_settings_page.dart';
 import 'features/wallet/pages/wallet_fund_page.dart';
 import 'features/transaction_history/pages/transaction_history_page.dart';
 import 'features/profile/pages/profile_page.dart';
@@ -104,6 +109,8 @@ class AirtimeDataApp extends StatelessWidget {
         AgentsRepository(apiClient: apiClient, config: config);
     final notificationsRepository =
         NotificationsRepository(apiClient: apiClient, config: config);
+    final adminRepository =
+        AdminRepository(apiClient: apiClient, config: config);
 
     return MultiRepositoryProvider(
       providers: [
@@ -117,6 +124,7 @@ class AirtimeDataApp extends StatelessWidget {
         RepositoryProvider.value(value: disputesRepository),
         RepositoryProvider.value(value: agentsRepository),
         RepositoryProvider.value(value: notificationsRepository),
+        RepositoryProvider.value(value: adminRepository),
         RepositoryProvider.value(value: walletRepository),
       ],
       child: MultiBlocProvider(
@@ -180,6 +188,8 @@ class AirtimeDataApp extends StatelessWidget {
                   '/profile-setup': (context) => ProfileSetupPage(
                       phoneNumber:
                           ModalRoute.of(context)!.settings.arguments as String),
+                  '/register-business': (context) =>
+                      const BusinessRegistrationPage(),
                   '/dashboard': (context) => const DashboardPage(),
                   '/airtime-purchase': (context) => const AirtimePurchasePage(),
                   '/data-purchase': (context) => const DataPurchasePage(),
@@ -214,6 +224,19 @@ class AirtimeDataApp extends StatelessWidget {
                       ),
                   // Uses the app-level NotificationsBloc (shared with the badge).
                   '/notifications': (context) => const NotificationsPage(),
+                  // Business owner (admin) screens. Each gets a fresh AdminBloc so
+                  // earnings and settings never share state. Non-admins see a
+                  // friendly 403 view rendered inside the page.
+                  '/admin/earnings': (context) => BlocProvider(
+                        create: (ctx) => AdminBloc(
+                            repository: ctx.read<AdminRepository>()),
+                        child: const AdminEarningsPage(),
+                      ),
+                  '/admin/settings': (context) => BlocProvider(
+                        create: (ctx) => AdminBloc(
+                            repository: ctx.read<AdminRepository>()),
+                        child: const BusinessSettingsPage(),
+                      ),
                 },
               );
             },

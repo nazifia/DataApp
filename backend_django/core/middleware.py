@@ -6,6 +6,9 @@ _thread_local = threading.local()
 
 _IP_RE = re.compile(r'^\d{1,3}(\.\d{1,3}){3}$')
 _ADMIN_PATHS = ('/admin/',)
+# Public, tenant-agnostic endpoints. Self-service registration runs before a
+# tenant exists, so a stale/wrong X-Tenant-Slug header must not 404 it.
+_PUBLIC_PATHS = ('/api/v1/tenants/register/',)
 
 
 def get_current_tenant():
@@ -37,8 +40,8 @@ class TenantMiddleware:
         clear_current_tenant()
         request.tenant = None
 
-        # Admin paths bypass tenant resolution entirely
-        if any(request.path_info.startswith(p) for p in _ADMIN_PATHS):
+        # Admin and public paths bypass tenant resolution entirely
+        if any(request.path_info.startswith(p) for p in _ADMIN_PATHS + _PUBLIC_PATHS):
             return self.get_response(request)
 
         slug = (
