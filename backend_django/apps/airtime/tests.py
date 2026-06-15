@@ -37,7 +37,7 @@ class AirtimePurchaseTests(TestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {token.access_token}')
         self.client.defaults['HTTP_X_TENANT_SLUG'] = 'test-tenant'
 
-    @patch('apps.airtime.views.purchase_airtime')
+    @patch('apps.airtime.services.purchase_airtime')
     def test_successful_purchase_debits_wallet_and_creates_transaction(self, mock_purchase):
         mock_purchase.return_value = {'success': True, 'reference': 'GL-001', 'message': 'ok'}
 
@@ -50,32 +50,34 @@ class AirtimePurchaseTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.wallet.refresh_from_db()
         self.assertEqual(self.wallet.balance, Decimal('4500'))
-        txn = Transaction.objects.get(reference='GL-001')
-        self.assertEqual(txn.status, 'success')
+        txn = Transaction.objects.get(network='mtn', status='success')
         self.assertEqual(txn.amount, Decimal('500'))
 
-    @patch('apps.airtime.views.purchase_airtime')
-    def test_failed_purchase_refunds_wallet(self, mock_purchase):
+    @patch('apps.airtime.services.purchase_airtime')
+    def test_failed_purchase_enters_retrying_and_holds_funds(self, mock_purchase):
+        # First failure no longer refunds immediately — it schedules a retry.
         mock_purchase.return_value = {'success': False, 'reference': 'GL-002', 'message': 'Network error'}
 
-        initial_balance = self.wallet.balance
         response = self.client.post('/api/v1/airtime/purchase/', {
             'network': 'mtn',
             'phone_number': '+2348011111111',
             'amount': '500',
         })
 
-        self.assertEqual(response.status_code, 502)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['status'], 'retrying')
         self.wallet.refresh_from_db()
-        self.assertEqual(self.wallet.balance, initial_balance)
-        txn = Transaction.objects.filter(network='mtn', status='failed').first()
-        self.assertIsNotNone(txn)
+        self.assertEqual(self.wallet.balance, Decimal('4500'))  # still debited
+        txn = Transaction.objects.get(network='mtn')
+        self.assertEqual(txn.status, 'retrying')
+        self.assertEqual(txn.retry_count, 1)
+        self.assertIsNotNone(txn.next_retry_at)
 
     def test_insufficient_balance_returns_400(self):
         self.wallet.balance = Decimal('10')
         self.wallet.save()
 
-        with patch('apps.airtime.views.purchase_airtime') as mock_purchase:
+        with patch('apps.airtime.services.purchase_airtime') as mock_purchase:
             response = self.client.post('/api/v1/airtime/purchase/', {
                 'network': 'mtn',
                 'phone_number': '+2348011111111',

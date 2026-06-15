@@ -1,5 +1,8 @@
 from django.urls import path
-from .user_views import CreateProfileView, ProfileView, ChangePasswordView, ProfilePictureView, RegisterFCMTokenView
+from .user_views import (
+    CreateProfileView, ProfileView, ChangePasswordView, ProfilePictureView,
+    RegisterFCMTokenView, SetUssdPinView,
+)
 
 urlpatterns = [
     path('profile/setup/', CreateProfileView.as_view()),
@@ -7,4 +10,5 @@ urlpatterns = [
     path('password/', ChangePasswordView.as_view()),
     path('profile/picture/', ProfilePictureView.as_view()),
     path('fcm-token/', RegisterFCMTokenView.as_view()),
+    path('ussd-pin/', SetUssdPinView.as_view()),
 ]

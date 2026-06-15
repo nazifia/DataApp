@@ -43,5 +43,9 @@ urlpatterns = [
     path('api/v1/tenants/', include('apps.tenants.urls')),
     path('api/v1/beneficiaries/', include('apps.beneficiaries.urls')),
     path('api/v1/disputes/', include('apps.disputes.urls')),
+    path('api/v1/bills/', include('apps.bills.urls')),
+    path('api/v1/referrals/', include('apps.referrals.urls')),
+    path('api/v1/agents/', include('apps.agents.urls')),
+    path('api/v1/ussd/', include('apps.ussd.urls')),
     path('sw.js', sw_js),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

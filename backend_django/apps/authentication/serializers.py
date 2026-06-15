@@ -23,6 +23,7 @@ class CreateProfileSerializer(serializers.Serializer):
     password = serializers.CharField(min_length=6, write_only=True)
     email = serializers.EmailField(required=False, allow_blank=True)
     device_id = serializers.CharField(required=False, allow_blank=True)
+    referral_code = serializers.CharField(required=False, allow_blank=True, default='')
 
 
 class UpdateProfileSerializer(serializers.Serializer):
@@ -35,11 +36,18 @@ class ChangePasswordSerializer(serializers.Serializer):
     new_password = serializers.CharField(min_length=6, write_only=True)
 
 
+class SetUssdPinSerializer(serializers.Serializer):
+    pin = serializers.RegexField(r'^\d{4}$', write_only=True, error_messages={
+        'invalid': 'PIN must be exactly 4 digits.',
+    })
+
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
             'id', 'phone_number', 'full_name', 'email', 'device_id',
-            'profile_picture_url', 'role', 'is_active', 'created_at', 'updated_at',
+            'profile_picture_url', 'role', 'referral_code', 'is_active',
+            'created_at', 'updated_at',
         ]
         read_only_fields = fields

@@ -39,7 +39,7 @@ class DisputeTests(TestCase):
         )
         response = self.client.get('/api/v1/disputes/')
         self.assertEqual(response.status_code, 200)
-        self.assertGreaterEqual(response.data['count'], 1)
+        self.assertGreaterEqual(response.data['total'], 1)
 
     def test_subject_too_short_returns_400(self):
         response = self.client.post('/api/v1/disputes/', {

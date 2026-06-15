@@ -1,16 +1,15 @@
 from asgiref.sync import async_to_sync
 from decimal import Decimal
 from django.db import transaction as db_transaction
-from django.db.models import F
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import serializers
 from rest_framework.throttling import UserRateThrottle
 from core.validators import NigerianPhoneField
-from core.notifications import send_push_notification
 from apps.transactions.models import Transaction
+from apps.transactions.fulfillment import fulfill
 from apps.wallet.models import Wallet
-from .services import get_data_plans, purchase_data
+from .services import get_data_plans
 
 VALID_NETWORKS = ('mtn', 'airtel', 'glo', 'etisalat')
 
@@ -69,6 +68,7 @@ class DataPurchaseView(APIView):
                     user=request.user,
                     type='data',
                     amount=charge,
+                    face_value=price,
                     status='pending',
                     reference=Transaction.generate_reference(),
                     network=d['network'],
@@ -78,38 +78,19 @@ class DataPurchaseView(APIView):
         except Wallet.DoesNotExist:
             return Response({'detail': 'Wallet not found.'}, status=404)
 
-        result = async_to_sync(purchase_data)(d['network'], d['plan_id'], d['phone_number'])
+        fulfill(txn)
 
-        if result['success']:
-            txn.status = 'success'
-            txn.reference = result['reference']
-            txn.save()
-            send_push_notification(
-                request.user,
-                title='Data Purchased',
-                body=f'{plan.get("name", "")} sent to {d["phone_number"]}.',
-                data={'type': 'data', 'reference': txn.reference},
-            )
-            return Response({
-                'message': 'Data purchased.',
-                'reference': txn.reference,
-                'plan_id': d['plan_id'],
-                'plan_name': plan.get('name', ''),
-                'amount': float(charge),
-                'data': plan.get('name', ''),
-                'validity': plan.get('validity', ''),
-                'network': d['network'],
-                'phone_number': d['phone_number'],
-            })
-        else:
-            with db_transaction.atomic():
-                Wallet.objects.filter(pk=wallet.pk).update(balance=F('balance') + charge)
-                txn.status = 'failed'
-                txn.save()
-            send_push_notification(
-                request.user,
-                title='Data Purchase Failed',
-                body=f'Your {plan.get("name", "")} data purchase failed. Your wallet has been refunded.',
-                data={'type': 'data_failed', 'reference': txn.reference},
-            )
-            return Response({'detail': f"Purchase failed: {result['message']}"}, status=502)
+        if txn.status == 'failed':
+            return Response({'detail': f'Purchase failed: {txn.last_error}'}, status=502)
+        return Response({
+            'message': 'Data purchased.' if txn.status == 'success' else 'Data purchase is being processed.',
+            'reference': txn.reference,
+            'status': txn.status,
+            'plan_id': d['plan_id'],
+            'plan_name': plan.get('name', ''),
+            'amount': float(charge),
+            'data': plan.get('name', ''),
+            'validity': plan.get('validity', ''),
+            'network': d['network'],
+            'phone_number': d['phone_number'],
+        })

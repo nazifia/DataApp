@@ -29,6 +29,7 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     ROLE_CHOICES = [
         ('user', 'User'),
+        ('agent', 'Agent'),
         ('support', 'Support'),
         ('moderator', 'Moderator'),
         ('admin', 'Admin'),
@@ -48,6 +49,13 @@ class User(AbstractBaseUser, PermissionsMixin):
     profile_picture_url = models.CharField(max_length=500, blank=True)
     fcm_token = models.CharField(max_length=500, blank=True)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='user')
+    # Referral program
+    referral_code = models.CharField(max_length=12, blank=True, db_index=True)
+    referred_by = models.ForeignKey(
+        'self', on_delete=models.SET_NULL, null=True, blank=True, related_name='referrals',
+    )
+    # USSD PIN (hashed via set_ussd_pin); blank = not set
+    ussd_pin = models.CharField(max_length=128, blank=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
@@ -63,6 +71,28 @@ class User(AbstractBaseUser, PermissionsMixin):
     class Meta:
         db_table = 'users'
         unique_together = [('tenant', 'phone_number')]
+
+    def save(self, *args, **kwargs):
+        if not self.referral_code:
+            self.referral_code = self._generate_referral_code()
+        super().save(*args, **kwargs)
+
+    def _generate_referral_code(self) -> str:
+        import random, string
+        alphabet = string.ascii_uppercase + string.digits
+        for _ in range(10):
+            code = ''.join(random.choices(alphabet, k=8))
+            if not User.objects.filter(referral_code=code).exists():
+                return code
+        return ''.join(random.choices(alphabet, k=10))
+
+    def set_ussd_pin(self, raw_pin: str):
+        from django.contrib.auth.hashers import make_password
+        self.ussd_pin = make_password(raw_pin)
+
+    def check_ussd_pin(self, raw_pin: str) -> bool:
+        from django.contrib.auth.hashers import check_password
+        return bool(self.ussd_pin) and check_password(raw_pin, self.ussd_pin)
 
     def __str__(self):
         return f'{self.phone_number} ({self.tenant.slug})'

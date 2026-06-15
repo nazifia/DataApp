@@ -8,7 +8,7 @@ from rest_framework.parsers import MultiPartParser
 from apps.wallet.models import Wallet
 from .serializers import (
     CreateProfileSerializer, UpdateProfileSerializer,
-    ChangePasswordSerializer, UserSerializer,
+    ChangePasswordSerializer, UserSerializer, SetUssdPinSerializer,
 )
 from .models import User
 
@@ -38,6 +38,16 @@ class CreateProfileView(APIView):
         user.email = d.get('email', '')
         user.device_id = d.get('device_id', '')
         user.set_password(d['password'])
+
+        # Apply referral code (once, can't refer self)
+        code = (d.get('referral_code') or '').strip().upper()
+        if code and not user.referred_by_id:
+            referrer = User.objects.filter(
+                tenant=request.tenant, referral_code=code,
+            ).exclude(pk=user.pk).first()
+            if referrer:
+                user.referred_by = referrer
+
         user.save()
 
         Wallet.objects.get_or_create(tenant=request.tenant, user=user, defaults={'balance': 0})
@@ -70,6 +80,15 @@ class ChangePasswordView(APIView):
         request.user.set_password(d['new_password'])
         request.user.save()
         return Response({'message': 'Password changed.'})
+
+
+class SetUssdPinView(APIView):
+    def put(self, request):
+        serializer = SetUssdPinSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        request.user.set_ussd_pin(serializer.validated_data['pin'])
+        request.user.save(update_fields=['ussd_pin'])
+        return Response({'message': 'USSD PIN set.'})
 
 
 class ProfilePictureView(APIView):

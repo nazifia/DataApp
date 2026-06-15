@@ -26,6 +26,14 @@ class Tenant(models.Model):
         max_digits=5, decimal_places=2, default=0,
         help_text='Extra % charged on data purchases'
     )
+    bill_markup_percent = models.DecimalField(
+        max_digits=5, decimal_places=2, default=0,
+        help_text='Extra % charged on electricity/TV bill payments'
+    )
+    referral_bonus = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0,
+        help_text='Wallet bonus credited to referrer on referee first successful purchase'
+    )
     min_wallet_fund = models.DecimalField(max_digits=10, decimal_places=2, default=50)
     max_daily_transaction = models.DecimalField(
         max_digits=12, decimal_places=2, default=500000,

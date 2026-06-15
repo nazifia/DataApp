@@ -9,11 +9,15 @@ class Transaction(TenantAwareModel, UUIDModel):
     TYPE_CHOICES = [
         ('airtime', 'Airtime'),
         ('data', 'Data'),
+        ('electricity', 'Electricity'),
+        ('tv', 'Cable TV'),
         ('wallet_fund', 'Wallet Fund'),
         ('refund', 'Refund'),
+        ('commission', 'Agent Commission'),
     ]
     STATUS_CHOICES = [
         ('pending', 'Pending'),
+        ('retrying', 'Retrying'),
         ('success', 'Success'),
         ('failed', 'Failed'),
     ]
@@ -36,6 +40,25 @@ class Transaction(TenantAwareModel, UUIDModel):
     network = models.CharField(max_length=20, choices=NETWORK_CHOICES, blank=True)
     phone_number = models.CharField(max_length=20, blank=True)
     plan_id = models.CharField(max_length=100, blank=True)
+    # Bill payment fields (electricity / TV)
+    customer_id = models.CharField(max_length=100, blank=True, help_text='Meter or smartcard number')
+    provider = models.CharField(max_length=50, blank=True, help_text='Disco / cable provider code')
+    variation_code = models.CharField(max_length=100, blank=True)
+    token = models.CharField(max_length=255, blank=True, help_text='Electricity token returned by provider')
+    # Value actually delivered to the provider (pre-markup). `amount` is what the wallet was charged.
+    face_value = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    # Auto-retry tracking
+    retry_count = models.PositiveIntegerField(default=0)
+    next_retry_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    last_error = models.TextField(blank=True)
+    # POS agent that facilitated this transaction (null = direct customer purchase)
+    agent = models.ForeignKey(
+        'agents.Agent',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='transactions',
+    )
     created_at = models.DateTimeField(default=timezone.now, db_index=True)
 
     class Meta:
