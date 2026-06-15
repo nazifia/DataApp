@@ -29,10 +29,12 @@ class CreateProfileView(APIView):
         serializer.is_valid(raise_exception=True)
         d = serializer.validated_data
 
-        try:
-            user = User.objects.get(tenant=request.tenant, phone_number=d['phone_number'])
-        except User.DoesNotExist:
-            return Response({'detail': 'User not found. Verify OTP first.'}, status=404)
+        # Profile setup may only target the authenticated user's own account.
+        # The phone_number in the body is informational — never trust it to pick
+        # the user, or any logged-in user could overwrite another's password.
+        if d['phone_number'] != request.user.phone_number:
+            return Response({'detail': 'You can only set up your own profile.'}, status=403)
+        user = request.user
 
         user.full_name = d['full_name']
         user.email = d.get('email', '')

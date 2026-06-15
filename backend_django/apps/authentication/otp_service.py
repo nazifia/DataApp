@@ -24,7 +24,10 @@ def save_otp(tenant, phone: str) -> str:
 
 
 def verify_otp(tenant, phone: str, otp: str) -> bool:
-    if is_dev_mode() and otp == settings.TEST_OTP:
+    # The static TEST_OTP must NEVER authenticate a real deployment. Gate it on
+    # DEBUG (build-time, not runtime-toggleable) so a flipped admin dev_mode flag
+    # on a production build can't turn 123456 into a master key for any phone.
+    if settings.DEBUG and is_dev_mode() and otp == settings.TEST_OTP:
         return True
     try:
         record = OTPRecord.objects.get(

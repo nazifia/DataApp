@@ -23,6 +23,10 @@ class LoginThrottle(AnonRateThrottle):
     scope = 'login'
 
 
+class VerifyOTPThrottle(AnonRateThrottle):
+    scope = 'otp'
+
+
 def _tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
     refresh['tenant_id'] = str(user.tenant_id)
@@ -50,6 +54,7 @@ class SendOTPView(APIView):
 
 class VerifyOTPView(APIView):
     permission_classes = [AllowAny]
+    throttle_classes = [VerifyOTPThrottle]
 
     def post(self, request):
         if not request.tenant:

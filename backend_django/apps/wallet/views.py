@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
+from core.permissions import IsAdminOrAbove
 from apps.transactions.models import Transaction
 from core.runtime import is_dev_mode
 from .models import Wallet, Withdrawal
@@ -294,8 +295,9 @@ class WithdrawView(APIView):
                 reference=reference,
             )
 
-        if is_dev_mode():
-            # Settle immediately in dev mode.
+        if settings.DEBUG and is_dev_mode():
+            # Settle immediately in dev mode. DEBUG-gated so a runtime dev_mode
+            # flag on a prod build can't skip the real Paystack transfer.
             self._mark_success(withdrawal)
             locked.refresh_from_db()
             return Response({
@@ -546,7 +548,10 @@ class PaystackWebhookView(APIView):
 # ─── Admin manual fund (kept for admin portal use) ───────────────────────────
 
 class FundWalletView(APIView):
-    """Direct wallet credit — only used by admin portal / tests. Not exposed to end users."""
+    """Direct wallet credit — admin portal only. Never exposed to end users:
+    a self-credit endpoint would let any user mint balance and withdraw it."""
+
+    permission_classes = [IsAdminOrAbove]
 
     def post(self, request):
         wallet = _get_wallet(request.user)

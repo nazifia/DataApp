@@ -42,7 +42,12 @@ class USSDCallbackView(APIView):
 
     def post(self, request):
         secret = getattr(settings, 'USSD_WEBHOOK_SECRET', '')
-        if secret and request.headers.get('X-USSD-Secret') != secret:
+        if not secret:
+            # An unset secret leaves this money-moving webhook open to anyone.
+            # Tolerate it only in DEBUG; refuse to serve it on a prod build.
+            if not settings.DEBUG:
+                return Response(end('USSD gateway not configured.'), status=503)
+        elif request.headers.get('X-USSD-Secret') != secret:
             return Response(end('Unauthorized.'), status=403)
 
         session_id = request.data.get('sessionId', '')
