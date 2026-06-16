@@ -32,6 +32,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   Future<void> _onLogin(LoginEvent event, Emitter<AuthState> emit) async {
     emit(const AuthLoading());
     try {
+      // Explicit workspace wins; otherwise login falls back to the persisted
+      // slug (api_client). Validate before login so a wrong slug fails clearly.
+      if (event.tenantSlug != null && event.tenantSlug!.isNotEmpty) {
+        await _authRepository.validateAndSetTenant(event.tenantSlug!);
+      }
       await _authRepository.login(event.phoneNumber, event.password);
       emit(const LoginSuccess());
     } catch (e) {

@@ -1143,31 +1143,41 @@ class _DashboardPageState extends State<DashboardPage> with RouteAware {
                     );
                   },
                 ),
-                // Biometric toggle
-                if (_biometricCapable)
-                  SwitchListTile.adaptive(
-                    contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 0),
-                    secondary: const Icon(
-                      Icons.fingerprint_rounded,
-                      color: Colors.teal,
-                      size: 22,
-                    ),
-                    title: const Text(
-                      'Biometric Login',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-                    ),
-                    value: _biometricEnabled,
-                    thumbColor: WidgetStateProperty.resolveWith(
-                      (states) => states.contains(WidgetState.selected)
-                          ? AppColors.primary
-                          : null,
-                    ),
-                    onChanged: (value) {
-                      Navigator.of(context).pop();
-                      _toggleBiometric(value);
-                    },
+                // Biometric toggle. Always shown so users can find it; when the
+                // device has no enrolled biometric/screen lock it renders
+                // disabled with a hint instead of disappearing silently.
+                SwitchListTile.adaptive(
+                  contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 0),
+                  secondary: Icon(
+                    Icons.fingerprint_rounded,
+                    color: _biometricCapable ? Colors.teal : Colors.grey,
+                    size: 22,
                   ),
+                  title: const Text(
+                    'Biometric Login',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                  ),
+                  subtitle: _biometricCapable
+                      ? null
+                      : const Text(
+                          'Set up a fingerprint, face, or screen lock in your '
+                          'device settings to use this.',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                  value: _biometricEnabled,
+                  thumbColor: WidgetStateProperty.resolveWith(
+                    (states) => states.contains(WidgetState.selected)
+                        ? AppColors.primary
+                        : null,
+                  ),
+                  onChanged: _biometricCapable
+                      ? (value) {
+                          Navigator.of(context).pop();
+                          _toggleBiometric(value);
+                        }
+                      : null,
+                ),
                 const Divider(height: 1, indent: 16, endIndent: 16),
                 _drawerItem(
                   Icons.logout_rounded,

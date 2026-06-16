@@ -11,11 +11,12 @@ abstract class AuthEvent extends Equatable {
 class LoginEvent extends AuthEvent {
   final String phoneNumber;
   final String password;
+  final String? tenantSlug;
 
-  const LoginEvent(this.phoneNumber, this.password);
+  const LoginEvent(this.phoneNumber, this.password, {this.tenantSlug});
 
   @override
-  List<Object> get props => [phoneNumber, password];
+  List<Object> get props => [phoneNumber, password, tenantSlug ?? ''];
 }
 
 class BiometricLoginEvent extends AuthEvent {

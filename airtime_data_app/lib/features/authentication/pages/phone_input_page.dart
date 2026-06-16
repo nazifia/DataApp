@@ -40,6 +40,16 @@ class _PhoneInputPageState extends State<PhoneInputPage> {
     super.initState();
     if (widget.isLogin) {
       _checkBiometric();
+      _prefillWorkspace();
+    }
+  }
+
+  // Pre-fill the workspace from the last-used slug so returning users (and
+  // owners who just registered) don't retype it, while still allowing a switch.
+  Future<void> _prefillWorkspace() async {
+    final slug = await _storage.read(key: 'tenant_slug');
+    if (slug != null && slug.isNotEmpty && mounted) {
+      _orgSlugController.text = slug;
     }
   }
 
@@ -71,7 +81,10 @@ class _PhoneInputPageState extends State<PhoneInputPage> {
       final phone =
           Validators.formatNigerianPhone(_phoneController.text.trim());
       final password = _passwordController.text;
-      context.read<AuthBloc>().add(LoginEvent(phone, password));
+      final slug = _orgSlugController.text.trim().toLowerCase();
+      context.read<AuthBloc>().add(
+            LoginEvent(phone, password, tenantSlug: slug.isEmpty ? null : slug),
+          );
     }
   }
 
@@ -267,6 +280,44 @@ class _PhoneInputPageState extends State<PhoneInputPage> {
               ),
               const SizedBox(height: 24),
             ],
+
+            // Workspace / Organisation slug — which business you sign in to.
+            // Members and business owners alike scope their login here.
+            const Text(
+              'Workspace',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: _orgSlugController,
+              textCapitalization: TextCapitalization.none,
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9\-_]')),
+              ],
+              decoration: const InputDecoration(
+                hintText: 'e.g. acme-corp',
+                prefixIcon: Icon(Icons.business_rounded),
+              ),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Please enter your workspace';
+                }
+                if (value.trim().length < 2) {
+                  return 'Workspace must be at least 2 characters';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Your business workspace slug — owners use the slug set at registration.',
+              style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+            ),
+            const SizedBox(height: 20),
 
             // Phone Number
             const Text(
@@ -475,9 +526,9 @@ class _PhoneInputPageState extends State<PhoneInputPage> {
             ),
             const SizedBox(height: 40),
 
-            // Organisation slug
+            // Workspace slug — which existing business workspace to join.
             const Text(
-              'Organisation Name *',
+              'Workspace *',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -498,17 +549,17 @@ class _PhoneInputPageState extends State<PhoneInputPage> {
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'Please enter your organisation name';
+                  return 'Please enter your workspace';
                 }
                 if (value.trim().length < 2) {
-                  return 'Organisation name must be at least 2 characters';
+                  return 'Workspace must be at least 2 characters';
                 }
                 return null;
               },
             ),
             const SizedBox(height: 6),
             Text(
-              'Enter your organisation\'s slug to join the right workspace',
+              'Enter your business workspace slug to join the right account',
               style: TextStyle(fontSize: 12, color: Colors.grey[500]),
             ),
             const SizedBox(height: 20),
