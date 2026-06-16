@@ -119,7 +119,9 @@
       "PowerShell(& \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\venv\\\\Scripts\\\\python.exe\" -c \"import django; print\\('Django:', django.__version__\\); import sys; print\\('Python:', sys.version\\)\")",
       "PowerShell(& \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\venv\\\\Scripts\\\\pip.exe\" index versions django 2>&1 | Select-Object -First 5)",
       "PowerShell(& \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\venv\\\\Scripts\\\\pip.exe\" install \"Django==5.2.14\" 2>&1 | Select-Object -Last 10)",
-      "PowerShell(& \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\venv\\\\Scripts\\\\python.exe\" -c \"import django; print\\('Django:', django.__version__\\); from django.template.context import Context; import copy; c = Context\\({}\\); copy.copy\\(c\\); print\\('Context.__copy__ OK'\\)\" 2>&1)"
+      "PowerShell(& \"C:\\\\Users\\\\Dell\\\\Desktop\\\\MY_PRODUCTS\\\\ADP\\\\venv\\\\Scripts\\\\python.exe\" -c \"import django; print\\('Django:', django.__version__\\); from django.template.context import Context; import copy; c = Context\\({}\\); copy.copy\\(c\\); print\\('Context.__copy__ OK'\\)\" 2>&1)",
+      "PowerShell(flutter analyze *)",
+      "Bash(awk *)"
     ]
   }
 }

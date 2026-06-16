@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../core/config/app_env.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/services/biometric_service.dart';
 import '../../../core/utils/validation.dart';
 
 class AuthRepository {
@@ -44,26 +45,55 @@ class AuthRepository {
       await _storage.write(
           key: 'access_token', value: data['access_token'].toString());
       if (data['refresh_token'] != null) {
-        await _storage.write(
-            key: 'refresh_token', value: data['refresh_token'].toString());
+        final refresh = data['refresh_token'].toString();
+        await _storage.write(key: 'refresh_token', value: refresh);
+        // Keep the biometric-gated credential current after a fresh login.
+        await BiometricService.refreshCredential(refresh);
       }
     }
     return data;
   }
 
-  // Biometric helpers
-  Future<void> enableBiometric(String phoneNumber) async {
-    await _storage.write(key: 'biometric_enabled', value: 'true');
-    await _storage.write(key: 'biometric_phone', value: phoneNumber);
-  }
-
-  Future<bool> isBiometricEnabled() async {
-    final value = await _storage.read(key: 'biometric_enabled');
-    return value == 'true';
-  }
-
-  Future<String?> getBiometricPhone() async {
-    return await _storage.read(key: 'biometric_phone');
+  // Biometric login: verify identity (caller prompts the OS sheet via
+  // BiometricService.authenticate) then exchange the biometric-stored refresh
+  // token for a fresh access token. Throws a user-facing message if the stored
+  // session is missing or expired so the UI can fall back to password login.
+  Future<Map<String, dynamic>> biometricLogin() async {
+    if (_config.useMockAuth) {
+      const mockToken = 'dev_access_token_123';
+      await _storage.write(key: 'access_token', value: mockToken);
+      await _storage.write(
+          key: 'refresh_token', value: 'dev_refresh_token_123');
+      return {'access': mockToken};
+    }
+    final refresh = await _storage.read(key: 'biometric_refresh_token');
+    if (refresh == null || refresh.isEmpty) {
+      throw Exception(
+          'Biometric login is not set up. Please sign in with your password.');
+    }
+    final slug = await _storage.read(key: 'tenant_slug');
+    final response = await _apiClient.dio.post(
+      '/auth/refresh-token/',
+      data: {'refresh': refresh},
+      options: Options(headers: {
+        if (slug != null && slug.isNotEmpty) 'X-Tenant-Slug': slug,
+      }),
+    );
+    final data = Map<String, dynamic>.from(response.data as Map);
+    final access = data['access']?.toString();
+    if (access == null || access.isEmpty) {
+      throw Exception(
+          'Biometric session expired. Please sign in with your password.');
+    }
+    await _storage.write(key: 'access_token', value: access);
+    // Rotate the stored refresh token if the backend issued a new one.
+    final newRefresh = data['refresh']?.toString();
+    final effectiveRefresh =
+        (newRefresh != null && newRefresh.isNotEmpty) ? newRefresh : refresh;
+    await _storage.write(key: 'refresh_token', value: effectiveRefresh);
+    await _storage.write(
+        key: 'biometric_refresh_token', value: effectiveRefresh);
+    return data;
   }
 
   // Validate that a tenant slug exists and, if so, apply it to all future requests
@@ -173,8 +203,9 @@ class AuthRepository {
       await _storage.write(
           key: 'access_token', value: data['access_token'].toString());
       if (data['refresh_token'] != null) {
-        await _storage.write(
-            key: 'refresh_token', value: data['refresh_token'].toString());
+        final refresh = data['refresh_token'].toString();
+        await _storage.write(key: 'refresh_token', value: refresh);
+        await BiometricService.refreshCredential(refresh);
       }
     }
     return data;
@@ -296,9 +327,23 @@ class AuthRepository {
   Future<void> clearTokens() async {
     // Keep tenant slug so the user can log back in without re-entering it.
     final slug = await _storage.read(key: 'tenant_slug');
+    // Preserve biometric enrollment so the user can biometric-login after
+    // logout without re-entering a password.
+    final bioEnabled = await _storage.read(key: 'biometric_enabled');
+    final bioPhone = await _storage.read(key: 'biometric_phone');
+    final bioToken = await _storage.read(key: 'biometric_refresh_token');
     await _storage.deleteAll();
     if (slug != null && slug.isNotEmpty) {
       await _storage.write(key: 'tenant_slug', value: slug);
+    }
+    if (bioEnabled == 'true') {
+      await _storage.write(key: 'biometric_enabled', value: 'true');
+      if (bioPhone != null && bioPhone.isNotEmpty) {
+        await _storage.write(key: 'biometric_phone', value: bioPhone);
+      }
+      if (bioToken != null && bioToken.isNotEmpty) {
+        await _storage.write(key: 'biometric_refresh_token', value: bioToken);
+      }
     }
   }
 

@@ -1,8 +1,8 @@
 // Authentication Bloc
 import 'dart:io';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:local_auth/local_auth.dart';
 import '../data/auth_repository.dart';
+import '../../../core/services/biometric_service.dart';
 import '../../../core/utils/validation.dart';
 import '../../../core/utils/api_error.dart';
 import '../event/auth_event.dart';
@@ -10,7 +10,6 @@ import '../state/auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository _authRepository;
-  final LocalAuthentication _localAuth = LocalAuthentication();
 
   AuthBloc({required AuthRepository authRepository})
       : _authRepository = authRepository,
@@ -44,22 +43,23 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       BiometricLoginEvent event, Emitter<AuthState> emit) async {
     emit(const AuthLoading());
     try {
-      final canAuth = await _localAuth.canCheckBiometrics ||
-          await _localAuth.isDeviceSupported();
-      if (!canAuth) {
-        emit(const AuthFailure('Biometric authentication not available'));
+      if (!await BiometricService.isBiometricEnabled()) {
+        emit(const AuthFailure('Biometric login is not set up'));
         return;
       }
-      final authenticated = await _localAuth.authenticate(
-        localizedReason: 'Authenticate to sign in to TopUpNaija',
+      final authenticated = await BiometricService.authenticate(
+        reason: 'Authenticate to sign in to TopUpNaija',
       );
-      if (authenticated) {
-        emit(const LoginSuccess());
-      } else {
+      if (!authenticated) {
         emit(const AuthFailure('Biometric authentication failed'));
+        return;
       }
+      // Identity verified locally — exchange the stored credential for a live
+      // session before treating the user as logged in.
+      await _authRepository.biometricLogin();
+      emit(const LoginSuccess());
     } catch (e) {
-      emit(AuthFailure('Biometric error: ${extractApiError(e)}'));
+      emit(AuthFailure(extractApiError(e)));
     }
   }
 

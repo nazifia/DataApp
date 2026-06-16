@@ -12,6 +12,7 @@ import '../../../core/utils/validation.dart';
 import '../../../core/constants/theme.dart';
 import '../../../core/utils/contact_picker.dart';
 import '../../../core/config/app_env.dart';
+import '../../../core/services/biometric_service.dart';
 
 class PhoneInputPage extends StatefulWidget {
   final bool isLogin;
@@ -128,8 +129,8 @@ class _PhoneInputPageState extends State<PhoneInputPage> {
     if (enable == true && mounted) {
       final phone =
           Validators.formatNigerianPhone(_phoneController.text.trim());
-      await _storage.write(key: 'biometric_enabled', value: 'true');
-      await _storage.write(key: 'biometric_phone', value: phone);
+      // Prompts the OS sheet and stores the refresh token behind it.
+      await BiometricService.enable(phone: phone);
     }
   }
 
