@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from rest_framework import status, serializers as drf_serializers
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -13,10 +15,10 @@ from .serializers import (
 
 class MarkupSerializer(drf_serializers.Serializer):
     airtime_markup_percent = drf_serializers.DecimalField(
-        max_digits=5, decimal_places=2, min_value=0, max_value=100, required=False,
+        max_digits=5, decimal_places=2, min_value=Decimal('0'), max_value=Decimal('100'), required=False,
     )
     data_markup_percent = drf_serializers.DecimalField(
-        max_digits=5, decimal_places=2, min_value=0, max_value=100, required=False,
+        max_digits=5, decimal_places=2, min_value=Decimal('0'), max_value=Decimal('100'), required=False,
     )
 
 

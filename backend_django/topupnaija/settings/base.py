@@ -90,7 +90,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [BASE_DIR / 'static']
+STATICFILES_DIRS = [BASE_DIR / 'static'] if (BASE_DIR / 'static').is_dir() else []
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -134,7 +134,27 @@ SIMPLE_JWT = {
 }
 
 CORS_ALLOW_ALL_ORIGINS = False
-CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[])
+
+
+def _clean_origins(raw):
+    """Split on commas (even if env didn't), strip whitespace and any path/
+    trailing slash so corsheaders.E014 can't fire on a malformed env value."""
+    origins = []
+    for item in raw:
+        for part in str(item).split(','):
+            part = part.strip()
+            if not part:
+                continue
+            # keep scheme://host[:port], drop any path
+            scheme, sep, rest = part.partition('://')
+            if sep:
+                rest = rest.split('/', 1)[0]
+                part = f'{scheme}://{rest}'
+            origins.append(part)
+    return origins
+
+
+CORS_ALLOWED_ORIGINS = _clean_origins(env.list('CORS_ALLOWED_ORIGINS', default=[]))
 
 from corsheaders.defaults import default_headers
 CORS_ALLOW_HEADERS = list(default_headers) + [
