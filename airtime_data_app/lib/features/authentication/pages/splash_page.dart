@@ -47,8 +47,8 @@ class _SplashPageState extends State<SplashPage>
     if (!mounted) return;
 
     final authRepo = AuthRepository(
-      apiClient: ApiClient(AppConfig.dev),
-      config: AppConfig.dev,
+      apiClient: ApiClient(AppConfig.active),
+      config: AppConfig.active,
     );
     final loggedIn = await authRepo.isLoggedIn();
 

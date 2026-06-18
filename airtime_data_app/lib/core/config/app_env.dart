@@ -36,10 +36,20 @@ class AppConfig {
 
   static const AppConfig prod = AppConfig(
     environment: AppEnvironment.prod,
-    baseUrl: 'https://your-backend-api.com/api/v1',
+    baseUrl: String.fromEnvironment(
+      'API_BASE_URL',
+      defaultValue: 'https://topupnaija.pythonanywhere.com/api/v1',
+    ),
     tenantSlug: 'default',
     enableLogging: false,
     useMockAuth: false,
     testOtp: '',
   );
+
+  // Single source of truth for the active environment.
+  // Build with --dart-define=PROD=true to select prod (default: dev).
+  // Override the API host with --dart-define=API_BASE_URL=https://...
+  static const bool _isProd = bool.fromEnvironment('PROD');
+
+  static AppConfig get active => _isProd ? prod : dev;
 }

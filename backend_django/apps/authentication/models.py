@@ -94,6 +94,12 @@ class User(AbstractBaseUser, PermissionsMixin):
         from django.contrib.auth.hashers import check_password
         return bool(self.ussd_pin) and check_password(raw_pin, self.ussd_pin)
 
+    def get_full_name(self):
+        return self.full_name or self.phone_number
+
+    def get_short_name(self):
+        return self.phone_number
+
     def __str__(self):
         return f'{self.phone_number} ({self.tenant.slug})'
 

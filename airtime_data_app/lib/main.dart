@@ -55,8 +55,8 @@ import 'core/constants/app_constants.dart';
 import 'core/constants/theme.dart';
 import 'core/widgets/inactivity_detector.dart';
 
-// Switch to AppConfig.prod before releasing to production
-final _config = AppConfig.dev;
+// Active environment — switch in AppConfig.active (app_env.dart)
+final _config = AppConfig.active;
 
 final RouteObserver<ModalRoute<void>> routeObserver =
     RouteObserver<ModalRoute<void>>();
