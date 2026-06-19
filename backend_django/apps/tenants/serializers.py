@@ -68,10 +68,15 @@ class TenantPublicSerializer(serializers.ModelSerializer):
 
 
 class TenantCreateSerializer(serializers.ModelSerializer):
+    owner_phone = NigerianPhoneField()
+    # Optional. When given, the owner admin account is provisioned with this
+    # password; when omitted a random one is generated and returned once.
+    owner_password = serializers.CharField(write_only=True, min_length=6, required=False)
+
     class Meta:
         model = Tenant
         fields = [
-            'name', 'slug', 'owner_email', 'owner_phone',
+            'name', 'slug', 'owner_email', 'owner_phone', 'owner_password',
             'logo_url', 'primary_color', 'support_email', 'support_phone',
             'airtime_markup_percent', 'data_markup_percent',
             'min_wallet_fund', 'max_daily_transaction',
@@ -81,6 +86,17 @@ class TenantCreateSerializer(serializers.ModelSerializer):
         if Tenant.all_objects.filter(slug=value).exists():
             raise serializers.ValidationError('A tenant with this slug already exists.')
         return value
+
+    def create(self, validated_data):
+        from .services import provision_tenant_owner
+
+        owner_password = validated_data.pop('owner_password', None)
+        with transaction.atomic():
+            tenant = Tenant.objects.create(**validated_data)
+            _, raw_password = provision_tenant_owner(tenant, password=owner_password)
+        # Stash the (possibly generated) password so the view can return it once.
+        tenant._owner_password = raw_password
+        return tenant
 
 
 class TenantRegisterSerializer(serializers.ModelSerializer):
@@ -121,8 +137,7 @@ class TenantRegisterSerializer(serializers.ModelSerializer):
         return slug
 
     def create(self, validated_data):
-        from apps.authentication.models import User
-        from apps.wallet.models import Wallet
+        from .services import provision_tenant_owner
 
         owner_password = validated_data.pop('owner_password')
         slug = validated_data.get('slug') or validated_data['name']
@@ -131,15 +146,7 @@ class TenantRegisterSerializer(serializers.ModelSerializer):
 
         with transaction.atomic():
             tenant = Tenant.objects.create(**validated_data)
-            # Provision the owner admin account so password login works at once.
-            owner = User.objects.create_user(
-                phone_number=tenant.owner_phone,
-                tenant=tenant,
-                password=owner_password,
-                email=tenant.owner_email,
-                role='admin',
-                is_active=True,
-            )
-            # Provision the owner's wallet so balance/funding works immediately.
-            Wallet.objects.create(tenant=tenant, user=owner, balance=0)
+            # Provision the owner admin account + wallet so password login
+            # works at once.
+            provision_tenant_owner(tenant, password=owner_password)
         return tenant

@@ -62,7 +62,11 @@ class TenantListCreateView(APIView):
         serializer = TenantCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         tenant = serializer.save()
-        return Response(TenantSerializer(tenant).data, status=status.HTTP_201_CREATED)
+        data = TenantSerializer(tenant).data
+        # Return the generated owner password once (only when we generated one).
+        if getattr(tenant, '_owner_password', None):
+            data['owner_password'] = tenant._owner_password
+        return Response(data, status=status.HTTP_201_CREATED)
 
 
 class TenantDetailView(APIView):
